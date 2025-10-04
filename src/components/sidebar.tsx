@@ -30,8 +30,9 @@ function CategoriesList() {
     }
 
     const Pill = (props: ParentProps & { class?: string }) => {
-        const c = 'w-19/20 h-8 rounded-lg m-2 pl-2 bg-cyan-800 place-self-end flex items-center justify-between hover:bg-cyan-700 focus:outline-2 focus:outline-cyan-50 ';
-        return <button class={twMerge(c, props.class)}>
+        return <button class={twMerge(`w-19/20 h-8 rounded-lg m-2 pl-2 bg-cyan-800 place-self-end flex items-center justify-between 
+        hover:bg-cyan-700 focus:outline-2 focus:outline-cyan-50 
+        `, props.class)}>
             {props.children}
         </button>
     }
@@ -39,10 +40,11 @@ function CategoriesList() {
     function PillGroup(props: { categoryItem: string }) {
         const [isOpen, setOpen] = createSignal(true)
 
-        function visibility() { return !isOpen() ? 'hidden' : '' }
+        function visibility() { return !isBarOpen() ? 'invisible' : 'visible' }
+        function showSubs() { return !isOpen() ? 'hidden' : '' }
 
         return (
-            <div class='w-19/20 place-self-center'>
+            <div class={`w-19/20 place-self-center transition-discrete delay-75 duration-100 ease-in ${visibility()}`}>
                 <Pill>
                     <p class='cursor-default'>{ props.categoryItem }</p>
                     <Show when={list[ props.categoryItem ].length > 0}>
@@ -50,7 +52,7 @@ function CategoriesList() {
                     </Show>
                 </Pill>
                 <For each={list[ props.categoryItem ]}>{ (subItem) =>
-                    <Pill class={`w-13/15 place-self-end ${visibility()}`}>
+                    <Pill class={`w-13/15 place-self-end ${showSubs()}`}>
                         <p>{subItem}</p>
                     </Pill>
                 }</For>
@@ -68,7 +70,7 @@ function CategoriesList() {
 
 
 const Sidebar = () => {
-    function barWidth() { return isBarOpen() ? 'w-70' : 'w-15'; }
+    function barWidth() { return isBarOpen() ? 'w-70 min-w-70' : 'w-15 min-w-15'; }
 
     return (
         <div class={`h-dvh dark:bg-cyan-900 rounded-e-2xl ${barWidth()}`} style="transition: 0.5s" >
