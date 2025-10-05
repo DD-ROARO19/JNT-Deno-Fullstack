@@ -29,7 +29,7 @@ function SearchBar(props: { class?: string, placeholder?: string } & ParentProps
 
     return (
         <>
-            <div ref={searchBarRef} id="SearchBar" class={twMerge(`py-2 my-3 bg-cyan-800 rounded-4xl flex justify-evenly place-items-center 
+            <div ref={searchBarRef} id="SearchBar" class={twMerge(`p-2 my-3 bg-cyan-800 rounded-4xl flex justify-evenly place-items-center 
             transition-discrete duration-150 ease-in-out
             ${isFixed() ? 'fixed top-0 right-1/10 z-50 shadow-lg w-1/2 place-self-end' : 'relative'}
             `, props.class)}
