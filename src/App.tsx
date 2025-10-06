@@ -14,9 +14,7 @@ function App() {
     <div class='h-dvh max-h-dvh w-dvw max-w-dvw flex dark:bg-zinc-800 dark:text-white' >
       <Sidebar />
       <div id='Content' class='h-full w-full overflow-y-auto scroll-smooth'>
-        <div class='min-w-100 w-3/4 place-self-center-safe flex flex-col'>
-          <Contents />
-        </div>
+        <Contents />
       </div>
     </div>
   )

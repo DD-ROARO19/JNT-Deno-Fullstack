@@ -6,6 +6,7 @@ export default function StartPage() {
     return (
         <>
             <SearchBar />
+            <p>Start</p>
         </>
     );
 }

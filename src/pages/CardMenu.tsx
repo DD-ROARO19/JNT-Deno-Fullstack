@@ -7,7 +7,7 @@ export default function CardMenu() {
     return (
         <>
             <SearchBar />
-            <p>Hola</p>
+            <p>Card Menu</p>
         </>
     )
 }
