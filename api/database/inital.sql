@@ -17,8 +17,13 @@ CREATE TABLE IF NOT EXISTS notes (
 CREATE VIEW IF NOT EXISTS categories AS
 SELECT 
     d.*,
-    COUNT(n.parent) AS count
-FROM directories AS d
-JOIN notes AS n
-WHERE d.id = n.parent
-GROUP BY d.id;
+    (
+        SELECT COUNT(n.id)
+        FROM notes AS n
+        JOIN directories AS sd 
+            ON sd.id = n.parent
+        WHERE 
+            sd.path = d.path
+            OR sd.path LIKE d.path || '/%'
+    ) AS note_count
+FROM directories AS d;
