@@ -12,8 +12,18 @@ const update_content = `UPDATE notes SET content = ? WHERE id = ?`
 const update_parent =  `UPDATE notes SET parent = ? WHERE id = ?`
 
 const all_notes =    `SELECT * FROM notes`;
-const all_from_dir = `SELECT * FROM notes WHERE parent = ?`;
 const one_note =     `SELECT * FROM notes WHERE id = ?`;
+
+const all_from_dir = 
+`SELECT 
+    n.*, d.path
+FROM notes AS n
+JOIN directories AS d
+    ON d.id = n.parent
+WHERE 
+    LOWER(d.path) = LOWER((SELECT path FROM directories WHERE id = ?)) 
+    OR LOWER(d.path) LIKE LOWER((SELECT path FROM directories WHERE id = ?)) || '/%';
+`;
 
 const all_from_path = 
 `SELECT 
