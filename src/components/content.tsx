@@ -1,8 +1,8 @@
 import { Route, Router } from "@solidjs/router";
 
 // Pages
-import StartPage from "../pages/Start";
-import CardMenu from "../pages/CardMenu";
+import StartPage from "../pages/Start.tsx";
+import CardMenu from "../pages/CardMenu.tsx";
 
 
 export default function Contents() {

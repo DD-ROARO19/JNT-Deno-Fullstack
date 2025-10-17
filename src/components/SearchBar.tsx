@@ -2,7 +2,7 @@ import { twMerge } from "tailwind-merge";
 import type { ParentProps } from "solid-js";
 import { createSignal, onCleanup, onMount } from "solid-js";
 
-import { SearchSVG } from "../assets/svgs";
+import { SearchSVG } from "../assets/svgs.tsx";
 
 function SearchBar(props: { class?: string, placeholder?: string } & ParentProps) {
     const [isFixed, setIsFixed] = createSignal(false);

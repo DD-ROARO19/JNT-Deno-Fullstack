@@ -3,8 +3,8 @@ import { For } from 'solid-js';
 import type { ParentProps } from 'solid-js';
 
 import { twMerge } from 'tailwind-merge';
-import { Edit, Erase } from '../assets/svgs';
-import SearchBar from './SearchBar';
+import { Edit, Erase } from '../assets/svgs.tsx';
+import SearchBar from './SearchBar.tsx';
 
 const arr = [0, 0, 0, 0, 0]
 

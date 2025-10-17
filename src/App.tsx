@@ -4,8 +4,8 @@ import 'solid-js'
 // import viteLogo from '/vite.svg'
 import './App.css'
 
-import Sidebar from './components/sidebar';
-import Contents from './components/content';
+import Sidebar from './components/sidebar.tsx';
+import Contents from './components/content.tsx';
 
 function App() {
   // const [count, setCount] = createSignal(0)

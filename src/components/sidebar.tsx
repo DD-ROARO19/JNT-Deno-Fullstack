@@ -1,10 +1,10 @@
 import 'solid-js'
 
 import logo from '../assets/solid.svg'
-import { DownArrow } from '../assets/svgs';
+import { DownArrow } from '../assets/svgs.tsx';
 // import type { DOMElement } from 'solid-js/jsx-runtime';
 
-import { isBarOpen, setBarOpen } from '../signals'
+import { isBarOpen, setBarOpen } from '../signals.tsx'
 import { createSignal, For, Show } from 'solid-js';
 
 import { twMerge } from 'tailwind-merge';
