@@ -5,32 +5,49 @@ import { DownArrow } from '../assets/svgs.tsx';
 // import type { DOMElement } from 'solid-js/jsx-runtime';
 
 import { isBarOpen, setBarOpen } from '../signals.tsx'
-import { createSignal, For, Show } from 'solid-js';
+import { 
+    // @ts-types="solid-js"
+    // createEffect, 
+    createSignal, 
+    For, // @ts-types="solid-js"
+onMount, Show 
+} from 'solid-js';
+// import { createStore } from "solid-js/store"
 
 import { twMerge } from 'tailwind-merge';
 import type { ParentProps } from 'solid-js';
 
-const [categories/*, setCategories/**/] = createSignal([
-    '@/New Notes@/',
-    '@/Cats@/',
-    '@/Cats@/Orage@/',
-    '@/Cats@/Black@/',
-    '@/Dog@/Chihuahuas@/',
-    '@/Dog@/Shiba@/',
-])
-
+function processList(pathList: string[]) {
+    const separatorFilter = pathList.map(v => v.split('/').slice(1)); // [['New Notes'], ['Cats'], ['Cats', 'Orage'], ['Cats', 'Black'], ['Dog', 'Chihuahuas'], ['Dog', 'Shiba']]
+    const prevList: string[] = [...new Set(pathList.map(v => v.split('/').slice(1)[0]))]; // ['New Notes', 'Cats', 'Dog']
+    
+    const list: any = {}
+    for (const category of prevList) {
+        list[category] = separatorFilter.filter(va => va[0] == category && va.length > 1).map(i => i.slice(1))
+    }
+    return { list: list, plist: prevList }
+}
 
 function CategoriesList() {
-    const startList = categories().map(v => v.split('@/').slice(1, -1)); // [['New Notes'], ['Cats'], ['Cats', 'Orage'], ['Cats', 'Black'], ['Dog', 'Chihuahuas'], ['Dog', 'Shiba']]
-    const plist: string[] = [...new Set(categories().map(v => v.split('@/').slice(1, -1)[0]))]; // ['New Notes', 'Cats', 'Dog']
+    const [categories, setCategories] = createSignal([])
 
-    const list: any = {}
-    for (const category of plist) {
-        list[category] = startList.filter(va => va[0] == category && va.length > 1).map(i => i.slice(1))
-    }
+    onMount(async () => {
+        const res = await fetch('/api/categories', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
+        let data: any = {}
+        data = await res.json()
+        console.log(data);
+        setCategories(data.map((v: { path: any }) => v.path))
+    })
+
+    const { list, plist } = processList(categories())
 
     const Pill = (props: ParentProps & { class?: string }) => {
-        return <button class={twMerge(`w-19/20 h-8 rounded-lg m-2 pl-2 bg-cyan-800 place-self-end flex items-center justify-between 
+        return <button type="button" class={twMerge(`w-19/20 h-8 rounded-lg m-2 pl-2 bg-cyan-800 place-self-end flex items-center justify-between 
         hover:bg-cyan-700 focus:outline-2 focus:outline-cyan-50 
         `, props.class)}>
             {props.children}

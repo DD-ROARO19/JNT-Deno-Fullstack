@@ -53,7 +53,7 @@ notes.get('/c/:parent', (c) => {
 notes.get('/:id?', (c) => {
     const id = c.req.param('id')
     const res = id ? db.prepare(one_note).get(id) : db.prepare(all_notes).all();
-    if (!res) return c.json({ msg: 'No notes found!' }, 404);
+    if (!res) return c.json({ msg: 'No notes found!', path: id }, 404);
     
     return c.json({ list: res })
 })

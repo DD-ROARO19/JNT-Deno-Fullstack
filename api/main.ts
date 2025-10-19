@@ -2,10 +2,17 @@ import { Hono } from "@hono/hono";
 import catgs from "./routes/categories.ts";
 import notes from "./routes/notes.ts";
 
-const app = new Hono().basePath('/api')
+const api = new Hono()
+const app = new Hono({ strict: false })
 // import db from "./database/db_start.ts";
 
-app.route('/categories', catgs)
-app.route('/notes', notes)
+api.route('/categories', catgs)
+api.route('/notes', notes)
+
+app.notFound((c) => {
+    return c.json({ msg: 'Error! Path not found', paths: c.req.path })
+})
+
+app.route('/api', api)
 
 Deno.serve(app.fetch);
