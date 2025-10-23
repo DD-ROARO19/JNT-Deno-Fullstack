@@ -1,34 +1,13 @@
-import 'solid-js'
 import { For } from 'solid-js';
 import type { ParentProps } from 'solid-js';
+import { useNavigate } from '@solidjs/router';
 
 import { twMerge } from 'tailwind-merge';
 import { Edit, Erase } from '../assets/svgs.tsx';
 import SearchBar from './SearchBar.tsx';
 
-const arr = [0, 0, 0, 0, 0]
-
-
-function newNote(e: MouseEvent) {
-    e.stopPropagation()
-    console.log('new');
-    
-}
-function openNote(e: MouseEvent) {
-    e.stopPropagation()
-    console.log('open');
-    
-}
-function editNote(e: MouseEvent) {
-    e.stopPropagation()
-    console.log('edit');
-    
-}
-function deleteNote(e: MouseEvent) {
-    e.stopPropagation()
-    console.log('delete');
-    
-}
+import type { Note } from "../../types.ts";
+// const arr = [0, 0, 0, 0, 0]
 
 
 function Card(props: ParentProps & { class?: string, title: string, content: string, onclick: (e: MouseEvent) => void }) {
@@ -44,18 +23,40 @@ function Card(props: ParentProps & { class?: string, title: string, content: str
     );
 }
 
-export function CardList() {
+export function CardList(props: { list: Note[] }) {
+    const navigate = useNavigate();
+
+    function newNote(e: MouseEvent) {
+        e.stopPropagation()
+        console.log('new');
+        navigate('/n/create', { resolve: true });
+    }
+    function openNote(e: MouseEvent, id: string) {
+        e.stopPropagation()
+        console.log('open =>', 'id: ' + id);
+        navigate('/n/' + id, { resolve: true });
+    }
+    function editNote(e: MouseEvent, id: string) {
+        e.stopPropagation()
+        console.log('edit =>', 'id: ' + id);
+
+    }
+    function deleteNote(e: MouseEvent, id: string) {
+        e.stopPropagation()
+        console.log('delete =>', 'id: ' + id);
+
+    }
 
     return (
         <>
             <SearchBar />
             <div class='max-h-dvh mt-4 grid gap-4 grid-cols-[repeat(auto-fit,minmax(21.75rem,1fr))]'>
-                <For each={arr}>{(_, i) =>
-                    <Card title={'Note ' + i()} content='Sample Text' onclick={e => openNote(e)} >
+                <For each={props.list}>{(item, _i) =>
+                    <Card title={item.title} content={item.content} onclick={e => openNote(e, item.id)} >
 
                         <span class='group/edit opacity-0 group-hover/card:opacity-100 relative place-self-end mt-auto flex gap-1.5 transition-discrete delay-50 duration-150 ease-in-out' >
-                            <button onclick={e => editNote(e)} title='Edit' class='cursor-pointer rounded p-1 hover:bg-cyan-600 active:bg-cyan-800' ><Edit /></button>
-                            <button onclick={e => deleteNote(e)} title='Erase' class='cursor-pointer rounded p-1 hover:bg-cyan-600 active:bg-cyan-800' ><Erase /></button>
+                            <button type="button" onclick={e => editNote(e, item.id)} title='Edit' class='cursor-pointer rounded p-1 hover:bg-cyan-600 active:bg-cyan-800' ><Edit /></button>
+                            <button type="button" onclick={e => deleteNote(e, item.id)} title='Erase' class='cursor-pointer rounded p-1 hover:bg-cyan-600 active:bg-cyan-800' ><Erase /></button>
                         </span>
 
                     </Card>

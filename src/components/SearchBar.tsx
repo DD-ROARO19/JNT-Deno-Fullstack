@@ -34,7 +34,7 @@ function SearchBar(props: { class?: string, placeholder?: string } & ParentProps
             ${isFixed() ? 'fixed top-0 right-1/10 z-50 shadow-lg w-1/2 place-self-end' : 'relative'}
             `, props.class)}
             >
-                <button class='group/search hover:bg-cyan-700 active:bg-cyan-900 w-15 rounded-xl cursor-pointer place-items-center' ><SearchSVG class='dark:group-active/search:stroke-cyan-600' /></button>
+                <button type="button" class='group/search hover:bg-cyan-700 active:bg-cyan-900 w-15 rounded-xl cursor-pointer place-items-center' ><SearchSVG class='dark:group-active/search:stroke-cyan-600' /></button>
                 <input type="text" placeholder={props.placeholder || 'Search'} class={`w-8/10 text-lg text-slate-200 bg-cyan-900 rounded-2xl ps-2.5 placeholder-slate-500/70 outline-0 focus:border-2 
                 border-slate-500 
                 `} />
