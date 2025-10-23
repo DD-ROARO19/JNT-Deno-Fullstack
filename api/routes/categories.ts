@@ -3,18 +3,9 @@ import db from "../database/db_start.ts"
 import { all_ctgs, update_stmt, delete_stmt, insert_stmt, one_ctg } from "../controllers/directories.ts";
 // import type { StatementResultingChanges } from "node:sqlite";
 
+import type { Category, CategoryNode } from '../../types.ts'
+
 const catgs = new Hono();
-
-type Category = {
-    id: number;
-    path: string;
-    note_count: number;
-}
-
-type CategoryNode = Category & {
-    name: string;
-    childs: CategoryNode[];
-}
 
 
 catgs.post('/', async (c) => {
