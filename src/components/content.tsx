@@ -13,11 +13,11 @@ export default function Contents() {
         <div class='min-w-100 w-3/4 place-self-center-safe flex flex-col'>
             <Router>
                 <Route path='/' component={StartPage} />
-                <Route path='/c/new' component={CardMenu} />
-                <Route path='/n/create' component={NewNote} />
-                <Route path='/c/:name/*' component={CardMenu} />
-                <Route path='/n/:id' component={Note} />
-                <Route path='/n/:id/edit' component={Note} />
+                <Route path='/category/new' component={CardMenu} />
+                <Route path='/note/create' component={NewNote} />
+                <Route path='/category/:name/*' component={CardMenu} />
+                <Route path='/note/:id' component={Note} />
+                <Route path='/note/:id/edit' component={Note} />
             </Router>
         </div>
     );

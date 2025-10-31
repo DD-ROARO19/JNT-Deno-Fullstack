@@ -44,7 +44,7 @@ function CategoriesList() {
 
 
     const Pill = (props: ParentProps & { class?: string, path: string }) => {
-        return <a href={'/c' + props.path} class={twMerge(`w-19/20 h-8 rounded-lg m-2 pl-2 bg-cyan-800 place-self-end flex items-center justify-between 
+        return <a href={'/category' + props.path} class={twMerge(`w-19/20 h-8 rounded-lg m-2 pl-2 bg-cyan-800 place-self-end flex items-center justify-between 
         hover:bg-cyan-700 focus:outline-2 focus:outline-cyan-50 cursor-default
         `, props.class)}>
             {props.children}

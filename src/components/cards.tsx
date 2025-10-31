@@ -29,12 +29,12 @@ export function CardList(props: { list: Note[] }) {
     function newNote(e: MouseEvent) {
         e.stopPropagation()
         console.log('new');
-        navigate('/n/create', { resolve: true });
+        navigate('/note/create', { resolve: true });
     }
     function openNote(e: MouseEvent, id: string) {
         e.stopPropagation()
         console.log('open =>', 'id: ' + id);
-        navigate('/n/' + id, { resolve: true });
+        navigate('/note/' + id, { resolve: true });
     }
     function editNote(e: MouseEvent, id: string) {
         e.stopPropagation()
