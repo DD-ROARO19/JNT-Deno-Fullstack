@@ -1,7 +1,7 @@
 // @ts-types="solid-js"
 import { onMount, createSignal } from "solid-js";
 import { CardList } from "../components/cards.tsx";
-// import SearchBar from "../components/SearchBar.tsx";
+import SearchBar from "../components/SearchBar.tsx";
 
 import type { Note } from '../../types.ts';
 
@@ -22,7 +22,7 @@ export default function StartPage() {
 
     return (
         <>
-            {/* <SearchBar /> */}
+            <SearchBar />
             <CardList list={list()} />
         </>
     );

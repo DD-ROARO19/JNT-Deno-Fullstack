@@ -4,7 +4,7 @@ import { useNavigate } from '@solidjs/router';
 
 import { twMerge } from 'tailwind-merge';
 import { Edit, Erase } from '../assets/svgs.tsx';
-import SearchBar from './SearchBar.tsx';
+// import SearchBar from './SearchBar.tsx';
 
 import type { Note } from "../../types.ts";
 // const arr = [0, 0, 0, 0, 0]
@@ -49,7 +49,7 @@ export function CardList(props: { list: Note[] }) {
 
     return (
         <>
-            <SearchBar />
+            {/* <SearchBar /> */}
             <div class='max-h-dvh mt-4 grid gap-4 grid-cols-[repeat(auto-fit,minmax(21.75rem,1fr))]'>
                 <For each={props.list}>{(item, _i) =>
                     <Card title={item.title} content={item.content} onclick={e => openNote(e, item.id)} >
