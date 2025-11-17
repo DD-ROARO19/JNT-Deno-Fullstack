@@ -15,6 +15,7 @@ function SearchBar(props: { class?: string, placeholder?: string } & ParentProps
 
         if (!searchBarRef || !scrollingContainer) {
             console.error("SearchBar couldn't find its ref or the #Content scrolling container.");
+            console.error('searchBarRef: ', searchBarRef); console.error('scrollingContainer: ', scrollingContainer);
             return;
         };
         setBarHeight(searchBarRef.offsetHeight)

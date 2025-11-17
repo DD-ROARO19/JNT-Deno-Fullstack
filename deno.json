@@ -13,7 +13,7 @@
   },
   "imports": {
     "@hono/hono": "jsr:@hono/hono@4.9.10",
-    "@solidjs/router": "https://esm.sh/@solidjs/router@0.15.3"
+    "@solidjs/router": "npm:@solidjs/router@0.15.3"
   },
   "compilerOptions": {
     "jsx": "react-jsx",
