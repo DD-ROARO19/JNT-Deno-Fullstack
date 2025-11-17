@@ -1,6 +1,6 @@
 import { For } from 'solid-js';
 import type { ParentProps } from 'solid-js';
-import { useNavigate } from '@solidjs/router';
+import { useNavigate, useLocation } from '@solidjs/router';
 
 import { twMerge } from 'tailwind-merge';
 import { Edit, Erase } from '../assets/svgs.tsx';
@@ -25,11 +25,12 @@ function Card(props: ParentProps & { class?: string, title: string, content: str
 
 export function CardList(props: { list: Note[] }) {
     const navigate = useNavigate();
+    const location = useLocation();
 
     function newNote(e: MouseEvent) {
         e.stopPropagation()
         console.log('new');
-        navigate('/note/create', { resolve: true });
+        navigate('/new/' + location.pathname.slice(6), { resolve: true });
     }
     function openNote(e: MouseEvent, id: string) {
         e.stopPropagation()
