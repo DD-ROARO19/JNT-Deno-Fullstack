@@ -66,9 +66,8 @@ function Title() {
     )
 }
 
-import { Keys } from "../components/Keys.tsx";
 
-export default function NewNote() {
+export default function EditNote() {
 
     return (
         <>
@@ -78,8 +77,9 @@ export default function NewNote() {
                 <Title />
 
                 {/* Content */}
-                <Keys>
-                </Keys>
+                <div>
+
+                </div>
 
             </div>
         </>
