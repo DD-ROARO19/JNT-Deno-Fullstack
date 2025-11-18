@@ -151,7 +151,7 @@ export function Options() {
     )
 }
 
-
+import { lastClicked, setLastClicked } from '../signals.tsx'
 export function InputButton() {
     let selectButtonRef: HTMLButtonElement | undefined;
 
@@ -163,8 +163,19 @@ export function InputButton() {
         }
     }
 
+    function handleClick(e: Event) {
+        const target = e.target as HTMLElement;
+
+        if (target.classList.contains('InputMenuButton')) {
+            if (target === lastClicked()) {
+                openInputMenu(!showInputMenu())
+            } else { updateHeight() }
+            setLastClicked(selectButtonRef)
+        }
+    }
+
     return (
-        <button type="button" ref={selectButtonRef} onClick={() => { updateHeight() }}
+        <button type="button" ref={selectButtonRef} onClick={handleClick}
         class="cursor-pointer InputMenuButton"
         >
             +
