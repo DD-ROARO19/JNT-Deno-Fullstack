@@ -1,8 +1,10 @@
 import type { ParentProps, Accessor, Setter } from 'solid-js';
 import {
     Show,
-    createSignal
+    createSignal,
+    For
 } from 'solid-js';
+import { Dynamic } from "solid-js/web"
 // import { twMerge } from 'tailwind-merge';
 
 import { DownArrow } from '../assets/svgs.tsx';
@@ -48,7 +50,9 @@ export function Keys(props: ParentProps & { class?: string }) {
 
 
                 {/* JSON content of the note */}
-                {props.children}
+                <span class="flex flex-col">
+                    {props.children}
+                </span>
 
 
                 {/* Clossin key "}" */}
