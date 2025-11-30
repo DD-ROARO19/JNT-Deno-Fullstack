@@ -22,6 +22,11 @@
   background: #005f78;
 }
 
+/* Handle corner */
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
 /* #root {
   max-width: 1280px;
   margin: 0 auto;

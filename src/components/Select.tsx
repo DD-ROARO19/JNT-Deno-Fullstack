@@ -1,4 +1,5 @@
 import { DownArrow } from '../assets/svgs.tsx';
+import { twMerge } from "tailwind-merge";
 import type { ParentProps, Accessor, Setter } from 'solid-js';
 import {
     For,
@@ -97,17 +98,17 @@ export function Selector(props: ParentProps & { align: string }) {
 import {
     menuCoords, setMenuCoords,
     showInputMenu, openInputMenu,
-    // inputMenuRef, setInputMenuRef
+    lineConfig
 } from "../signals.tsx";
 
-export function Options() {
+export function OptionsMenu() {
     let optionsMenuRef: HTMLDivElement | undefined;
 
     createEffect(() => {
         // const menuRef = inputMenuRef();
         const handleOutClick = (e: Event) => {
-            if ( !optionsMenuRef || optionsMenuRef.contains(e.target as Node) || 
-                (e.target as HTMLButtonElement).className.includes('InputMenuButton') ) {
+            if (!optionsMenuRef || optionsMenuRef.contains(e.target as Node) ||
+                (e.target as HTMLButtonElement).className.includes('InputMenuButton')) {
                 return;
             }
 
@@ -122,11 +123,29 @@ export function Options() {
         return showInputMenu() ? 'visible' : 'hidden';
     }
 
+    const MenuItem = (props: { text: string; class?: string; val: string }) => {
+        const c = `block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900
+        dark:text-gray-300 dark:hover:bg-slate-700 dark:hover:text-gray-400`;
+        return (
+            <option role="menuitem" class={twMerge(c, props.class)} value={props.val}>
+                {props.text}
+            </option>
+        )
+    }
+
+    const MenuTitle = (props: { text: string }) => (
+        <option role="menuitem" class="block px-4 py-2 text-sm font-bold italic text-gray-700
+        dark:text-gray-300">
+            {props.text}
+        </option>
+    )
+
+
     return (
         <div ref={optionsMenuRef}
             id="InputMenu"
-            class={`absolute z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black 
-            ring-opacity-5 focus:outline-none`}
+            class={`absolute z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 
+            ring-black ring-opacity-5 focus:outline-none dark:bg-stone-800`}
             style={{
                 top: `${menuCoords().y}px`,
                 left: `${menuCoords().x}px`,
@@ -136,14 +155,17 @@ export function Options() {
             aria-orientation="vertical"
             aria-labelledby="menu-button"
         >
-            <div class="py-1" role="none">
+            <div class="py-1 select-none" role="none">
                 {/* The menu items passed as children will appear here */}
                 {/* {props.children} */}
-                <option class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem"
-                    selected>Type of input</option>
+                <Show when={lineConfig().extra_buttons} >
+                    <For each={lineConfig().extra_buttons}>{(option) =>
+                        <MenuItem text={option.text} val={option.text} />
+                    }</For>
+                </Show>
+                <MenuTitle text={lineConfig().inputs_titles} />
                 <For each={Object.keys(types_of_inputs)}>{(type) =>
-                    <option class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900" role="menuitem"
-                        value={type}>{type}</option>
+                    <MenuItem class="list-item list-inside" text={type} val={type} />
                 }</For>
 
             </div>
@@ -151,23 +173,38 @@ export function Options() {
     )
 }
 
-import { lastClicked, setLastClicked } from '../signals.tsx'
-export function InputButton() {
+
+import {
+    lastClicked, setLastClicked,
+    setLineConfig
+} from '../signals.tsx'
+import { createSelector } from 'solid-js'
+
+import type { lineMenuConfig } from "../types.tsx";
+type inputBtn_props = {
+    class?: string
+    text?: string
+    path: string
+    config: lineMenuConfig
+}
+export function InputButton(props: inputBtn_props) {
+    const isLastClicked = createSelector(lastClicked); // Should add some performace (?)
     let selectButtonRef: HTMLButtonElement | undefined;
 
     function updateHeight() {
         if (selectButtonRef) {
             const rect = selectButtonRef.getBoundingClientRect();
             setMenuCoords({ x: (rect.right - 224), y: (rect.top + selectButtonRef.offsetHeight) });
+            setLineConfig(props.config);
             openInputMenu(true);
         }
     }
 
     function handleClick(e: Event) {
-        const target = e.target as HTMLElement;
+        const target = e.target as HTMLButtonElement;
 
         if (target.classList.contains('InputMenuButton')) {
-            if (target === lastClicked()) {
+            if (isLastClicked(target)) {
                 openInputMenu(!showInputMenu())
             } else { updateHeight() }
             setLastClicked(selectButtonRef)
@@ -176,9 +213,9 @@ export function InputButton() {
 
     return (
         <button type="button" ref={selectButtonRef} onClick={handleClick}
-        class="cursor-pointer InputMenuButton"
+            class={twMerge("cursor-pointer InputMenuButton select-none", props.class)}
         >
-            +
+            {props.text || '+'}
         </button>
     )
 }

@@ -2,8 +2,10 @@
 import {
     createSignal,
     onMount,
-    onCleanup
+    onCleanup,
+    For
 } from 'solid-js'
+import { createStore } from "solid-js/store";
 import { Edit2, Erase } from '../assets/svgs.tsx'
 
 
@@ -39,10 +41,22 @@ function Title() {
                 `}
             >
                 {/* <button type="button" class='group/title hover:bg-cyan-700 active:bg-cyan-900 w-15 rounded-xl cursor-pointer place-items-center' ><SearchSVG class='dark:group-active/search:stroke-cyan-600' /></button> */}
-                <input type="text" placeholder='Title' class={`w-8/10 p-0.5 text-lg text-slate-200 
+                {/* <input type="text" placeholder='Title' class={`w-8/10 p-0.5 text-lg text-slate-200 
                 bg-cyan-900 rounded ps-3 placeholder-slate-500/70 outline-0 focus:border-2 
                     border-slate-500 
-                `} />
+                `} /> */}
+                <div class="relative w-8/10 p-0.5 text-lg text-slate-200 bg-cyan-900 rounded-lg ps-3 
+                placeholder-slate-500/70 outline-0 focus:border-2 border-slate-500 ">
+                    <input type="text" id="floating_outlined" class="block px-1.5 pb-1 pt-1.5 w-full text-md 
+                    bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer"
+                        placeholder=" " />
+                    <label for="floating_outlined" class="absolute text-md text-body duration-300 transform 
+                    -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2 peer-focus:px-2 
+                    peer-focus:text-fg-brand peer-placeholder-shown:scale-130 peer-placeholder-shown:-translate-y-1/2 
+                    peer-placeholder-shown:top-1/2 peer-focus:top-0 peer-focus:scale-75 peer-focus:-translate-y-4 
+                    rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1
+                    pointer-events-none">Note Title</label>
+                </div>
                 {/* {props.children} */}
                 <button type="button" class='group/save bg-cyan-700/70 hover:bg-cyan-700 
                 active:bg-cyan-900 p-1.5 rounded cursor-pointer place-items-center'>
@@ -67,11 +81,20 @@ function Title() {
 }
 
 import { Keys } from "../components/Keys.tsx";
+import { InputButton, OptionsMenu } from "../components/Select.tsx";
+import { NewLineOne, NewLineTwo } from '../components/Edit_Lines.tsx'
+import { newNote, setNewNote } from "../stores.tsx";
+import type { lineMenuConfig } from "../types.tsx";
 
 export default function NewNote() {
 
+    const addConfig: lineMenuConfig = { 
+        inputs_titles: 'Select type' 
+    }
+
     return (
         <>
+            <OptionsMenu />
             <div class="m-4 dark:bg-cyan-800 min-h-30 rounded-2xl p-2 flex flex-col 
             hover:text-white">
                 {/* Title */}
@@ -79,6 +102,12 @@ export default function NewNote() {
 
                 {/* Content */}
                 <Keys>
+                    <For each={newNote.content}>{(line, index) =>
+                        <NewLineTwo type={line.type} index={index()} path="content" />
+                    }</For>
+                    <InputButton path="content" config={addConfig}
+                    class="rounded-xl mx-8 my-1 border-2 border-slate-700 hover:border-slate-600 
+                    active:border-slate-700"/>
                 </Keys>
 
             </div>
