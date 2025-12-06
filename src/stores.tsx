@@ -3,6 +3,7 @@ import type { JSONValue, JSONObject, LineContent } from "./types.tsx";
 
 type newNote = {
     metadata: {
+        title: string;
         author: string;
         path: string;
         tags: string[] | undefined;
@@ -11,6 +12,7 @@ type newNote = {
 }
 export const [newNote, setNewNote] = createStore<newNote>({
     metadata: {
+        title: '',
         author: "User",
         path: "/",
         tags: undefined

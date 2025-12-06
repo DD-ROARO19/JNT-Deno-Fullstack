@@ -10,5 +10,8 @@ export const [light, setLight] = createSignal(false)
 export const [menuCoords, setMenuCoords] = createSignal({ x: 0, y: 0 })
 export const [showInputMenu, openInputMenu] = createSignal(false)
 export const [lastClicked, setLastClicked] = createSignal<HTMLButtonElement | undefined>();
-import type { lineMenuConfig } from './types.tsx'
-export const [lineConfig, setLineConfig] = createSignal<lineMenuConfig>({inputs_titles: "Inputs"});
+import type { lineMenu } from './types.tsx'
+export const [menuOpen, setMenuOpen] = createSignal('none');
+export const [lineMenuConfig, setLineMenuConfig] = createSignal<lineMenu>({
+    primary_inputs: { title: 'Inputs', buttons: [] }
+});
