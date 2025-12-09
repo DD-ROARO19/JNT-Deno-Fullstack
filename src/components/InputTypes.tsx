@@ -4,7 +4,7 @@ import { For, Show, createSignal } from "solid-js"
 import type { lineMenu } from "../types.tsx";
 import { DownArrow } from "../assets/svgs.tsx";
 import { InputButton } from "./Select.tsx";
-import type { JSONValue, JSONArray, ArrayContent } from "../types.tsx"
+import type { JSONValue, JSONArray } from "../types.tsx"
 import { Dynamic } from "solid-js/web"
 
 import type { typeOfInputs } from "../types.tsx";
@@ -162,7 +162,7 @@ export function ObjectType() {
     )
 }
 
-const inputs = {
+export const inputs = {
     string: StringType,
     number: NumberType,
     array: ArrayType,

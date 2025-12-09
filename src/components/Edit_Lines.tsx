@@ -3,7 +3,6 @@ import { Dynamic } from "solid-js/web"
 import type { ParentProps } from 'solid-js';
 
 // import { InputButton } from "./Select.tsx";
-import { ArrayType, NumberType, ObjectType, StringType } from "./InputTypes.tsx";
 import type { lineMenu } from "../types.tsx";
 import { updateStore } from "../helpers.tsx";
 
@@ -16,16 +15,8 @@ import { updateStore } from "../helpers.tsx";
 // }
 
 
-const inputs = {
-    string: StringType,
-    number: NumberType,
-    array: ArrayType,
-    object: ObjectType,
-    null: () => <span>Replace</span>,
-    boolean: () => <span>Replace</span>,
-}
 import type { typeOfInputs } from "../types.tsx";
-
+import { inputs } from "./InputTypes.tsx";
 
 // export function NewLineOne(props: ParentProps & { place?: number, level?: number }) {
 

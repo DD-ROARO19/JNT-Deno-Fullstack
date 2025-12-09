@@ -90,16 +90,18 @@ import { addInput } from "../helpers.tsx";
 
 export default function NewNote() {
 
+    const rootPath = ['content']
+
     const addConfig: lineMenu = { 
         primary_inputs: { 
             open: true,
             title:'Select type',
             buttons: [
-                { text: 'String', action: () => addInput(['content'], 'string') },
-                { text: 'Number', action: () => addInput(['content'], 'number') },
-                { text: 'Boolean', action: () => addInput(['content'], 'boolean') },
-                { text: 'Array', action: () => addInput(['content'], 'array') },
-                { text: 'Object', action: () => addInput(['content'], 'object') },
+                { text: 'String', action: () => addInput(rootPath, 'string') },
+                { text: 'Number', action: () => addInput(rootPath, 'number') },
+                { text: 'Boolean', action: () => addInput(rootPath, 'boolean') },
+                { text: 'Array', action: () => addInput(rootPath, 'array') },
+                { text: 'Object', action: () => addInput(rootPath, 'object') },
             ]
         } 
     }

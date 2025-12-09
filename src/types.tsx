@@ -13,10 +13,10 @@ export type lineMenu = {
 export type typeOfInputs = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object';
 export type LineContent = {
     type: typeOfInputs;
-    key: string;
+    key: string | undefined;
     value: JSONValue;
 };
-export type ArrayContent = { type: typeOfInputs; value: JSONValue; };
+// export type ArrayContent = { type: typeOfInputs; value: JSONValue; };
 
 export type JSONPrimitive = string | number | boolean | null;
 export type JSONObject = {
