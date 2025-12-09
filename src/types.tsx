@@ -13,8 +13,8 @@ export type lineMenu = {
 export type typeOfInputs = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object';
 export type LineContent = {
     type: typeOfInputs;
-    key: string | undefined;
-    value: JSONValue;
+    key: string | number;
+    value: JSONPrimitive | LineContent[];
 };
 // export type ArrayContent = { type: typeOfInputs; value: JSONValue; };
 

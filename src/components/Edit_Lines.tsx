@@ -69,7 +69,7 @@ export function NewLineTwo(props: ParentProps & lineProps) {
                 />
                 <h2 class=":_Space mx-1">:</h2>
                 <Dynamic component={inputs[props.type]}
-                    value={newNote.content[props.index].value}
+                    data={newNote.content[props.index].value}
                     config={addConfig}
                     path={[...props.path, 'value']} 
                 >

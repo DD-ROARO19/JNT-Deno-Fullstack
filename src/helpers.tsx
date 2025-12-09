@@ -7,7 +7,7 @@ export function updateStore(path: (string | number)[], change: JSONValue) {
 }
 
 export function addInput(path: (string | number)[], input_type: typeOfInputs) {
-    console.log('path', path);
+    console.debug('add to path', path);
     
     // @ts-ignore: May I get some path, pls?
     setNewNote(...path, list => [...list, { type: input_type, key: '', value: '' }])

@@ -1,7 +1,7 @@
 // @ts-types="solid-js"
 import { For, Show, createSignal } from "solid-js"
 // import { newNote, setNewNote } from "../stores.tsx"
-import type { lineMenu } from "../types.tsx";
+import type { LineContent, lineMenu } from "../types.tsx";
 import { DownArrow } from "../assets/svgs.tsx";
 import { InputButton } from "./Select.tsx";
 import type { JSONValue, JSONArray } from "../types.tsx"
@@ -16,11 +16,11 @@ type inputsProps = {
     config: lineMenu;
 }
 
-export function StringType(props: inputsProps & { value: string }) {
+export function StringType(props: inputsProps & { data: string }) {
     return (
         <span class="group/s-line flex-1 flex">
             <textarea placeholder="Bla Bla Bla..."
-                value={props.value}
+                value={props.data}
                 onChange={e => updateStore(props.path, e.currentTarget.value)}
                 // value={newNote['content'][props.index].value?.toString()}
                 // onInput={e => setNewNote('content', props.index, 'value', e.currentTarget.value)}
@@ -35,11 +35,11 @@ export function StringType(props: inputsProps & { value: string }) {
     )
 }
 
-export function NumberType(props: inputsProps & { value: number }) {
+export function NumberType(props: inputsProps & { data: number }) {
     return (
         <span class="group/n-line flex-1 flex">
             <input type="number" placeholder="0, 1 or more (or less)!"
-                value={props.value}
+                value={props.data}
                 onChange={e => updateStore(props.path, Number(e.currentTarget.value))}
                 // value={newNote['content'][props.index].value?.toString()}
                 // onInput={e => setNewNote('content', props.index, 'value', e.currentTarget.value)}
@@ -76,7 +76,8 @@ function getType(input: JSONValue) {
 }
 
 
-export function ArrayType(props: inputsProps & { value: JSONArray }) {
+export function ArrayType(props: inputsProps & { data: LineContent[] }) {
+    // console.log('array content', props);
     const [showList, setList] = createSignal(true);
 
     const Toggle = (props: { text: string, end?: boolean }) => (
@@ -128,23 +129,25 @@ export function ArrayType(props: inputsProps & { value: JSONArray }) {
                     invisible group-hover/line:visible hover:border-slate-600 
                     active:border-slate-600/80 absolute"/>
             <Show when={showList()}
-                fallback={<Toggle text={`[${props.value.length}]`} />}
+                fallback={<Toggle text={`[${props.data.length}]`} />}
             >
                 <Toggle text="[" />
                 <div class="ArrayType w-full relative flex flex-col pl-6 border-l border-slate-700/50 my-1">
-                    <For each={props.value}>{(value, index) =>
-                        <div class="w-full flex group/array_line justify-between">
+                    <For each={props.data}>{(item, index) => {
+                        updateStore([...props.path, index(), 'key'], index())
+                        return (<div class="w-full flex group/array_line justify-between">
                             <h2 class="mr-2">{index()}.</h2>
                             <span class="flex-1">
-                                <Dynamic component={inputs[getType(value)]} value={value}
+                                <Dynamic component={inputs[item.type]} data={item.value}
                                     config={{ ...lineConfig, 
-                                        extra_options: [{ text: 'Erase '+getType(value), action: () => {} }] 
+                                        extra_options: [{ text: 'Erase '+getType(item.type), action: () => {} }] 
                                     }}
-                                    path={[...props.path, index()]}
+                                    path={[...props.path, index(), 'value']}
                                 />
+                                
                             </span>
                         </div>
-                    }</For>
+                    )}}</For>
                     <InputButton path={[...props.path]} config={addItemConfig} text="+1"
                         class="w-15 rounded-xl border-2 border-slate-700/50 hover:border-slate-600 
                     active:border-slate-700"/>
