@@ -12,11 +12,13 @@ export function addInput(path: (string | number)[], input_type: typeOfInputs) {
     // @ts-ignore: May I get some path, pls?
     setNewNote(...path, list => [...list, { type: input_type, key: '', value: '' }])
 }
-export function EraseInput(path: (string | number)[], index: number) {
+export function eraseInput(path: (string | number)[], index: number) {
+    console.log('erase in path', [...path, index]);
+    
     // @ts-ignore: 'Need to unbox that path brotha'
     setNewNote(...path, list => list.filter((_, i) => i != index))
 }
 export function changeInput(path: (string | number)[], new_type: typeOfInputs) {
     // @ts-ignore: Path!?1!
-    setNewNote(...path, 'key', new_type)
+    setNewNote(...path, 'type', new_type)
 }
