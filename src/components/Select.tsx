@@ -206,7 +206,7 @@ import type { lineMenu } from "../types.tsx";
 type inputBtn_props = {
     class?: string
     text?: string
-    path: (string | number)[]
+    // path: (string | number)[]
     config: lineMenu
 }
 export function InputButton(props: inputBtn_props) {

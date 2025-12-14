@@ -3,8 +3,8 @@ import { Dynamic } from "solid-js/web"
 import type { ParentProps } from 'solid-js';
 
 // import { InputButton } from "./Select.tsx";
-import type { lineMenu } from "../types.tsx";
-import { updateStore } from "../helpers.tsx";
+import type { JSONPrimitive, LineContent, lineMenu } from "../types.tsx";
+import { changeInput, updateStore } from "../helpers.tsx";
 
 // function Listin(props: { number: number }) {
 //     return (
@@ -37,48 +37,52 @@ type lineProps = {
     type: typeOfInputs;
     path: (string | number)[];
     index: number;
+    data: JSONPrimitive | LineContent[];
+    key?: string | number;
 }
 import { newNote } from "../stores.tsx";
 
-export function NewLineTwo(props: ParentProps & lineProps) {
+export function NewLine(props: ParentProps & lineProps) {
 
-    const addConfig: lineMenu = {
+    const LineConfig: lineMenu = {
         primary_inputs: {
             title: 'Change type',
             buttons: [
-                { text: 'string', action: () => { } },
+                { text: 'string', action: () => changeInput(props.path, 'string') },
                 { text: 'number', action: () => { } },
                 { text: 'array', action: () => { } },
                 { text: 'object', action: () => { } },
             ]
         },
         extra_options: [
-            { text: 'Erase '+props.type, action: () => { } },
+            { text: 'Erase ' + props.type, action: () => { } },
             { text: 'Add new item', action: () => { } },
             // { text: 'Erase line', action: () => {} },
         ]
     }
 
+    // const settings = {
+    //     component: inputs[props.type],
+    //     data: props.data,
+    //     config: LineConfig,
+    //     path: [...props.path, props.index, 'value']
+    // }
+    // props.key ? settings.key = props.key;
+
     return (
-        <div class="NewLine text-stone-300 flex group/line relative">
-            <span class="Bruh w-full flex-1 ml-[8%] flex flex-wrap">
-                <input value={newNote['content'][props.index].key} onChange={e => updateStore([...props.path, 'key'], e.currentTarget.value)}
-                    type="text" placeholder="Key name" style="field-sizing: content"
-                    class="KeyInput max-w-30 focus:outline-none focus:bg-stone-800 rounded-md 
-                    self-start text-sky-300"
-                />
-                <h2 class=":_Space mx-1">:</h2>
-                <Dynamic component={inputs[props.type]}
-                    data={newNote.content[props.index].value}
-                    config={addConfig}
-                    path={[...props.path, 'value']} 
-                >
-                    {props.children}
-                </Dynamic>
-            </span>
+        <>
+            {props.children}
             {/* <InputButton path={`${props.path}.${newNote['content'][props.index].key}`} text="#" config={addConfig}
-            class="w-6.5 h-6.5 border-2 border-slate-800 rounded-sm absolute right-1
-            invisible group-hover/line:visible hover:border-slate-600 active:border-slate-600/80"/> */}
-        </div>
+                class="w-6.5 h-6.5 border-2 border-slate-800 rounded-sm absolute right-1
+                invisible group-hover/line:visible hover:border-slate-600 active:border-slate-600/80"/> */}
+
+            <Dynamic component={inputs[props.type]}
+                data={props.data}
+                config={LineConfig}
+                path={[...props.path, props.index, 'value']}
+                key = { props.key || '' }
+            />
+            <div class="Brake w-full"></div>
+        </>
     )
 }

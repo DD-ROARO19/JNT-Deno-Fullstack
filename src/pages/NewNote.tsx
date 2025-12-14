@@ -36,16 +36,11 @@ function Title() {
 
     return (
         <>
-            <div ref={titleBarRef} id="title" class={`p-2.5 bg-cyan-800 rounded-4xl flex justify-evenly place-items-center 
+            <div ref={titleBarRef} id="title" class={`NoteTitle p-2.5 bg-cyan-800 rounded-4xl flex justify-evenly place-items-center 
                 transition-discrete duration-150 ease-in-out
                 ${isFixed() ? 'fixed top-0 right-1/10 z-50 shadow-lg w-1/2 place-self-end' : 'relative'}
                 `}
             >
-                {/* <button type="button" class='group/title hover:bg-cyan-700 active:bg-cyan-900 w-15 rounded-xl cursor-pointer place-items-center' ><SearchSVG class='dark:group-active/search:stroke-cyan-600' /></button> */}
-                {/* <input type="text" placeholder='Title' class={`w-8/10 p-0.5 text-lg text-slate-200 
-                bg-cyan-900 rounded ps-3 placeholder-slate-500/70 outline-0 focus:border-2 
-                    border-slate-500 
-                `} /> */}
                 <div class="relative w-8/10 p-0.5 text-lg text-slate-200 bg-cyan-900 rounded-lg ps-3 
                 placeholder-slate-500/70 outline-0 focus:border-2 border-slate-500 ">
                     <input type="text" id="floating_outlined" class="block px-1.5 pb-1 pt-1.5 w-full text-md 
@@ -61,7 +56,7 @@ function Title() {
                 {/* {props.children} */}
                 <button type="button" class='group/save bg-cyan-700/70 hover:bg-cyan-700 
                 active:bg-cyan-900 p-1.5 rounded cursor-pointer place-items-center'
-                onClick={() => console.log('newNote', newNote.content)} >
+                    onClick={() => console.log('newNote', newNote.content)} >
                     <Edit2 class="dark:cyan-500 dark:group-active/save:fill-white/70" />
                 </button>
                 <button type="button" class='group/erase bg-cyan-700/70 hover:bg-cyan-700 
@@ -71,7 +66,7 @@ function Title() {
             </div>
 
             <div
-                id="extra"
+                id="ExtraSpace"
                 class="transition-all"
                 style={{
                     height: isFixed() ? `${barHeight()}px` : '0px',
@@ -84,18 +79,19 @@ function Title() {
 
 import { Keys } from "../components/Keys.tsx";
 import { InputButton, OptionsMenu } from "../components/Select.tsx";
-import { NewLineTwo } from '../components/Edit_Lines.tsx'
+import { NewLine } from '../components/Edit_Lines.tsx'
 import type { lineMenu } from "../types.tsx";
-import { addInput } from "../helpers.tsx";
+import { addInput, updateStore } from "../helpers.tsx";
+import { ObjectType } from "../components/InputTypes.tsx";
 
 export default function NewNote() {
 
     const rootPath = ['content']
 
-    const addConfig: lineMenu = { 
-        primary_inputs: { 
+    const addConfig: lineMenu = {
+        primary_inputs: {
             open: true,
-            title:'Select type',
+            title: 'Select type',
             buttons: [
                 { text: 'String', action: () => addInput(rootPath, 'string') },
                 { text: 'Number', action: () => addInput(rootPath, 'number') },
@@ -103,7 +99,7 @@ export default function NewNote() {
                 { text: 'Array', action: () => addInput(rootPath, 'array') },
                 { text: 'Object', action: () => addInput(rootPath, 'object') },
             ]
-        } 
+        }
     }
 
     return (
@@ -115,14 +111,9 @@ export default function NewNote() {
                 <Title />
 
                 {/* Content */}
-                <Keys>
-                    <For each={newNote.content}>{(line, index) =>
-                        <NewLineTwo type={line.type} index={index()} path={["content", index()]} />
-                    }</For>
-                    <InputButton path={["content", newNote.content.length]} config={addConfig}
-                    class="rounded-xl mx-8 my-1 border-2 border-slate-700 hover:border-slate-600 
-                    active:border-slate-700"/>
-                </Keys>
+                <div class="NoteContent bg-stone-800/75 rounded-lg py-3 text-stone-300 pl-[5%]">
+                    <ObjectType data={newNote.content} path={["content"]} config={addConfig} index={null} no_config full_addButton />
+                </div>
 
             </div>
         </>

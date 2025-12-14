@@ -26,5 +26,11 @@ export const [newNote, setNewNote] = createStore<newNote>({
             { type:"number", key: 1, value: 67 },
             { type:"array", key: 2, value: [{ type:"string", key: 0, value: 'xD' }] },
         ] },
+        { type:"object", key: 'object?', value: [
+            { type:"boolean", key: 'mode_switch', value: false },
+            { type:"boolean", key: 'has_check', value: true },
+            { type:"boolean", key: 'has_radio', value: true },
+            // { type:"array", key: 2, value: [{ type:"boolean", key: '', value: '00' }] },
+        ] },
     ]
 })
