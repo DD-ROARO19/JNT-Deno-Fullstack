@@ -1,20 +1,16 @@
 // @ts-types="solid-js"
-import { For, Show, createSignal } from "solid-js"
-// import { newNote, setNewNote } from "../stores.tsx"
+import { 
+    For, Show, createSignal,
+    Switch, Match
+} from "solid-js"
 import type { LineContent, lineMenu } from "../types.tsx";
 import { DownArrow } from "../assets/svgs.tsx";
 import { InputButton } from "./Select.tsx";
-import type { JSONValue, JSONArray } from "../types.tsx"
 import { Dynamic } from "solid-js/web"
 
-import type { typeOfInputs } from "../types.tsx";
-import type { ParentProps, Accessor, Setter } from "solid-js";
+import type { Accessor, Setter } from "solid-js";
 import { addInput, changeInput, updateStore } from "../helpers.tsx";
 import { NewLine } from '../components/Edit_Lines.tsx'
-// @ts-types="solid-js"
-import { Switch } from "solid-js";
-// @ts-types="solid-js"
-import { Match } from "solid-js";
 
 type inputsProps = {
     path: (string | number)[];
@@ -60,12 +56,12 @@ export function StringType(props: inputsProps & { data: string }) {
 }
 
 export function NumberType(props: inputsProps & { data: number }) {
-    // console.log('Number props: ', props);
+    console.log('Number props: ', props);
 
     return (
         <span class="NumberType group/n-line flex-1 flex relative">
             <input type="number" placeholder="0, 1 or more (or less)!"
-                value={props.data}
+                value={Number(props.data)}
                 onChange={e => updateStore(props.path, Number(e.currentTarget.value))}
                 class="NumberType flex-1 focus:outline-none focus:bg-stone-800 rounded-md mr-8
                 text-[#DCDCAA] no-spin"
@@ -78,26 +74,6 @@ export function NumberType(props: inputsProps & { data: number }) {
     )
 }
 
-
-// function getType(input: JSONValue) {
-//     if (Array.isArray(input)) {
-//         return 'array'
-//     }
-
-//     switch (typeof input) {
-//         case 'string':
-//             return 'string';
-//         case 'number':
-//             return 'number';
-//         case 'boolean':
-//             return 'boolean';
-//         case 'object':
-//             return 'object';
-
-//         default:
-//             return 'null'
-//     }
-// }
 
 function Toggle(props: {
     text: string, config: lineMenu; end?: boolean, show: boolean;
@@ -291,8 +267,8 @@ export function BooleanType(props: inputsProps & { data: boolean, key: string })
         <span class="BooleanType group/n-line flex-1 flex relative">
             <span class="flex gap-2 text-[#9980FF] items-center">
                 <Switch fallback={<BoolSwitch />}>
-                    <Match when={props.key.endsWith('check')}><BoolCheck /></Match>
-                    <Match when={props.key.endsWith('radio')}><BoolRadio /></Match>
+                    <Match when={props.key.length > 1 && props.key?.endsWith('check')}><BoolCheck /></Match>
+                    <Match when={props.key.length > 1 && props.key?.endsWith('radio')}><BoolRadio /></Match>
                 </Switch>
             </span>
             <InputButton text="#" config={lineConfig(props.path)}

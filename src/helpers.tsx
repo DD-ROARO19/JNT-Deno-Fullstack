@@ -11,14 +11,14 @@ export function addInput(path: (string | number)[], input_type: typeOfInputs) {
     
     // @ts-ignore: May I get some path, pls?
     setNewNote(...path, list => { 
-        console.log('Old list: ', list); 
+        console.debug('Old list: ', list); 
         const newList: LineContent[] = [...list, { type: input_type, key: '', value: '' }]; 
-        console.log('New list: ', newList); 
+        console.debug('New list: ', newList); 
         return newList;
     })
 }
 export function eraseInput(path: (string | number)[], index: number) {
-    console.log('erase in path', [...path, index]);
+    console.debug('erase in path', [...path, index]);
     
     // @ts-ignore: 'Need to unbox that path brotha'
     setNewNote(...path, list => list.filter((_, i) => i != index))
@@ -27,5 +27,5 @@ export function changeInput(path: (string | number)[], new_type: typeOfInputs) {
     console.debug('change type in path', path, '\nto: ',new_type);
     
     // @ts-ignore: Path!?1!
-    setNewNote(...path, 'type', new_type)
+    setNewNote(...path.slice(0, -1), 'type', new_type)
 }
