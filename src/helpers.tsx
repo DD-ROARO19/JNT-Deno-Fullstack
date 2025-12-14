@@ -17,11 +17,12 @@ export function addInput(path: (string | number)[], input_type: typeOfInputs) {
         return newList;
     })
 }
-export function eraseInput(path: (string | number)[], index: number) {
-    console.debug('erase in path', [...path, index]);
+export function eraseInput(path: (string | number)[]) {
+    console.debug('erase in path', [...path]);
+    const listPath = path.slice(0, -2), index = path.at(-2)
     
     // @ts-ignore: 'Need to unbox that path brotha'
-    setNewNote(...path, list => list.filter((_, i) => i != index))
+    setNewNote(...listPath, list => list.filter((_, i) => i != index))
 }
 export function changeInput(path: (string | number)[], new_type: typeOfInputs) {
     console.debug('change type in path', path, '\nto: ',new_type);

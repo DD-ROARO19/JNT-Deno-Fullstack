@@ -9,7 +9,7 @@ import { InputButton } from "./Select.tsx";
 import { Dynamic } from "solid-js/web"
 
 import type { Accessor, Setter } from "solid-js";
-import { addInput, changeInput, updateStore } from "../helpers.tsx";
+import { addInput, changeInput, updateStore, eraseInput } from "../helpers.tsx";
 import { NewLine } from '../components/Edit_Lines.tsx'
 
 type inputsProps = {
@@ -31,7 +31,7 @@ function lineConfig(path: (string | number)[]): lineMenu {
             ]
         },
         extra_options: [
-            { text: 'Erase item', action: () => { } }
+            { text: 'Erase item', action: () => eraseInput(path) }
         ]
     }
 }
