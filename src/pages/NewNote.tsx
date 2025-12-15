@@ -2,8 +2,7 @@
 import {
     createSignal,
     onMount,
-    onCleanup,
-    For
+    onCleanup
 } from 'solid-js'
 
 import { newNote, setNewNote } from "../stores.tsx";
@@ -56,7 +55,7 @@ function Title() {
                 {/* {props.children} */}
                 <button type="button" class='group/save bg-cyan-700/70 hover:bg-cyan-700 
                 active:bg-cyan-900 p-1.5 rounded cursor-pointer place-items-center'
-                    onClick={() => console.log('newNote', newNote.content)} >
+                    onClick={() => console.log('NOTE CONTENT: ', extractNewNote())} >
                     <Edit2 class="dark:cyan-500 dark:group-active/save:fill-white/70" />
                 </button>
                 <button type="button" class='group/erase bg-cyan-700/70 hover:bg-cyan-700 
@@ -77,11 +76,9 @@ function Title() {
     )
 }
 
-import { Keys } from "../components/Keys.tsx";
-import { InputButton, OptionsMenu } from "../components/Select.tsx";
-import { NewLine } from '../components/Edit_Lines.tsx'
+import { OptionsMenu } from "../components/Select.tsx";
 import type { lineMenu } from "../types.tsx";
-import { addInput, updateStore } from "../helpers.tsx";
+import { addInput, extractNewNote } from "../helpers.tsx";
 import { ObjectType } from "../components/InputTypes.tsx";
 
 export default function NewNote() {

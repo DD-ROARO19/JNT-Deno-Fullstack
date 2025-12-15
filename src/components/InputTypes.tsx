@@ -3,14 +3,13 @@ import {
     For, Show, createSignal,
     Switch, Match
 } from "solid-js"
-import type { LineContent, lineMenu } from "../types.tsx";
+import type { JSONPrimitive, LineContent, lineMenu, typeOfInputs } from "../types.tsx";
 import { DownArrow } from "../assets/svgs.tsx";
 import { InputButton } from "./Select.tsx";
-import { Dynamic } from "solid-js/web"
 
 import type { Accessor, Setter } from "solid-js";
-import { addInput, changeInput, updateStore, eraseInput } from "../helpers.tsx";
-import { NewLine } from '../components/Edit_Lines.tsx'
+import { addInput, changeInput, updateStore, eraseInput, extractValue } from "../helpers.tsx";
+import { NewLine } from './RowLines.tsx'
 
 type inputsProps = {
     path: (string | number)[];
@@ -18,7 +17,7 @@ type inputsProps = {
     index?: number | null;
 }
 
-function lineConfig(path: (string | number)[]): lineMenu {
+function lineConfig(path: (string | number)[], data: JSONPrimitive | LineContent[], type: typeOfInputs): lineMenu {
     return {
         primary_inputs: {
             title: 'Change type',
@@ -31,7 +30,8 @@ function lineConfig(path: (string | number)[]): lineMenu {
             ]
         },
         extra_options: [
-            { text: 'Erase item', action: () => eraseInput(path) }
+            { text: 'Erase item', action: () => eraseInput(path) },
+            { text: 'Copy value', action: () => {console.log('COPY: ', extractValue(data, type))} },
         ]
     }
 }
@@ -47,7 +47,7 @@ export function StringType(props: inputsProps & { data: string }) {
                 class="StringType flex-1 focus:outline-none focus:bg-stone-800 rounded-md mr-8
                 min-h-6 field-sizing-content text-[#CE9178]"
             ></textarea>
-            <InputButton text="#" config={lineConfig(props.path)}
+            <InputButton text="#" config={lineConfig(props.path, props.data, 'string')}
                 class="w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
             invisible group-hover/s-line:visible hover:border-slate-600 
             active:border-slate-600/80 absolute"/>
@@ -56,7 +56,7 @@ export function StringType(props: inputsProps & { data: string }) {
 }
 
 export function NumberType(props: inputsProps & { data: number }) {
-    console.log('Number props: ', props);
+    // console.log('Number props: ', props);
 
     return (
         <span class="NumberType group/n-line flex-1 flex relative">
@@ -66,7 +66,7 @@ export function NumberType(props: inputsProps & { data: number }) {
                 class="NumberType flex-1 focus:outline-none focus:bg-stone-800 rounded-md mr-8
                 text-[#DCDCAA] no-spin"
             />
-            <InputButton text="#" config={lineConfig(props.path)}
+            <InputButton text="#" config={lineConfig(props.path, props.data, 'number')}
                 class="w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
             invisible group-hover/n-line:visible hover:border-slate-600 
             active:border-slate-600/80 absolute"/>
@@ -137,9 +137,9 @@ export function ArrayType(props: inputsProps & listsProps) {
                     active:border-slate-600/80 absolute"/>
             <Show when={showList()}
                 fallback={<Toggle text={`[${props.data?.length}]`} isOpen={showList} setOpen={setList}
-                    config={lineConfig(props.path)} show={!props.no_config} />}
+                    config={lineConfig(props.path, props.data, 'array')} show={!props.no_config} />}
             >
-                <Toggle text="[" isOpen={showList} setOpen={setList} config={lineConfig(props.path)}
+                <Toggle text="[" isOpen={showList} setOpen={setList} config={lineConfig(props.path, props.data, 'array')}
                     show={!props.no_config} />
 
                 <div class="ArrayType w-full relative flex flex-col pl-6
@@ -164,7 +164,7 @@ export function ArrayType(props: inputsProps & listsProps) {
                     />
                 </div>
 
-                <Toggle text="]" isOpen={showList} setOpen={setList} config={lineConfig(props.path)}
+                <Toggle text="]" isOpen={showList} setOpen={setList} config={lineConfig(props.path, props.data, 'array')}
                     show={!props.no_config} end />
             </Show>
         </>
@@ -180,9 +180,9 @@ export function ObjectType(props: inputsProps & listsProps) {
         <>
             <Show when={isShowing()} fallback={
                 <Toggle text={`{${props.data?.length}}`} isOpen={isShowing} setOpen={setShow}
-                    config={lineConfig(props.path)} show={!props.no_config} />
+                    config={lineConfig(props.path, props.data, 'object')} show={!props.no_config} />
             }>
-                <Toggle text="{" isOpen={isShowing} setOpen={setShow} config={lineConfig(props.path)}
+                <Toggle text="{" isOpen={isShowing} setOpen={setShow} config={lineConfig(props.path, props.data, 'object')}
                     show={!props.no_config} />
 
                 <div class="ObjectType w-full flex flex-wrap pl-8 border-l-1 border-[#293B49] my-1">
@@ -212,7 +212,7 @@ export function ObjectType(props: inputsProps & listsProps) {
                     {/* mx-8 my-1  */}
                 </div>
 
-                <Toggle text="}" isOpen={isShowing} setOpen={setShow} config={lineConfig(props.path)}
+                <Toggle text="}" isOpen={isShowing} setOpen={setShow} config={lineConfig(props.path, props.data, 'object')}
                     show={!props.no_config} end />
             </Show>
         </>
@@ -271,7 +271,7 @@ export function BooleanType(props: inputsProps & { data: boolean, key: string })
                     <Match when={props.key.length > 1 && props.key?.endsWith('radio')}><BoolRadio /></Match>
                 </Switch>
             </span>
-            <InputButton text="#" config={lineConfig(props.path)}
+            <InputButton text="#" config={lineConfig(props.path, props.data, 'boolean')}
                 class="w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
             invisible group-hover/n-line:visible hover:border-slate-600 
             active:border-slate-600/80 absolute"/>

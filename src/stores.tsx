@@ -1,5 +1,5 @@
 import { createStore } from "solid-js/store";
-import type { JSONValue, JSONObject, LineContent } from "./types.tsx";
+import type { LineContent } from "./types.tsx";
 
 type newNote = {
     metadata: {
@@ -30,7 +30,6 @@ export const [newNote, setNewNote] = createStore<newNote>({
             { type:"boolean", key: 'mode_switch', value: false },
             { type:"boolean", key: 'has_check', value: true },
             { type:"boolean", key: 'has_radio', value: true },
-            // { type:"array", key: 2, value: [{ type:"boolean", key: '', value: '00' }] },
         ] },
     ]
 })

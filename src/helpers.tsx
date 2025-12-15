@@ -1,7 +1,10 @@
-import { setNewNote } from "./stores.tsx";
-import type { JSONValue, typeOfInputs, LineContent } from "./types.tsx";
+import { unwrap } from "solid-js/store";
+import { newNote, setNewNote } from "./stores.tsx";
+import type { 
+    JSONValue, typeOfInputs, LineContent, JSONPrimitive
+} from "./types.tsx";
 
-export function updateStore(path: (string | number)[], change: JSONValue) {
+export function updateStore(path: (string | number)[], change: JSONPrimitive) {
     // @ts-ignore: Don't know how else I could "unpack" the 'path' array
     setNewNote(...path, change);
 }
@@ -18,7 +21,7 @@ export function addInput(path: (string | number)[], input_type: typeOfInputs) {
     })
 }
 export function eraseInput(path: (string | number)[]) {
-    console.debug('erase in path', [...path]);
+    console.debug('erase in path', path);
     const listPath = path.slice(0, -2), index = path.at(-2)
     
     // @ts-ignore: 'Need to unbox that path brotha'
@@ -29,4 +32,29 @@ export function changeInput(path: (string | number)[], new_type: typeOfInputs) {
     
     // @ts-ignore: Path!?1!
     setNewNote(...path.slice(0, -1), 'type', new_type)
+}
+
+export function extractValue(data: JSONPrimitive | LineContent[], type: typeOfInputs): JSONValue {
+    switch (type) {
+        case 'array':
+            return (data as LineContent[]).map(item => extractValue(item.value, item.type))
+            
+        case 'object':
+            return (data as LineContent[]).reduce((acc, item) => {
+                acc[item.key] = extractValue(item.value, item.type);
+                return acc;
+            }, {} as Record<string | number, JSONValue>)
+    
+        default:
+        return data
+    }
+}
+
+export function extractNewNote() {
+    const rawData = unwrap(newNote);
+
+    return {
+        metadata: rawData.metadata,
+        content: extractValue(rawData.content, 'object')
+    }
 }

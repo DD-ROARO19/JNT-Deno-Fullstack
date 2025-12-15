@@ -1,10 +1,7 @@
 import { Dynamic } from "solid-js/web"
-
 import type { ParentProps } from 'solid-js';
-
-// import { InputButton } from "./Select.tsx";
-import type { JSONPrimitive, LineContent, lineMenu } from "../types.tsx";
-import { changeInput, updateStore } from "../helpers.tsx";
+import type { JSONPrimitive, LineContent, typeOfInputs } from "../types.tsx";
+import { inputs } from "./InputTypes.tsx";
 
 // function Listin(props: { number: number }) {
 //     return (
@@ -13,10 +10,6 @@ import { changeInput, updateStore } from "../helpers.tsx";
 //         </div>
 //     )
 // }
-
-
-import type { typeOfInputs } from "../types.tsx";
-import { inputs } from "./InputTypes.tsx";
 
 type lineProps = {
     type: typeOfInputs;
