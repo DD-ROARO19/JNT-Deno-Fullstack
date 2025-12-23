@@ -1,5 +1,5 @@
 // @ts-types="solid-js"
-import { 
+import {
     For, Show, createSignal,
     Switch, Match
 } from "solid-js"
@@ -8,7 +8,7 @@ import { DownArrow } from "../assets/svgs.tsx";
 import { InputButton } from "./Select.tsx";
 
 import type { Accessor, Setter } from "solid-js";
-import { addInput, changeInput, updateStore, eraseInput, extractValue } from "../helpers.tsx";
+import { addInput, changeInput, updateStore, eraseInput, copyToClipboard } from "../helpers.tsx";
 import { NewLine } from './RowLines.tsx'
 
 type inputsProps = {
@@ -31,26 +31,34 @@ function lineConfig(path: (string | number)[], data: JSONPrimitive | LineContent
         },
         extra_options: [
             { text: 'Erase item', action: () => eraseInput(path) },
-            { text: 'Copy value', action: () => {console.log('COPY: ', extractValue(data, type))} },
+            { text: 'Copy value', action: () => copyToClipboard(data, type) },
         ]
     }
+}
+
+function LineSettingsBtn(props: { config: lineMenu, hover_class: string, text?: string }) {
+    return (
+        <InputButton config={props.config}
+            icon={{ option: 1, class: 'w-3.5 h-3.5 fill-stone-300' }}
+            class={`w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
+            invisible ${props.hover_class} hover:border-slate-600 
+            active:border-slate-600/80 absolute`} />
+    )
 }
 
 export function StringType(props: inputsProps & { data: string }) {
     // console.log('String props: ', props);
 
     return (
-        <span class="StringType group/s-line flex-1 flex relative">
+        <span class="StringType group/s-line flex-1 flex relative hover:bg-gray-700/50">
             <textarea placeholder="Bla Bla Bla..."
                 value={props.data}
                 onChange={e => updateStore(props.path, e.currentTarget.value)}
                 class="StringType flex-1 focus:outline-none focus:bg-stone-800 rounded-md mr-8
                 min-h-6 field-sizing-content text-[#CE9178]"
             ></textarea>
-            <InputButton text="#" config={lineConfig(props.path, props.data, 'string')}
-                class="w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
-            invisible group-hover/s-line:visible hover:border-slate-600 
-            active:border-slate-600/80 absolute"/>
+            <LineSettingsBtn config={lineConfig(props.path, props.data, 'string')}
+                hover_class="group-hover/s-line:visible" />
         </span>
     )
 }
@@ -59,17 +67,15 @@ export function NumberType(props: inputsProps & { data: number }) {
     // console.log('Number props: ', props);
 
     return (
-        <span class="NumberType group/n-line flex-1 flex relative">
+        <span class="NumberType group/n-line flex-1 flex relative hover:bg-gray-700/50">
             <input type="number" placeholder="0, 1 or more (or less)!"
-                value={Number(props.data)}
+                value={(props.data || props.data === 0) ? Number(props.data) : ''}
                 onChange={e => updateStore(props.path, Number(e.currentTarget.value))}
                 class="NumberType flex-1 focus:outline-none focus:bg-stone-800 rounded-md mr-8
                 text-[#DCDCAA] no-spin"
             />
-            <InputButton text="#" config={lineConfig(props.path, props.data, 'number')}
-                class="w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
-            invisible group-hover/n-line:visible hover:border-slate-600 
-            active:border-slate-600/80 absolute"/>
+            <LineSettingsBtn config={lineConfig(props.path, props.data, 'number')}
+                hover_class="group-hover/n-line:visible" />
         </span>
     )
 }
@@ -83,18 +89,17 @@ function Toggle(props: {
 
     return (
         <>
-            <span class="Bracket flex-1 flex group/bracket relative">
+            <span class="Bracket flex-1 flex group relative"
+            classList={{'hover:bg-gray-700/50': props.show}}>
 
-                <h2>{props.text}</h2>
-                <DownArrow isDown={props.isOpen} setArrow={props.setOpen} class={`hover:bg-white/0 
-            active:bg-white/0 w-4 h-4 ${(props.end) ? 'invisible group-hover/bracket:visible' : ''} `}
-                    svg_class="dark:fill-stone-300 hover:fill-white active:fill-stone-500 w-4 h-4"
-                />
+                <h2 class="">{props.text}</h2>
                 <Show when={props.show}>
-                    <InputButton text="#" config={props.config}
-                        class="w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
-                invisible group-hover/bracket:visible hover:border-slate-600 
-                active:border-slate-600/80 absolute"/>
+                    <DownArrow isDown={props.isOpen} setArrow={props.setOpen} class={`hover:bg-white/0 
+                active:bg-white/0 w-3.5 h-3.5 ${(props.end) ? 'invisible group-hover:visible' : ''} `}
+                        svg_class="dark:fill-stone-300 hover:fill-white active:fill-stone-500 w-4 h-4"
+                    />
+                    <LineSettingsBtn config={props.config}
+                        hover_class="group-hover:visible" />
                 </Show>
 
             </span>
@@ -118,6 +123,18 @@ function addButtonConfig(path: (string | number)[]): lineMenu {
     }
 }
 
+function AddItemBtn(props: { config: lineMenu, isFullWidth: boolean | undefined }) {
+    return (
+        <div class="w-full group" classList={{ 'hover:bg-gray-700/50': props.isFullWidth != true }}>
+            <InputButton config={props.config} text={props.isFullWidth ? undefined : '+1'}
+                class={`rounded-xl border-2 hover:border-slate-600 active:border-slate-700
+                    ${props.isFullWidth ? 'w-[95%] border-slate-700' : 'w-15 border-[#293B49] group-hover:border-slate-700'}
+                `}
+            />
+        </div>
+    )
+}
+
 type listsProps = {
     data: LineContent[];
     no_config?: boolean;
@@ -131,10 +148,10 @@ export function ArrayType(props: inputsProps & listsProps) {
 
     return (
         <>
-            <InputButton text="[ ]" config={props.config}
+            {/* <InputButton text="[ ]" config={props.config}
                 class="w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
                     invisible group-hover/line:visible hover:border-slate-600 
-                    active:border-slate-600/80 absolute"/>
+                    active:border-slate-600/80 absolute"/> */}
             <Show when={showList()}
                 fallback={<Toggle text={`[${props.data?.length}]`} isOpen={showList} setOpen={setList}
                     config={lineConfig(props.path, props.data, 'array')} show={!props.no_config} />}
@@ -157,11 +174,7 @@ export function ArrayType(props: inputsProps & listsProps) {
                             </div>
                         )
                     }}</For>
-                    <InputButton config={addButtonConfig(props.path)} text={props.full_addButton ? undefined : '+1'}
-                        class={`rounded-xl border-2 hover:border-slate-600 active:border-slate-700
-                        ${props.full_addButton ? 'w-[95%] border-slate-700':'w-15 border-[#293B49]'}
-                    `}
-                    />
+                    <AddItemBtn config={addButtonConfig(props.path)} isFullWidth={props.full_addButton}/>
                 </div>
 
                 <Toggle text="]" isOpen={showList} setOpen={setList} config={lineConfig(props.path, props.data, 'array')}
@@ -204,12 +217,7 @@ export function ObjectType(props: inputsProps & listsProps) {
                             </NewLine>
                         )
                     }}</For>
-                <InputButton config={addButtonConfig(props.path)} text={props.full_addButton ? undefined : '+1'}
-                    class={`rounded-xl border-2 hover:border-slate-600 active:border-slate-700
-                        ${props.full_addButton ? 'w-[95%] border-slate-700':'w-15 border-[#293B49]'}
-                    `}
-                    />
-                    {/* mx-8 my-1  */}
+                    <AddItemBtn config={addButtonConfig(props.path)} isFullWidth={props.full_addButton}/>
                 </div>
 
                 <Toggle text="}" isOpen={isShowing} setOpen={setShow} config={lineConfig(props.path, props.data, 'object')}
@@ -221,25 +229,25 @@ export function ObjectType(props: inputsProps & listsProps) {
 
 export function BooleanType(props: inputsProps & { data: boolean, key: string }) {
 
-    function BoolCheck() { 
+    function BoolCheck() {
         return (
             <>
-                <input type="checkbox" checked={props.data} 
-                onClick={() => updateStore(props.path, !props.data)} />
-                <p class="text-slate-600 select-all">{ props.data ? 'true' : 'false' }</p>
+                <input type="checkbox" checked={props.data}
+                    onClick={() => updateStore(props.path, !props.data)} />
+                <p class="text-slate-600 select-all">{props.data ? 'true' : 'false'}</p>
             </>
-        ) 
+        )
     }
     function BoolRadio() {
         return (
             <>
                 <label for="true" class="select-none">True</label>
-                <input type="radio" name="bool" checked={props.data} 
-                onClick={() => updateStore(props.path, !props.data)} 
+                <input type="radio" name="bool" checked={props.data}
+                    onClick={() => updateStore(props.path, !props.data)}
                 />
                 <label for="false" class="select-none">False</label>
-                <input type="radio" name="bool" checked={props.data == false} 
-                onClick={() => updateStore(props.path, !props.data)} 
+                <input type="radio" name="bool" checked={props.data == false}
+                    onClick={() => updateStore(props.path, !props.data)}
                 />
             </>
         )
@@ -248,7 +256,7 @@ export function BooleanType(props: inputsProps & { data: boolean, key: string })
         return (
             <>
                 <button type="button" role="switch" onClick={() => updateStore(props.path, !props.data)}
-                class={`
+                    class={`
                 relative inline-flex h-5 w-10 items-center rounded-full border-1 transition-colors 
                 duration-200 border-gray-600 cursor-pointer
                 ${props.data ? "bg-[#4878F6]" : "bg-transparent"}
@@ -258,23 +266,21 @@ export function BooleanType(props: inputsProps & { data: boolean, key: string })
                     ease-in-out bg-white ${props.data ? "translate-x-6" : "translate-x-1"}
                         `} />
                 </button>
-                <p class="select-all">{ props.data ? 'true' : 'false' }</p>
+                <p class="select-all">{props.data ? 'true' : 'false'}</p>
             </>
         )
     }
 
     return (
-        <span class="BooleanType group/n-line flex-1 flex relative">
+        <span class="BooleanType group/b-line flex-1 flex relative hover:bg-gray-700/50">
             <span class="flex gap-2 text-[#9980FF] items-center">
                 <Switch fallback={<BoolSwitch />}>
                     <Match when={props.key.length > 1 && props.key?.endsWith('check')}><BoolCheck /></Match>
                     <Match when={props.key.length > 1 && props.key?.endsWith('radio')}><BoolRadio /></Match>
                 </Switch>
             </span>
-            <InputButton text="#" config={lineConfig(props.path, props.data, 'boolean')}
-                class="w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
-            invisible group-hover/n-line:visible hover:border-slate-600 
-            active:border-slate-600/80 absolute"/>
+            <LineSettingsBtn config={lineConfig(props.path, props.data, 'boolean')}
+                hover_class="group-hover/b-line:visible" />
         </span>
     )
 }

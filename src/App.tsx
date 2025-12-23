@@ -13,9 +13,7 @@ function App() {
   return (
     <div class='h-dvh max-h-dvh w-dvw max-w-dvw flex dark:bg-zinc-800 dark:text-white' >
       <Sidebar />
-      <div id='Content' class='h-full w-full overflow-y-auto scroll-smooth'>
-        <Contents />
-      </div>
+      <Contents />
     </div>
   )
 }

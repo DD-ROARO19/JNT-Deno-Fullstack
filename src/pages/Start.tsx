@@ -31,9 +31,9 @@ export default function StartPage() {
     }); /**/
 
     return (
-        <>
+        <div class="w-3/4 place-self-center">
             <SearchBar />
             <CardList list={list() || []} />
-        </>
+        </div>
     );
 }
