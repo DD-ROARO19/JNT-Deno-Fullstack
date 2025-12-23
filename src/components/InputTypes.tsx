@@ -31,7 +31,7 @@ function lineConfig(path: (string | number)[], data: JSONPrimitive | LineContent
         },
         extra_options: [
             { text: 'Erase item', action: () => eraseInput(path) },
-            { text: 'Copy value', action: () => copyToClipboard(data, type) },
+            { text: 'Copy value', action: () => copyToClipboard(data, type, path) },
         ]
     }
 }

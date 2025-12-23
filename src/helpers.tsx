@@ -38,51 +38,93 @@ export function changeInput(path: (string | number)[], new_type: typeOfInputs) {
 }
 //
 
+
 // Extract values from the store
 //
-export function extractValue(data: JSONPrimitive | LineContent[], type: typeOfInputs): JSONValue {
-    switch (type) {
-        case 'array':
-            return (data as LineContent[]).map(item => extractValue(item.value, item.type))
-
-        case 'object':
-            return (data as LineContent[]).reduce((acc, item) => {
-                if (!(item.key)) { alert('Key without value!') }
-                acc[item.key] = extractValue(item.value, item.type);
-                return acc;
-            }, {} as Record<string | number, JSONValue>)
-
-        default:
-            return String(data)
+export class ObjectCheckError extends Error {
+    constructor(
+        public path: (string | number)[],
+        public code: 'EMPTY_KEY' | 'DUPLICATE_KEY',
+        message: string
+    ) {
+        super(message);
+        this.name = "ObjectCheckError";
     }
 }
+
+/** Returns value with the correct format dependant of the content  */
+export function extractValue(data: JSONPrimitive | LineContent[], type: typeOfInputs, path: (string | number)[]): JSONValue {
+    switch (type) {
+        case 'array':
+            return (data as LineContent[]).map((item, index) => extractValue(item.value, item.type, [...path, index]))
+
+        case 'object': {
+            const seenKeys = new Set<string | number>();
+
+            return (data as LineContent[]).reduce((acc, item, index) => {
+
+                if (item.key === "" || item.key === null || item.key === undefined) {
+                    throw new ObjectCheckError([...path, index], 'EMPTY_KEY', `Empty key found in: ${[...path, index]}`);
+                }
+                if (seenKeys.has(item.key)) {
+                    throw new ObjectCheckError([...path, index], 'DUPLICATE_KEY', `Duplicate key found in: ${[...path, index]}`);
+                }
+                seenKeys.add(item.key);
+
+                acc[item.key] = extractValue(item.value, item.type, [...path, index]);
+                return acc;
+            }, {} as Record<string | number, JSONValue>);
+        }
+
+        default:
+            return data as JSONValue
+    }
+}
+/** Returns the current saved note as an object. */
 export function extractNewNote() {
     const rawData = unwrap(newNote);
     return {
         metadata: rawData.metadata,
-        content: extractValue(rawData.content, 'object')
+        content: extractValue(rawData.content, 'object', [])
     }
 }
-export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeOfInputs) {
-    const dataValue = extractValue(data, type);
-    switch (type) {
-        case 'object':
-            navigator.clipboard.writeText(JSON.stringify(dataValue, undefined, 2))
-            break;
-        case 'array': {
-            // const arr = (dataValue as JSONArray)
-            navigator.clipboard.writeText(
-                (dataValue as JSONArray).map(item => { 
-                    if (Array.isArray(item)) return `[${item.join(',')}]`;
-                    else if(typeof item === 'object') return JSON.stringify(item);
-                    else return item;
-                }).join('\t')
-            )
-        } break;
+export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeOfInputs, path: (string | number)[]) {
+    try {
+        const dataValue = extractValue(data, type, path);
+        switch (type) {
+            case 'object':
+                navigator.clipboard.writeText(JSON.stringify(dataValue, undefined, 2))
+                break;
+            case 'array': {
+                // const arr = (dataValue as JSONArray)
+                navigator.clipboard.writeText(
+                    (dataValue as JSONArray).map(item => {
+                        if (Array.isArray(item)) return `[${item.join(',')}]`;
+                        else if (typeof item === 'object') return JSON.stringify(item);
+                        else return item;
+                    }).join('\t')
+                )
+            } break;
 
-        default:
-            navigator.clipboard.writeText(dataValue as string)
-            break;
+            default:
+                navigator.clipboard.writeText(dataValue as string)
+                break;
+        }
+    } catch (err) {
+        if (err instanceof ObjectCheckError) {
+            console.error('Validation Failed:', err);
+
+            return null
+        }
+        throw err
     }
+}
+//
+
+
+// API interactions
+//
+export function SaveNote() {
+
 }
 //

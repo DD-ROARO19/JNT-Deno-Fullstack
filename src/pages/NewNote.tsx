@@ -62,7 +62,7 @@ function Title() {
                 {/* Copy Content */}
                 <button type="button" class='group bg-cyan-700/70 hover:bg-cyan-700 
                 active:bg-cyan-900 p-1.5 rounded cursor-pointer place-items-center'
-                    onClick={() => console.log('NOTE CONTENT: ', copyToClipboard(newNote.content, 'object'))} >
+                    onClick={() => console.log('NOTE CONTENT: ', copyToClipboard(newNote.content, 'object', []))} >
                     <CopySVG class="dark:group-active:stroke-white/70" option={3} />
                 </button>
                 {/* Erase Note */}
