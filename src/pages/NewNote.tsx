@@ -6,7 +6,7 @@ import {
 } from 'solid-js'
 
 import { newNote, setNewNote } from "../stores.tsx";
-import { Edit2, Erase } from '../assets/svgs.tsx'
+import { CopySVG, Edit2, Erase } from '../assets/svgs.tsx'
 
 
 function Title() {
@@ -53,13 +53,21 @@ function Title() {
                     pointer-events-none">Note Title</label>
                 </div>
                 {/* {props.children} */}
+                {/* Save Note */}
                 <button type="button" class='group/save bg-cyan-700/70 hover:bg-cyan-700 
                 active:bg-cyan-900 p-1.5 rounded cursor-pointer place-items-center'
                     onClick={() => console.log('NOTE CONTENT: ', extractNewNote())} >
-                    <Edit2 class="dark:cyan-500 dark:group-active/save:fill-white/70" />
+                    <Edit2 class="dark:group-active/save:fill-white/70" />
                 </button>
+                {/* Copy Content */}
+                <button type="button" class='group bg-cyan-700/70 hover:bg-cyan-700 
+                active:bg-cyan-900 p-1.5 rounded cursor-pointer place-items-center'
+                    onClick={() => console.log('NOTE CONTENT: ', copyToClipboard(newNote.content, 'object'))} >
+                    <CopySVG class="dark:group-active:stroke-white/70" option={3} />
+                </button>
+                {/* Erase Note */}
                 <button type="button" class='group/erase bg-cyan-700/70 hover:bg-cyan-700 
-                active:bg-cyan-900 p-1.5 rounded cursor-poin|ter place-items-center'>
+                active:bg-cyan-900 p-1.5 rounded cursor-pointer place-items-center'>
                     <Erase class="dark:fill-cyan-500 dark:group-active/erase:fill-cyan-500/70" />
                 </button>
             </div>
@@ -78,7 +86,7 @@ function Title() {
 
 import { OptionsMenu } from "../components/Select.tsx";
 import type { lineMenu } from "../types.tsx";
-import { addInput, extractNewNote } from "../helpers.tsx";
+import { addInput, copyToClipboard, extractNewNote } from "../helpers.tsx";
 import { ObjectType } from "../components/InputTypes.tsx";
 
 export default function NewNote() {
@@ -102,13 +110,13 @@ export default function NewNote() {
     return (
         <>
             <OptionsMenu />
-            <div class="m-4 dark:bg-cyan-800 min-h-30 rounded-2xl p-2 flex flex-col 
-            hover:text-white">
+            <div class="m-4 dark:bg-cyan-800 w-3/4 max-w-215 rounded-2xl p-2 flex flex-col 
+            hover:text-white place-self-center">
                 {/* Title */}
                 <Title />
 
                 {/* Content */}
-                <div class="NoteContent bg-stone-800/75 rounded-lg py-3 text-stone-300 pl-[5%]">
+                <div class="NoteContent bg-stone-800/75 rounded-lg py-3 text-stone-300 pl-8">
                     <ObjectType data={newNote.content} path={["content"]} config={addConfig} index={null} no_config full_addButton />
                 </div>
 
