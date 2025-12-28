@@ -4,6 +4,7 @@ import type {
     JSONValue, typeOfInputs, LineContent, JSONPrimitive,
     JSONArray
 } from "./types.tsx";
+import { toast } from "./components/notifications.tsx";
 
 
 // # Update store values #
@@ -43,7 +44,7 @@ export function changeInput(path: (string | number)[], new_type: typeOfInputs) {
 //
 export class ObjectCheckError extends Error {
     constructor(
-        public path: (string | number)[],
+        public path: number[],
         public code: 'EMPTY_KEY' | 'DUPLICATE_KEY',
         message: string
     ) {
@@ -64,10 +65,12 @@ export function extractValue(data: JSONPrimitive | LineContent[], type: typeOfIn
             return (data as LineContent[]).reduce((acc, item, index) => {
 
                 if (item.key === "" || item.key === null || item.key === undefined) {
-                    throw new ObjectCheckError([...path, index], 'EMPTY_KEY', `Empty key found in: ${[...path, index]}`);
+                    const newPath = [...path, index].filter((item) => (typeof item == 'number'));
+                    throw new ObjectCheckError(newPath, 'EMPTY_KEY', `Empty key found in: ${newPath}`);
                 }
                 if (seenKeys.has(item.key)) {
-                    throw new ObjectCheckError([...path, index], 'DUPLICATE_KEY', `Duplicate key found in: ${[...path, index]}`);
+                    const newPath = [...path, index].filter((item) => (typeof item == 'number'));
+                    throw new ObjectCheckError(newPath, 'DUPLICATE_KEY', `Duplicate key found in: ${newPath}`);
                 }
                 seenKeys.add(item.key);
 
@@ -113,7 +116,7 @@ export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeO
     } catch (err) {
         if (err instanceof ObjectCheckError) {
             console.error('Validation Failed:', err);
-
+            toast().newNotification(err.message)
             return null
         }
         throw err

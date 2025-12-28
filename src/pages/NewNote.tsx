@@ -88,6 +88,7 @@ import { OptionsMenu } from "../components/Select.tsx";
 import type { lineMenu } from "../types.tsx";
 import { addInput, copyToClipboard, extractNewNote } from "../helpers.tsx";
 import { ObjectType } from "../components/InputTypes.tsx";
+import { toast } from "../components/notifications.tsx";
 
 export default function NewNote() {
 
@@ -107,9 +108,12 @@ export default function NewNote() {
         }
     }
 
+    const Toast = () => toast().Content();
+
     return (
         <>
             <OptionsMenu />
+            <Toast  />
             <div class="m-4 dark:bg-cyan-800 w-3/4 max-w-215 rounded-2xl p-2 flex flex-col 
             hover:text-white place-self-center">
                 {/* Title */}
