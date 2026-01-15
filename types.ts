@@ -1,8 +1,13 @@
-export type Note = {
-    id: string,
+export interface NoteMetadata {
     title: string,
-    content: string,
-}
+    author: string,
+    path: string,
+    directory_id: number,
+    tags: string[] | undefined
+};
+
+export type NewNote = Omit<NoteMetadata, 'directory_id'> & { content: object }
+export type Note = Omit<NoteMetadata, 'path'> & { id: number, content: object }
 
 export type Category = {
     id: number;

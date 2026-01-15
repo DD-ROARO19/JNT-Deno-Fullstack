@@ -1,16 +1,8 @@
 import { createStore } from "solid-js/store";
-import type { LineContent } from "./types.tsx";
+import type { newNoteFrame } from "./types.tsx";
 
-type newNote = {
-    metadata: {
-        title: string;
-        author: string;
-        path: string;
-        tags: string[] | undefined;
-    };
-    content: LineContent[];
-}
-export const [newNote, setNewNote] = createStore<newNote>({
+
+export const [newNote, setNewNote] = createStore<newNoteFrame>({
     metadata: {
         title: '',
         author: "User",

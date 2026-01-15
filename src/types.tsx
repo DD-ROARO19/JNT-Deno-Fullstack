@@ -1,10 +1,12 @@
-export type menuButtons = { 
+import type { NoteMetadata } from "../types.ts";
+
+export type menuButtons = {
     text: string
     action: () => void
     subButtons?: menuButtons[]
 }
 export type menuOption = { title: string; buttons: menuButtons[]; open?: boolean }
-export type lineMenu = { 
+export type lineMenu = {
     // inputs_titles: string
     primary_inputs: menuOption
     extra_options?: menuButtons[]
@@ -24,3 +26,10 @@ export type JSONObject = {
 }
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray;
 export type JSONArray = JSONValue[];
+
+
+/** Frame for creating new notes. */
+export interface newNoteFrame {
+    metadata: Omit<NoteMetadata, 'directory_id'>;
+    content: LineContent[]
+}

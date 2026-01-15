@@ -6,16 +6,19 @@ import {
     insert_stmt, 
     one_note,
     delete_stmt
-} from "../controllers/notes.ts";
+} from "../statements/notes.ts";
+import type { Note } from "../../types.ts";
+import { getDir_byPath } from "../controllers/dir_controller.ts";
+import { create_note } from "../controllers/notes_controller.ts";
 // import type { StatementResultingChanges } from "node:sqlite";
 
 const notes = new Hono();
 
-notes.post('/', async (c) => {
-    const { title, content, parent } = await c.req.json()
 
+
+notes.post('/create', async (c) => {
     try {
-        db.prepare(insert_stmt).run(title, content, parent)
+        create_note(await c.req.json())
     } catch (err) {
         console.error(err);
         return c.json(err, 500)
