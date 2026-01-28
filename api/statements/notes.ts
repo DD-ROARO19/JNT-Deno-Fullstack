@@ -31,58 +31,65 @@ const all_notes = `SELECT * FROM notes`;
 const one_note = `SELECT * FROM notes WHERE id = ?`;
 
 // -- Advanced selects.
-const notes_on_folder = {
-    by_id: `--sql WITH RECURSIVE sub_dirs AS (
-        SELECT * FROM directories
-        WHERE id = ?
+// const on_folder = {
+//     total_byID: `--sql 
+//         SELECT n.* FROM v_descendant AS d 
+//         JOIN notes AS notes
+//             ON n.directory_id IS d.child_id 
+//         WHERE d.root_id = ?`,
+//     directly_byID: `--sql 
+//         SELECT * FROM notes
+//         WHERE directory_id = ?`,
+//     total_byPath: `--sql 
+//         SELECT n.* FROM v_descendants AS d
+//         JOIN v_dir_paths AS p
+//             ON d.root_id = p.id
+//         JOIN notes AS n
+//             ON n.directory_id = d.child_id
+//         WHERE p.full_path IS ?`,
+//     directly_byPath: `--sql 
+//         SELECT n.* from v_dir_paths AS p 
+//         JOIN notes AS n
+//             ON n.directory_id = p.id
+//         WHERE p.full_path IS ?`
+// }
+// Should I divide `on_folder`? (either by total/directly or byID/byPath or each it's own const)
 
-        UNION ALL
-
-        SELECT d.* FROM directories AS d
-        JOIN sub_dirs AS sb ON d.parent_id = sb.child_id 
-    )
-    SELECT n.*
-    FROM notes AS n
-    JOIN sub_dirs AS folder 
-        ON n.directory_id = folder.id`,
-
-    by_path: `--sql WITH RECURSIVE path_finder AS (
-        SELECT id, alias, alias AS full_path 
-        FROM directories
-        WHERE id IS NULL
-
-        UNION ALL
-
-        SELECT d.id, d.alias, pf.full_path || d.alias 
-        FROM directories AS d
-        JOIN path_finder AS pf ON d.parent_id = pf.child_id 
-    )
-    SELECT * FROM path_finder
-    WHERE full_path = ?`
+const on_folder_id = {
+    total: `--sql 
+        SELECT n.* --%% -->change to add more cols
+            FROM notes AS n 
+        --@@ -->change to expand query
+        JOIN v_descendants AS d
+            ON n.directory_id IS d.child_id 
+        WHERE d.root_id = $id`,
+    directly: `--sql 
+        SELECT n.* --%% 
+            FROM notes AS n
+        --@@
+        WHERE n.directory_id = $id`
 }
-
-const all_from_dir = // -- (OLD) || Query all notes from an id (for a materalized path). 
-    `SELECT 
-    n.*, d.path
-FROM notes AS n
-JOIN directories AS d
-    ON d.id = n.parent
-WHERE 
-    LOWER(d.path) = LOWER((SELECT path FROM directories WHERE id = ?)) 
-    OR LOWER(d.path) LIKE LOWER((SELECT path FROM directories WHERE id = ?)) || '/%';
-`;
-
-const all_from_path = // (OLD) || Query all notes from a materalized path.
-    `SELECT 
-    n.*, d.path
-FROM notes AS n
-JOIN directories AS d
-    ON d.id = n.parent
-WHERE 
-    LOWER(d.path) = LOWER(?) 
-    OR LOWER(d.path) LIKE LOWER(?) || '/%';
-`;
-
+const on_folder_path = {
+    total: `--sql 
+        SELECT n.* --%% 
+            FROM notes AS n
+        --@@
+        JOIN v_descendants AS d
+            ON n.directory_id = d.child_id
+        JOIN v_dir_paths AS p
+            ON d.root_id = p.id
+        WHERE p.full_path IS $id`,
+    directly: `--sql 
+        SELECT n.* --%% 
+            FROM notes AS n 
+        --@@
+        JOIN v_dir_paths AS p
+            ON n.directory_id = p.id
+        WHERE p.full_path IS $id`
+}
+// , snippet(notes_fts, content, '<b>', '</b>', '...', 20) AS snippet
+// JOIN notes_fts(?) AS s
+//     ON s.rowid = n.id
 
 // ---- DELETE ----
 const delete_stmt = `DELETE FROM notes WHERE id = ?`
@@ -93,6 +100,6 @@ export {
     insert_stmt, update_stmt,
     update_title, update_content, update_directory as update_parent,
     delete_stmt,
-    all_from_dir, all_from_path, all_notes, one_note,
-    notes_on_folder
+    all_notes, one_note,
+    on_folder_id, on_folder_path
 }

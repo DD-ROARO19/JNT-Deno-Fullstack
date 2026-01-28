@@ -6,6 +6,10 @@ export function createDirectory(alias: string, parent_id: number | null) {
 }
 
 // Fun recursion idea (not really necessary!).
+/** Recursive version of `getDir_byPath`.
+ *  Looks for the ID id the last directory on a path,
+ *  and if it doesn't exist it creates it.
+ *  (ej. "/dogs/small" would give you the id for "small"). */
 export function getParent_byPath(path: string[], parent_id: number | null) {
     if (path.length > 1) {
         const first_item = path.shift();

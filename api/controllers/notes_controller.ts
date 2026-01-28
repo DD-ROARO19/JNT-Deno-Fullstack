@@ -4,7 +4,9 @@ import type { NewNote } from "../../types.ts";
 // DB RELATED IMPORTS
 import db from "../database/db_start.ts";
 import { // SQL Statements. 
-    insert_stmt 
+    one_note,
+    all_notes,
+    insert_stmt, 
 } from "../statements/notes.ts";
 
 // HELPER FUNCTIONS
@@ -14,12 +16,20 @@ import { getDir_byPath, getParent_byPath } from "./dir_controller.ts";
  * @param b - Body of the request for creating the note.
  */
 export function create_note(b: NewNote) {
-    console.time('-- for-loop');
-    const parent_id = getDir_byPath(b.path.length > 1 ? b.path.split('/') : [''])
-    console.timeEnd('-- for-loop');
-    // console.time('-- recur');
-    // const parent_id2 = getParent_byPath(b.path.length > 1 ? b.path.split('/') : [''], null)
-    // console.timeEnd('-- recur');
+    try {
+        // console.time('-- for-loop');
+        const parent_id = getDir_byPath(b.path.length > 1 ? b.path.split('/') : [''])
+        // console.timeEnd('-- for-loop');
+        // console.time('-- recur');
+        // const parent_id2 = getParent_byPath(b.path.length > 1 ? b.path.split('/') : [''], null)
+        // console.timeEnd('-- recur');
+    
+        return db.prepare(insert_stmt).run(b.title, b.author, JSON.stringify(b.content), JSON.stringify(b.tags), parent_id)
+    } catch (err) {
+        console.error(err);
+    }
+}
 
-    return db.prepare(insert_stmt).run(b.title, b.author, JSON.stringify(b.content), JSON.stringify(b.tags), parent_id2)
+export function getNote(id: number) {
+    return db.prepare(one_note).get(id);
 }

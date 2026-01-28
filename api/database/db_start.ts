@@ -17,7 +17,7 @@ import { create_note } from "../controllers/notes_controller.ts";
 import { all_notes } from "../statements/notes.ts";
 
 
-if (true) { // trying to create the wellcome guide.
+if (db.prepare(all_notes).all().length < 1) { // trying to create the wellcome guide.
 	// Initial testing
 	try {
 		const wellcome: NewNote = {
@@ -71,12 +71,20 @@ if (true) { // trying to create the wellcome guide.
 		const testNote: Omit<NewNote, 'path' | 'title'> = {
 			author: 'Testing',
 			content: {},
-			tags: []
+			tags: ['test']
 		}
 		console.debug(create_note(wellcome), 'Wellcome guide created.');
-		create_note({ ...testNote, path: '/', title: 'X-Note Test'})
-		create_note({ ...testNote, path: '/Cats', title: 'Short path test'})
-		create_note({ ...testNote, path: '/Mexico/Dogs/Small/Chihuahuas', title: 'Long path test'})
+		create_note({ ...testNote, path: '/', title: 'Hello!!', tags: [], content: { text: 'A WARM WELLCOME TO THE APP! THIS IS A SIMPLE TEXT!!1!.' } })
+		create_note({ ...testNote, path: '/', title: 'X-Note Test', content: {} })
+		create_note({ ...testNote, path: '/', title: 'Peoples test', content: {list:[{name:'Anon', age:20}, {name:'jane', age:21}]} })
+		create_note({ ...testNote, path: '/Mexico/Cats', title: 'Orange Cat', content: { description: 'Orange', caracteristics: ['Dumb', 'Crazy', 'Lazy'] }, tags: ['Mexico', 'test', 'cats']})
+		create_note({ ...testNote, path: '/Mexico/Dogs', title: 'Doggos', content: {UniversalTruth:'Dogs are cute!'}, tags: ['Mexico', 'dogs', 'truth'] })
+		create_note({ ...testNote, path: '/Mexico/Dogs/Small/Chihuahuas', title: 'Long path test', tags: ['Mexico', 'test', 'dogs', 'Chihuahuas'],
+			content: {description:'El chihuahua, también conocido como chihuahueño, es una raza de perro originaria de México, una de las razas de perros más antiguas del continente americano, además de ser el perro más pequeño del mundo.'}
+		})
+		create_note({ ...testNote, path: '/Mexico/Dogs/Small/MiniToy', title: 'Another test', tags: ['Mexico', 'test', 'dogs', 'mini'],
+			content: {'¿que son?':'Una raza de perro mini toy es una categoría de perros que son muy pequeños en tamaño, tanto en términos de altura como de peso. El término «toy» alude a que, por sus reducidas dimensiones, estos perros se asemejan a un juguete. Esta etiqueta, junto con los términos “mini” o “miniatura”, se utiliza para describir razas específicas que han sido criadas para mantener una estatura reducida o variantes minúsculas de razas estándar.'}
+		})
 		
 		// ---- OLD WAY ----
 		// const insert_cat = db.prepare(ctg_stmt);
