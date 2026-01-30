@@ -63,15 +63,15 @@ SELECT * FROM sub_dirs;
 
 -- Notes counts view || total number of notes in the directory & sub_directories. 
 CREATE VIEW IF NOT EXISTS v_note_count AS
-SELECT
-    -- folder.id, folder.parent_id,
-    COUNT(n.id) AS note_count,
-    folder.*
-FROM directories AS folder
+SELECT 
+    COUNT(n.id) AS total_note_count, 
+    COUNT(CASE WHEN des.root_id IS des.child_id THEN n.id ELSE NULL END) AS direct_count,
+    folder.* 
+FROM directories AS folder 
 JOIN v_descendants AS des 
-    ON folder.id IS des.root_id
+    ON folder.id IS des.root_id 
 LEFT JOIN notes AS n 
-    ON n.directory_id IS des.child_id
+    ON n.directory_id IS des.child_id 
 GROUP BY folder.id;
 
 -- Path view || all the existing valid paths.

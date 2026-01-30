@@ -30,7 +30,13 @@ const one_folder = `SELECT * FROM v_note_counts`;
 
 // -- Advance selects
 
-
+/** It sould return a detailed array of every directory / folder. 
+ * This could, for example, have the required data for creating a tree... */
+const detail_dir_query = `--sql
+    SELECT c.*, p.full_path FROM v_note_count AS c
+    JOIN v_dir_paths AS p 
+        ON c.id = p.id
+`;
 
 // ---- DELETE ----
 
@@ -45,5 +51,6 @@ export {
     delete_stmt,
     all_dirs, one_dir, dir_id,
     // all_ctgs, one_ctg
-    all_folders, one_folder
+    all_folders, one_folder,
+    detail_dir_query
 }
