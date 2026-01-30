@@ -78,14 +78,14 @@ const on_folder_path = {
             ON n.directory_id = d.child_id
         JOIN v_dir_paths AS p
             ON d.root_id = p.id
-        WHERE p.full_path IS $id`,
+        WHERE p.full_path IS LOWER($id)`,
     directly: `--sql 
         SELECT n.* --%% 
             FROM notes AS n 
         --@@
         JOIN v_dir_paths AS p
             ON n.directory_id = p.id
-        WHERE p.full_path IS $id`
+        WHERE p.full_path IS LOWER($id)`
 }
 // , snippet(notes_fts, content, '<b>', '</b>', '...', 20) AS snippet
 // JOIN notes_fts(?) AS s

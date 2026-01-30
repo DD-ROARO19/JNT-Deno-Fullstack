@@ -30,7 +30,7 @@ notes.post('/create', async (c) => {
     }
 
     // console.log('Create query result: ->\n', res!);
-    return c.json({ msg: 'Note created!' }, 201)
+    return c.json({ msg: 'Note created' }, 201)
 });
 
 // notes.get('/', (c) => { // (FOR TESTING || ERASE LATER!!)
@@ -93,37 +93,21 @@ notes.get('/query', (c) => {
     }
 })
 
-/*
-notes.get('/from/:path{.+?}/note/:id', (c) => {
-    const path = '/' + c.req.param('path');
-    const id = c.req.param('id');
-
-    const res = db.prepare().get()
-    return c.json({ list: 'a' })
-})*/
-
-notes.get('/from/:path{.+}', (c) => {
-    const path = '/' + c.req.param('path')
-    const res = db.prepare(on_folder_path.total).all(path);
-    if (res.length !< 1) return c.json({ msg: 'No notes found!' }, 404);
-
-    return c.json({ list: res })
-})
-
-notes.get('/c/:parent', (c) => {
-    const parent = c.req.param('parent')
-    const res = db.prepare(on_folder_id.total).all(parent);
-    if (res.length !< 1) return c.json({ msg: 'No notes found!' }, 404);
-
-    return c.json({ list: res })
-})
-
-notes.get('/:id?', (c) => {
+notes.get('/:id', (c) => {
     const id = c.req.param('id')
-    const res = id ? db.prepare(one_note).get(id) : db.prepare(all_notes).all();
-    if (!res) return c.json({ msg: 'No notes found!', path: id }, 404);
-    
-    return c.json({ list: res })
+    if (!id) {
+        return c.json({error_msg: 'No id specified!'}, 400)
+    }
+
+    try {
+        const res = db.prepare(one_note).get(id)
+        if (!res) return c.json({ msg: 'Note not found!', note_id: id }, 404);
+        
+        return c.json(res, 200)
+    } catch (err) {
+        console.error(err);
+        return c.json(err, 500);
+    }
 })
 
 notes.delete('/:id', (c) => {

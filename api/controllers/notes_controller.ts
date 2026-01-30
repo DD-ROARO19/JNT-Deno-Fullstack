@@ -5,7 +5,6 @@ import type { NewNote } from "../../types.ts";
 import db from "../database/db_start.ts";
 import { // SQL Statements. 
     one_note,
-    all_notes,
     insert_stmt, 
 } from "../statements/notes.ts";
 
@@ -17,12 +16,10 @@ import { getDir_byPath, getParent_byPath } from "./dir_controller.ts";
  */
 export function create_note(b: NewNote) {
     try {
-        // console.time('-- for-loop');
+        // console.time('-- time');
         const parent_id = getDir_byPath(b.path.length > 1 ? b.path.split('/') : [''])
-        // console.timeEnd('-- for-loop');
-        // console.time('-- recur');
         // const parent_id2 = getParent_byPath(b.path.length > 1 ? b.path.split('/') : [''], null)
-        // console.timeEnd('-- recur');
+        // console.timeEnd('-- time');
     
         return db.prepare(insert_stmt).run(b.title, b.author, JSON.stringify(b.content), JSON.stringify(b.tags), parent_id)
     } catch (err) {
