@@ -1,4 +1,5 @@
 import type { NoteMetadata } from "../types.ts";
+import type { Category, CategoryNode } from "../types.ts";
 
 export type menuButtons = {
     text: string
@@ -33,3 +34,13 @@ export interface newNoteFrame {
     metadata: Omit<NoteMetadata, 'directory_id'>;
     content: LineContent[]
 }
+
+export type categoryItem = Category & Partial<Pick<CategoryNode, 'childs'>>
+
+export interface fetchParams {
+    path: string, 
+    search?: string, 
+    tags?: string[], 
+    directOnly?: true
+}
+export type otherFetchParams = Omit<fetchParams, 'path'>;

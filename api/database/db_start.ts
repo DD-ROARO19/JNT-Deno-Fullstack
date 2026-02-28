@@ -1,6 +1,7 @@
 // DB definition.
-const db = new DatabaseSync("notebook.db");
-const initialQuery = Deno.readTextFileSync(Deno.cwd()+'/api/database/inital.sql')
+const dir_path = Deno.cwd()+'/api/database/';
+const db = new DatabaseSync(dir_path+"notebook.db");
+const initialQuery = Deno.readTextFileSync(dir_path+'inital.sql')
 
 db.exec(initialQuery);
 export default db;

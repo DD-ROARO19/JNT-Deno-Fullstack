@@ -33,7 +33,9 @@ CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
     tags,
     content,
     content='notes',
-    content_rowid='id'
+    content_rowid='id',
+    prefix='2 3 4 5',
+    tokenize = 'unicode61'
 );
 
 

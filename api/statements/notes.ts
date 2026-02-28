@@ -54,37 +54,39 @@ const one_note = `SELECT * FROM notes WHERE id = ?`;
 //         WHERE p.full_path IS ?`
 // }
 // Should I divide `on_folder`? (either by total/directly or byID/byPath or each it's own const)
+const cols = "n.id, n.directory_id, n.title, n.author, n.tags, n.created_at, n.last_updated"
+// +", snippet(notes_fts, 5, '', '', '...', 50) as content";
 
 const on_folder_id = {
     total: `--sql 
-        SELECT n.* --%% -->change to add more cols
+        SELECT ${cols} --%% -->change to add more cols 
             FROM notes AS n 
-        --@@ -->change to expand query
-        JOIN v_descendants AS d
+        --@@ -->change to expand query 
+        JOIN v_descendants AS d 
             ON n.directory_id IS d.child_id 
         WHERE d.root_id = $id`,
     directly: `--sql 
-        SELECT n.* --%% 
-            FROM notes AS n
-        --@@
+        SELECT ${cols} --%% 
+            FROM notes AS n 
+        --@@ 
         WHERE n.directory_id = $id`
 }
 const on_folder_path = {
     total: `--sql 
-        SELECT n.* --%% 
-            FROM notes AS n
-        --@@
-        JOIN v_descendants AS d
-            ON n.directory_id = d.child_id
-        JOIN v_dir_paths AS p
-            ON d.root_id = p.id
+        SELECT ${cols} --%% 
+            FROM notes AS n 
+        --@@ 
+        JOIN v_descendants AS d 
+            ON n.directory_id = d.child_id 
+        JOIN v_dir_paths AS p 
+            ON d.root_id = p.id 
         WHERE p.full_path IS LOWER($id)`,
     directly: `--sql 
-        SELECT n.* --%% 
+        SELECT ${cols} --%% 
             FROM notes AS n 
-        --@@
-        JOIN v_dir_paths AS p
-            ON n.directory_id = p.id
+        --@@ 
+        JOIN v_dir_paths AS p 
+            ON n.directory_id = p.id 
         WHERE p.full_path IS LOWER($id)`
 }
 // , snippet(notes_fts, content, '<b>', '</b>', '...', 20) AS snippet
