@@ -1,10 +1,18 @@
-import { twMerge } from "tailwind-merge";
-import type { ParentProps } from "solid-js";
+// @ts-types="solid-js"
 import { createSignal, onCleanup, onMount } from "solid-js";
+import type { ParentProps, Setter, Accessor } from "solid-js";
 
+import type { otherFetchParams } from '../types.tsx'
+import { twMerge } from "tailwind-merge";
 import { SearchSVG } from "../assets/svgs.tsx";
 
-function SearchBar(props: { class?: string, placeholder?: string } & ParentProps) {
+interface barProps {
+    class?: string, placeholder?: string,
+    setter: Setter<otherFetchParams>,
+    // value: Accessor<otherFetchParams>
+}
+
+function SearchBar(props: barProps & ParentProps) {
     const [isFixed, setIsFixed] = createSignal(false);
     const [barHeight, setBarHeight] = createSignal(100);
     let searchBarRef: HTMLDivElement | undefined;
@@ -36,9 +44,9 @@ function SearchBar(props: { class?: string, placeholder?: string } & ParentProps
             `, props.class)}
             >
                 <button type="button" class='group/search hover:bg-cyan-700 active:bg-cyan-900 w-15 rounded-xl cursor-pointer place-items-center' ><SearchSVG class='dark:group-active/search:stroke-cyan-600' /></button>
-                <input type="text" placeholder={props.placeholder || 'Search'} class={`w-8/10 text-lg text-slate-200 bg-cyan-900 rounded-2xl ps-2.5 placeholder-slate-500/70 outline-0 focus:border-2 
-                border-slate-500 
-                `} />
+                <input type="text" placeholder={props.placeholder || 'Search bar'} class={`w-8/10 text-lg text-slate-200 bg-cyan-900 rounded-2xl ps-2.5 placeholder-slate-500/70 outline-0 focus:border-2 
+                border-slate-500 `} 
+                onInput={(e) => props.setter( prev => ({...prev, search: e.currentTarget.value ? e.currentTarget.value+'*' : ''}) )}/>
                 {props.children}
             </div>
 

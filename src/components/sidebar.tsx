@@ -17,22 +17,22 @@ import {
 
 import { twMerge } from 'tailwind-merge';
 import type { ParentProps } from 'solid-js';
-import type { CategoryNode } from "../../types.ts";
+import type { categoryItem } from "../types.tsx";
 
-const [categories, setCategories] = createSignal<CategoryNode[]>([])
+const [categories, setCategories] = createSignal<categoryItem[]>([])
 
 async function getCategories() {
-    const res = await fetch('/api/categories/tree', {
+    const res = await fetch('/api/categories/list', {
         method: 'GET',
         headers: {
             "Content-Type": "application/json",
         }
     });
 
-    const data = await res.json() as { list: CategoryNode[] };
-    setCategories(data.list)
+    const data = await res.json() as { list: categoryItem[] };
+    setCategories(data.list.slice(1))
     // console.log('singal ->', categories());
-    console.log('Categories List ->', 'Loading');
+    console.debug('Categories List ->', 'Loading');
     
 }
 
@@ -44,15 +44,15 @@ function CategoriesList() {
     })
 
 
-    const Pill = (props: ParentProps & { class?: string, path: string }) => {
-        return <a href={'/show' + props.path} class={twMerge(`w-19/20 h-8 rounded-lg m-2 pl-2 bg-cyan-800 place-self-end flex items-center justify-between 
+    const Pill = (props: ParentProps & { class?: string, data: categoryItem }) => {
+        return <a href={'/show' + props.data.full_path} class={twMerge(`w-19/20 h-8 rounded-lg m-2 pl-2 bg-cyan-800 place-self-end flex items-center justify-between 
         hover:bg-cyan-700 focus:outline-2 focus:outline-cyan-50 cursor-default
         `, props.class)}>
             {props.children}
         </a>
     }
 
-    function PillGroup(props: { categoryItem: CategoryNode }) {
+    function PillGroup(props: { categoryItem: categoryItem }) {
         const [isOpen, setOpen] = createSignal(true)
 
         function visibility() { return !isBarOpen() ? 'invisible' : 'visible' }
@@ -60,28 +60,28 @@ function CategoriesList() {
 
         return (
             <div class={`w-19/20 place-self-center transition-discrete delay-75 duration-100 ease-in ${visibility()}`}>
-                <Pill path={props.categoryItem.path} >
-                    <p class='cursor-default'>{props.categoryItem.name}</p>
-                    <Show when={props.categoryItem.childs.length > 0}>
+                <Pill data={props.categoryItem} >
+                    <p class='cursor-default'>{props.categoryItem.alias}</p>
+                    <Show when={props.categoryItem.childs && props.categoryItem.childs.length > 0} >
                         <DownArrow isDown={isOpen} setArrow={setOpen} />
                     </Show>
                 </Pill>
                 <For each={props.categoryItem.childs}>{(subItem) =>
-                    <Pill path={subItem.path} class={`w-13/15 place-self-end ${showSubs()}`}>
-                        <p>{subItem.name}</p>
+                    <Pill data={subItem} class={`w-13/15 place-self-end ${showSubs()}`}>
+                        <p>{subItem.alias}</p>
                     </Pill>
                 }</For>
             </div>
         );
     }
 
-    const _newNote: CategoryNode = { id: -1, path: '', note_count: -1, name: '+', childs: [] }
+    // const _newNote: CategoryNode = { id: -1, path: '', note_count: -1, name: '+', childs: [] }
 
     return (
         <>
             {/* <PillGroup categoryItem={ newNote } /> */}
             <div class={`w-19/20 place-self-center transition-discrete delay-75 duration-100 ease-in ${!isBarOpen() ? 'invisible' : 'visible'}`}>
-                <Pill path="/new" class="justify-center">
+                <Pill data="/new" class="justify-center">
                     <p>+</p>
                 </Pill>
             </div>

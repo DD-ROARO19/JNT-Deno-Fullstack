@@ -1,38 +1,43 @@
 // @ts-types="solid-js"
-import { 
-    // onMount, createSignal, 
-    createResource 
+import {
+    createResource,
+    createSignal,
 } from "solid-js";
 import { CardList } from "../components/cards.tsx";
 import SearchBar from "../components/SearchBar.tsx";
 
 import type { Note } from '../../types.ts';
+import type { otherFetchParams } from "../types.tsx";
 
 
-const fetchAllNotes = async () => {
-    const res = await fetch('/api/notes', {
+const fetchAllNotes = async (query: otherFetchParams) => {
+    let url: `/api/notes/query?directory_id=1&${string}` = '/api/notes/query?directory_id=1&';
+
+    for (const key in query) {
+        url += (`${key}=${query[key as keyof otherFetchParams]}&`);
+    }
+
+    const res = await fetch(url, {
         method: 'GET',
         headers: {
             "Content-Type": "application/json",
         }
     });
 
-    const data = await res.json() as { list: Note[] };
-    return data.list;
+    const data = await res.json() as Note[];
+    console.log('data: ', data);
+
+    return data;
 }
 
 export default function StartPage() {
-    const [list] = createResource(() => fetchAllNotes());
+    const [searchParams, setSearchParams] = createSignal<otherFetchParams>({})
     
-    /*const [list, setList] = createSignal<Note[]>([])
-
-    onMount(async () => {
-        setList(fetchAllNotes());
-    }); /**/
+    const [list] = createResource(() => searchParams(), fetchAllNotes);
 
     return (
         <div class="w-3/4 place-self-center">
-            <SearchBar />
+            <SearchBar setter={setSearchParams} />
             <CardList list={list() || []} />
         </div>
     );
