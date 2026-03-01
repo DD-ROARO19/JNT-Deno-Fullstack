@@ -12,9 +12,7 @@ import { CardList } from "../components/cards.tsx";
 import SearchBar from "../components/SearchBar.tsx";
 
 const fetchNotesByPath = async (query: fetchParams): Promise<Note[]> => {
-    // console.log('Notes List ->', 'Loading');
-    // console.log('path:', path);
-
+    // console.log('query_data: ', query);
     let url: `/api/notes/query?${string}` = '/api/notes/query?';
 
     for(const key in query){
@@ -38,15 +36,15 @@ export default function CardMenu() {
     const params = useParams();
     const [searchParams, setSearchParams] = createSignal<otherFetchParams>({})
     
-    const [list] = createResource(() => ({ path: params.path, ...searchParams }), fetchNotesByPath);
+    const [list] = createResource(() => ({ path: '/'+params.path, ...searchParams() }), fetchNotesByPath);
 
     return (
-        <>
+        <div class="w-3/4 place-self-center">
             <SearchBar setter={setSearchParams} />
             {/* {list.loading && <div>Loading...</div>} */}
             {list.error && <div>Error while loading notes.</div>}
 
             <CardList list={list() || []} />
-        </>
+        </div>
     );
 }

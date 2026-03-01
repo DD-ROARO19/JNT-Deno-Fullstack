@@ -1,27 +1,29 @@
-import 'solid-js'
+// @ts-types="solid-js"
+import {
+    // createEffect, 
+    createSignal,
+    For,
+    Show,
+    onMount,
+    createResource
+} from 'solid-js';
+// import { A } from "@solidjs/router";
+// import { createStore } from "solid-js/store"
 
 import logo from '../assets/solid.svg'
 import { BackArrow, DownArrow, Home, ReloadArrow } from '../assets/svgs.tsx';
 // import type { DOMElement } from 'solid-js/jsx-runtime';
 
 import { isBarOpen, setBarOpen } from '../signals.tsx'
-import {
-    // @ts-types="solid-js"
-    // createEffect, 
-    createSignal,
-    For, // @ts-types="solid-js"
-    onMount, Show
-} from 'solid-js';
-// import { A } from "@solidjs/router";
-// import { createStore } from "solid-js/store"
 
 import { twMerge } from 'tailwind-merge';
 import type { ParentProps } from 'solid-js';
 import type { categoryItem } from "../types.tsx";
 
-const [categories, setCategories] = createSignal<categoryItem[]>([])
+// const [list, setList] = createSignal<categoryItem[]>([])
 
-async function getCategories() {
+async function getCategories(): Promise<categoryItem[]> {
+    console.debug('Categories List ->', 'Loading');
     const res = await fetch('/api/categories/list', {
         method: 'GET',
         headers: {
@@ -29,27 +31,27 @@ async function getCategories() {
         }
     });
 
-    const data = await res.json() as { list: categoryItem[] };
-    setCategories(data.list.slice(1))
-    // console.log('singal ->', categories());
-    console.debug('Categories List ->', 'Loading');
-    
+    const data = await res.json();
+    return data.slice(1);
 }
 
+const [list, { mutate, refetch }] = createResource(getCategories);
 
 function CategoriesList() {
+    // onMount(async () => {
+    //     setList(await getCategories())
+    // })
 
-    onMount(async () => {
-        await getCategories()
-    })
+    const Pill = (props: ParentProps & { class?: string, data?: categoryItem, title?: string }) => {
+        const style = twMerge(`w-19/20 h-8 rounded-lg m-2 pl-2 bg-cyan-800 place-self-end flex items-center 
+        justify-between hover:bg-cyan-700 focus:outline-2 focus:outline-cyan-50 cursor-default`, props.class);
 
-
-    const Pill = (props: ParentProps & { class?: string, data: categoryItem }) => {
-        return <a href={'/show' + props.data.full_path} class={twMerge(`w-19/20 h-8 rounded-lg m-2 pl-2 bg-cyan-800 place-self-end flex items-center justify-between 
-        hover:bg-cyan-700 focus:outline-2 focus:outline-cyan-50 cursor-default
-        `, props.class)}>
-            {props.children}
-        </a>
+        return (!props.data) ?
+            <a class={style} title={props.title}> {props.children} </a>
+            :
+            <a href={'/show' + props.data.full_path} class={style} title={props.title}>
+                {props.children}
+            </a>
     }
 
     function PillGroup(props: { categoryItem: categoryItem }) {
@@ -60,7 +62,7 @@ function CategoriesList() {
 
         return (
             <div class={`w-19/20 place-self-center transition-discrete delay-75 duration-100 ease-in ${visibility()}`}>
-                <Pill data={props.categoryItem} >
+                <Pill data={props.categoryItem} title={props.categoryItem.created_at.toLocaleString()} >
                     <p class='cursor-default'>{props.categoryItem.alias}</p>
                     <Show when={props.categoryItem.childs && props.categoryItem.childs.length > 0} >
                         <DownArrow isDown={isOpen} setArrow={setOpen} />
@@ -81,11 +83,11 @@ function CategoriesList() {
         <>
             {/* <PillGroup categoryItem={ newNote } /> */}
             <div class={`w-19/20 place-self-center transition-discrete delay-75 duration-100 ease-in ${!isBarOpen() ? 'invisible' : 'visible'}`}>
-                <Pill data="/new" class="justify-center">
+                <Pill class="justify-center" title="Create new note">
                     <p>+</p>
                 </Pill>
             </div>
-            <For each={categories()}>{(item) =>
+            <For each={list()}>{(item) =>
                 <PillGroup categoryItem={item} />
             }</For>
         </>
@@ -106,7 +108,7 @@ const Sidebar = () => {
         <div class={`h-dvh dark:bg-cyan-900 rounded-e-2xl ${barWidth()} select-none`} style={`transition: ${milis}ms`} >
             <div class="flex flex-row-reverse justify-between ">
                 <img onclick={() => setBarOpen(p => !p)} src={logo} class='w-10 h-10 m-3 cursor-pointer' />
-                <ReloadArrow class="w-10 h-10 m-3 dark:fill-cyan-600" onclick={getCategories} />
+                <ReloadArrow class="w-10 h-10 m-3 dark:fill-cyan-600" onclick={refetch} />
                 <HomeIcon />
                 <BackIcon />
             </div>
