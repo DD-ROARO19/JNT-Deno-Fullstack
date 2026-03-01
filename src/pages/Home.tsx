@@ -10,7 +10,7 @@ import type { Note } from '../../types.ts';
 import type { otherFetchParams } from "../types.tsx";
 
 
-const fetchAllNotes = async (query: otherFetchParams) => {
+const fetchAllNotes = async (query: otherFetchParams): Promise<Note[]> => {
     let url: `/api/notes/query?directory_id=1&${string}` = '/api/notes/query?directory_id=1&';
 
     for (const key in query) {
@@ -24,8 +24,8 @@ const fetchAllNotes = async (query: otherFetchParams) => {
         }
     });
 
-    const data = await res.json() as Note[];
-    console.log('data: ', data);
+    const data = res.json();
+    // console.log('data: ', data);
 
     return data;
 }

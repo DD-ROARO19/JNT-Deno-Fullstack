@@ -7,7 +7,7 @@ export const [newNote, setNewNote] = createStore<newNoteFrame>({
         title: '',
         author: "User",
         path: "/",
-        tags: undefined
+        tags: []
     },
     content: [
         { type:"string", key: 'Text', value: 'Sample' },

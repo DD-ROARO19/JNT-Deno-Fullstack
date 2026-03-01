@@ -48,7 +48,7 @@ catgs.get('/tree', (c) => {
         
         // return c.json({debugg: { tried: { req: q } }}, 200);
         // console.timeEnd('---- tree');
-        return c.json({ folders: map.get(1) }, 200);
+        return c.json(map.get(1), 200);
     } catch (err) {
         console.error(err);
         return c.json(err, 500);
@@ -96,7 +96,7 @@ catgs.get('/list', (c) => {
     
         // console.timeEnd('---- list');
         // console.log({ tree: tree, map: map });
-        return c.json({ list })
+        return c.json(list)
     } catch (err) {
         console.error(err);
         return c.json(err, 500);
@@ -122,7 +122,7 @@ catgs.get('/query', (c) => {
         
         if (res.length < 1) return c.json({ mgs: 'No directories found!' }, 404)
     
-        return c.json({ folders: res })
+        return c.json(res)
     } catch (err) {
         console.error({debug: {error: err, tried: { req: q, stmt, bind }}});
         return c.json(err, 500);

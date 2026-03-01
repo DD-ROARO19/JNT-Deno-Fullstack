@@ -1,3 +1,4 @@
 {
-    recreate_guides: true
+    recreate_guides: true,
+    bar_open: true
 }
