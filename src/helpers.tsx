@@ -44,12 +44,14 @@ export function changeInput(path: (string | number)[], new_type: typeOfInputs) {
 //
 export class ObjectCheckError extends Error {
     constructor(
-        public path: number[],
+        public path: (string | number)[],
         public code: 'EMPTY_KEY' | 'DUPLICATE_KEY',
         message: string
     ) {
         super(message);
         this.name = "ObjectCheckError";
+        console.error(this, { ...this });
+        toast().newNotification(this.message)
     }
 }
 
@@ -65,16 +67,16 @@ export function extractValue(data: JSONPrimitive | LineContent[], type: typeOfIn
             return (data as LineContent[]).reduce((acc, item, index) => {
 
                 if (item.key === "" || item.key === null || item.key === undefined) {
-                    const newPath = [...path, index].filter((item) => (typeof item == 'number'));
-                    throw new ObjectCheckError(newPath, 'EMPTY_KEY', `Empty key found in: ${newPath}`);
+                    const newPath = [...path, `item #${++index}`];
+                    throw new ObjectCheckError(newPath, 'EMPTY_KEY', `Empty key found in: ${newPath.join('> ')}`);
                 }
                 if (seenKeys.has(item.key)) {
-                    const newPath = [...path, index].filter((item) => (typeof item == 'number'));
-                    throw new ObjectCheckError(newPath, 'DUPLICATE_KEY', `Duplicate key found in: ${newPath}`);
+                    const newPath = [...path, `item #${++index}`];
+                    throw new ObjectCheckError(newPath, 'DUPLICATE_KEY', `Duplicate key found in: ${newPath.join('> ')}`);
                 }
                 seenKeys.add(item.key);
 
-                acc[item.key] = extractValue(item.value, item.type, [...path, index]);
+                acc[item.key] = extractValue(item.value, item.type, [...path, item.key]);
                 return acc;
             }, {} as Record<string | number, JSONValue>);
         }
@@ -83,12 +85,25 @@ export function extractValue(data: JSONPrimitive | LineContent[], type: typeOfIn
             return data as JSONValue
     }
 }
-/** Returns the current saved note as an object. */
+
+class NoteValError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'NoteValError';
+        console.error(this);
+        toast().newNotification(this.message)
+    }
+}
+
+/** Returns the current stored note as a common json object. */
 export function extractNewNote() {
-    const rawData = unwrap(newNote);
+    const { metadata, content } = unwrap(newNote);
+
+    if (metadata.title.trim() === '') throw new NoteValError('Note title is empty!')    // Validation of metadata for errors!!
+
     return {
-        metadata: rawData.metadata,
-        content: extractValue(rawData.content, 'object', [])
+        ...metadata,
+        content: extractValue(content, 'object', [])
     }
 }
 export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeOfInputs, path: (string | number)[]) {
@@ -114,11 +129,7 @@ export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeO
                 break;
         }
     } catch (err) {
-        if (err instanceof ObjectCheckError) {
-            console.error('Validation Failed:', err);
-            toast().newNotification(err.message)
-            return null
-        }
+        if (err instanceof ObjectCheckError) return null;
         throw err
     }
 }
@@ -127,7 +138,27 @@ export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeO
 
 // API interactions
 //
-export function SaveNote() {
+export async function SaveNote() {
+    try {
+        const value = extractNewNote();
 
+        const res = await fetch('/api/notes/create', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(value)
+        })
+
+        if (!res.ok) {
+            console.error(`${res.status}: ${res.statusText}`, res) // Create error handle for endpoints?
+        }
+
+        toast().newNotification((await res.json() as { msg: string }).msg)
+    } catch (err) {
+        if (err instanceof ObjectCheckError) return null;
+        if (err instanceof NoteValError) return null;
+        throw err
+    }
 }
 //

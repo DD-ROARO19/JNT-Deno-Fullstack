@@ -23,7 +23,7 @@ const notes = new Hono();
 
 notes.post('/create', async (c) => {
     try {
-        create_note(await c.req.json())
+        console.log(create_note(await c.req.json()));
     } catch (err) {
         console.error(err);
         return c.json(err, 500)

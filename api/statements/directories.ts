@@ -21,7 +21,7 @@ WHERE id = ?
 // -- Simples
 const all_dirs = `SELECT * FROM directories`;
 const one_dir =  `SELECT * FROM directories WHERE id = ?`;
-const dir_id =  `SELECT id FROM directories WHERE parent_id IS ? AND alias is ?`;
+const dir_id =  `SELECT id FROM directories WHERE parent_id IS ? AND LOWER(alias) is LOWER(?)`;
 //
 // const all_ctgs = `SELECT * FROM categories`;
 // const one_ctg =  `SELECT * FROM categories WHERE id = ?`;

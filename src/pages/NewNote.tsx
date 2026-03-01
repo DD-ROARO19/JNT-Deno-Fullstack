@@ -8,6 +8,8 @@ import {
 import { newNote, setNewNote } from "../stores.tsx";
 import { CopySVG, Edit2, Erase } from '../assets/svgs.tsx'
 
+import { addInput, copyToClipboard, SaveNote } from "../helpers.tsx";
+
 
 function Title() {
     const [isFixed, setIsFixed] = createSignal(false);
@@ -44,7 +46,7 @@ function Title() {
                 placeholder-slate-500/70 outline-0 focus:border-2 border-slate-500 ">
                     <input type="text" id="floating_outlined" class="block px-1.5 pb-1 pt-1.5 w-full text-md 
                     bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer"
-                        placeholder=" " onChange={e => setNewNote('metadata', 'title', e.currentTarget.value)} />
+                        placeholder="" onChange={e => setNewNote('metadata', 'title', e.currentTarget.value)} />
                     <label for="floating_outlined" class="absolute text-md text-body duration-300 transform 
                     -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2 peer-focus:px-2 
                     peer-focus:text-fg-brand peer-placeholder-shown:scale-130 peer-placeholder-shown:-translate-y-1/2 
@@ -56,7 +58,7 @@ function Title() {
                 {/* Save Note */}
                 <button type="button" class='group/save bg-cyan-700/70 hover:bg-cyan-700 
                 active:bg-cyan-900 p-1.5 rounded cursor-pointer place-items-center'
-                    onClick={() => console.log('NOTE CONTENT: ', extractNewNote())} >
+                    onClick={() => console.log('NOTE CONTENT: ', SaveNote())} >
                     <Edit2 class="dark:group-active/save:fill-white/70" />
                 </button>
                 {/* Copy Content */}
@@ -86,12 +88,14 @@ function Title() {
 
 import { OptionsMenu } from "../components/Select.tsx";
 import type { lineMenu } from "../types.tsx";
-import { addInput, copyToClipboard, extractNewNote } from "../helpers.tsx";
 import { ObjectType } from "../components/InputTypes.tsx";
 import { toast } from "../components/notifications.tsx";
+import { useParams } from "@solidjs/router";
 
 export default function NewNote() {
+    const params = useParams();
 
+    setNewNote('metadata', 'path', `/${params.path}`)
     const rootPath = ['content']
 
     const addConfig: lineMenu = {
