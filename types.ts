@@ -3,14 +3,19 @@ export interface NoteMetadata {
     author: string,
     path: string,
     directory_id: number,
-    tags: string[]
+    tags: string[],
+    // content: object
 };
 
-export type NewNote = Omit<NoteMetadata, 'directory_id'> & { content: object }
+// export type NewNote = Omit<NoteMetadata, 'directory_id'>
 
 type stringifiedArray = string;
+type stringifiedObject = string;
+
 export type Note = Omit<NoteMetadata, 'path' | 'tags'> & 
-{ id: number, snippet?: string, created_at: Date, last_updated: Date, tags: stringifiedArray }
+{ id: number, created_at: Date, last_updated: Date, tags: stringifiedArray, content: stringifiedObject }
+
+export type cardNote = Omit<Note, 'content'> & { snippet?: string }
 
 export interface Category {
     parent_id: number | null,

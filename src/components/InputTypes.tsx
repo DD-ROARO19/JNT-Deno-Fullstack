@@ -3,19 +3,13 @@ import {
     For, Show, createSignal,
     Switch, Match
 } from "solid-js"
-import type { JSONPrimitive, LineContent, lineMenu, typeOfInputs } from "../types.tsx";
+import type { inputsProps, JSONPrimitive, LineContent, lineMenu, typeOfInputs } from "../types.tsx";
 import { DownArrow } from "../assets/svgs.tsx";
 import { InputButton } from "./Select.tsx";
 
 import type { Accessor, Setter } from "solid-js";
 import { addInput, changeInput, updateStore, eraseInput, copyToClipboard } from "../helpers.tsx";
 import { NewLine } from './RowLines.tsx'
-
-type inputsProps = {
-    path: (string | number)[];
-    config: lineMenu;
-    index?: number | null;
-}
 
 function lineConfig(path: (string | number)[], data: JSONPrimitive | LineContent[], type: typeOfInputs): lineMenu {
     return {
@@ -46,6 +40,10 @@ function LineSettingsBtn(props: { config: lineMenu, hover_class: string, text?: 
     )
 }
 
+
+// ##  PRIMITIVE VALUE COMPONENTS  ##
+
+/** Component to display text. */
 export function StringType(props: inputsProps & { data: string }) {
     // console.log('String props: ', props);
 
@@ -63,6 +61,7 @@ export function StringType(props: inputsProps & { data: string }) {
     )
 }
 
+/** Component to display numbers */
 export function NumberType(props: inputsProps & { data: number }) {
     // console.log('Number props: ', props);
 
@@ -80,7 +79,67 @@ export function NumberType(props: inputsProps & { data: number }) {
     )
 }
 
+/** Component that displays a boolean value in diferent styles depending on its key. */
+export function BooleanType(props: inputsProps & { data: boolean, key: string }) {
 
+    function BoolCheck() {
+        return (
+            <>
+                <input type="checkbox" checked={props.data}
+                    onClick={() => updateStore(props.path, !props.data)} />
+                <p class="text-slate-600 select-all">{props.data ? 'true' : 'false'}</p>
+            </>
+        )
+    }
+    function BoolRadio() {
+        return (
+            <>
+                <label for="true" class="select-none">True</label>
+                <input type="radio" name="bool" checked={props.data}
+                    onClick={() => updateStore(props.path, !props.data)}
+                />
+                <label for="false" class="select-none">False</label>
+                <input type="radio" name="bool" checked={props.data == false}
+                    onClick={() => updateStore(props.path, !props.data)}
+                />
+            </>
+        )
+    }
+    function BoolSwitch() {
+        return (
+            <>
+                <button type="button" role="switch" onClick={() => updateStore(props.path, !props.data)}
+                    class={`
+                relative inline-flex h-5 w-10 items-center rounded-full border-1 transition-colors 
+                duration-200 border-gray-600 cursor-pointer
+                ${props.data ? "bg-[#4878F6]" : "bg-transparent"}
+                    `} >
+                    <span class={`
+                    inline-block h-3 w-3 transform rounded-full transition-transform duration-200 
+                    ease-in-out bg-white ${props.data ? "translate-x-6" : "translate-x-1"}
+                        `} />
+                </button>
+                <p class="select-all">{props.data ? 'true' : 'false'}</p>
+            </>
+        )
+    }
+
+    return (
+        <span class="BooleanType group/b-line flex-1 flex relative hover:bg-gray-700/50">
+            <span class="flex gap-2 text-[#9980FF] items-center">
+                <Switch fallback={<BoolSwitch />}>
+                    <Match when={props.key.endsWith('check')}><BoolCheck /></Match>
+                    <Match when={props.key.endsWith('radio')}><BoolRadio /></Match>
+                </Switch>
+            </span>
+            <LineSettingsBtn config={lineConfig(props.path, props.data, 'boolean')}
+                hover_class="group-hover/b-line:visible" />
+        </span>
+    )
+}
+
+
+/** Button to hide or open the contents of object components. */
 function Toggle(props: {
     text: string, config: lineMenu; end?: boolean, show: boolean;
     isOpen: Accessor<boolean>, setOpen: Setter<boolean>
@@ -141,6 +200,10 @@ type listsProps = {
     full_addButton?: boolean;
 }
 
+
+// ##  OBJECT COMPONENTS  ##
+
+/** Component for rendering an list of values. */
 export function ArrayType(props: inputsProps & listsProps) {
     // console.log('Array props: ', props);
     const [showList, setList] = createSignal(true);
@@ -156,8 +219,8 @@ export function ArrayType(props: inputsProps & listsProps) {
                 fallback={<Toggle text={`[${props.data?.length}]`} isOpen={showList} setOpen={setList}
                     config={lineConfig(props.path, props.data, 'array')} show={!props.no_config} />}
             >
-                <Toggle text="[" isOpen={showList} setOpen={setList} config={lineConfig(props.path, props.data, 'array')}
-                    show={!props.no_config} />
+                <Toggle text="[" isOpen={showList} setOpen={setList} 
+                    config={lineConfig(props.path, props.data, 'array')} show={!props.no_config} />
 
                 <div class="ArrayType w-full relative flex flex-col pl-6
                 border-l-1 border-[#293B49] my-1">
@@ -177,13 +240,14 @@ export function ArrayType(props: inputsProps & listsProps) {
                     <AddItemBtn config={addButtonConfig(props.path)} isFullWidth={props.full_addButton}/>
                 </div>
 
-                <Toggle text="]" isOpen={showList} setOpen={setList} config={lineConfig(props.path, props.data, 'array')}
-                    show={!props.no_config} end />
+                <Toggle text="]" isOpen={showList} setOpen={setList} 
+                    config={lineConfig(props.path, props.data, 'array')} show={!props.no_config} end />
             </Show>
         </>
     )
 }
 
+/** Component to render groups of `key` - `value` pairs. */
 export function ObjectType(props: inputsProps & listsProps) {
     // console.log('Object Props: ', props);
     const [isShowing, setShow] = createSignal(true);
@@ -195,8 +259,8 @@ export function ObjectType(props: inputsProps & listsProps) {
                 <Toggle text={`{${props.data?.length}}`} isOpen={isShowing} setOpen={setShow}
                     config={lineConfig(props.path, props.data, 'object')} show={!props.no_config} />
             }>
-                <Toggle text="{" isOpen={isShowing} setOpen={setShow} config={lineConfig(props.path, props.data, 'object')}
-                    show={!props.no_config} />
+                <Toggle text="{" isOpen={isShowing} setOpen={setShow} 
+                    config={lineConfig(props.path, props.data, 'object')} show={!props.no_config} />
 
                 <div class="ObjectType w-full flex flex-wrap pl-8 border-l-1 border-[#293B49] my-1">
                     <For each={props.data}>{(item, index) => {
@@ -207,7 +271,8 @@ export function ObjectType(props: inputsProps & listsProps) {
                                 <span class="Key flex justify-between">
                                     <input value={item.key} type="text" placeholder="Key name"
                                         onChange={e =>
-                                            updateStore([...props.path, index(), 'key'], e.currentTarget.value)
+                                            updateStore([...props.path, index(), 'key'], 
+                                            e.currentTarget.value) 
                                         }
                                         style="field-sizing: content"
                                         class="KeyInput max-w-30 focus:outline-none focus:bg-stone-800 
@@ -220,68 +285,10 @@ export function ObjectType(props: inputsProps & listsProps) {
                     <AddItemBtn config={addButtonConfig(props.path)} isFullWidth={props.full_addButton}/>
                 </div>
 
-                <Toggle text="}" isOpen={isShowing} setOpen={setShow} config={lineConfig(props.path, props.data, 'object')}
-                    show={!props.no_config} end />
+                <Toggle text="}" isOpen={isShowing} setOpen={setShow} 
+                    config={lineConfig(props.path, props.data, 'object')} show={!props.no_config} end />
             </Show>
         </>
-    )
-}
-
-export function BooleanType(props: inputsProps & { data: boolean, key: string }) {
-
-    function BoolCheck() {
-        return (
-            <>
-                <input type="checkbox" checked={props.data}
-                    onClick={() => updateStore(props.path, !props.data)} />
-                <p class="text-slate-600 select-all">{props.data ? 'true' : 'false'}</p>
-            </>
-        )
-    }
-    function BoolRadio() {
-        return (
-            <>
-                <label for="true" class="select-none">True</label>
-                <input type="radio" name="bool" checked={props.data}
-                    onClick={() => updateStore(props.path, !props.data)}
-                />
-                <label for="false" class="select-none">False</label>
-                <input type="radio" name="bool" checked={props.data == false}
-                    onClick={() => updateStore(props.path, !props.data)}
-                />
-            </>
-        )
-    }
-    function BoolSwitch() {
-        return (
-            <>
-                <button type="button" role="switch" onClick={() => updateStore(props.path, !props.data)}
-                    class={`
-                relative inline-flex h-5 w-10 items-center rounded-full border-1 transition-colors 
-                duration-200 border-gray-600 cursor-pointer
-                ${props.data ? "bg-[#4878F6]" : "bg-transparent"}
-                    `} >
-                    <span class={`
-                    inline-block h-3 w-3 transform rounded-full transition-transform duration-200 
-                    ease-in-out bg-white ${props.data ? "translate-x-6" : "translate-x-1"}
-                        `} />
-                </button>
-                <p class="select-all">{props.data ? 'true' : 'false'}</p>
-            </>
-        )
-    }
-
-    return (
-        <span class="BooleanType group/b-line flex-1 flex relative hover:bg-gray-700/50">
-            <span class="flex gap-2 text-[#9980FF] items-center">
-                <Switch fallback={<BoolSwitch />}>
-                    <Match when={props.key.length > 1 && props.key?.endsWith('check')}><BoolCheck /></Match>
-                    <Match when={props.key.length > 1 && props.key?.endsWith('radio')}><BoolRadio /></Match>
-                </Switch>
-            </span>
-            <LineSettingsBtn config={lineConfig(props.path, props.data, 'boolean')}
-                hover_class="group-hover/b-line:visible" />
-        </span>
     )
 }
 

@@ -6,7 +6,7 @@ import { twMerge } from 'tailwind-merge';
 import { Edit, Erase } from '../assets/svgs.tsx';
 // import SearchBar from './SearchBar.tsx';
 
-import type { Note } from "../../types.ts";
+import type { cardNote } from "../../types.ts";
 // @ts-types="solid-js"
 import { Show } from "solid-js";
 // const arr = [0, 0, 0, 0, 0]
@@ -47,7 +47,7 @@ function Card(props: ParentProps & CardData) {
     );
 }
 
-export function CardList(props: { list: Note[] }) {
+export function CardList(props: { list: cardNote[] }) {
     const navigate = useNavigate();
     const location = useLocation();
 

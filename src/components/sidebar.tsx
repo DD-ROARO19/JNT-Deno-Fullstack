@@ -19,6 +19,10 @@ import { isBarOpen, setBarOpen } from '../signals.tsx'
 import { twMerge } from 'tailwind-merge';
 import type { ParentProps } from 'solid-js';
 import type { categoryItem } from "../types.tsx";
+// @ts-types="solid-js"
+import { Switch } from "solid-js";
+// @ts-types="solid-js"
+import { Match } from "solid-js";
 
 // const [list, setList] = createSignal<categoryItem[]>([])
 
@@ -35,9 +39,7 @@ async function getCategories(): Promise<categoryItem[]> {
     return data.slice(1);
 }
 
-const [list, { mutate, refetch }] = createResource(getCategories);
-
-function CategoriesList() {
+function CategoriesList(props: { list: categoryItem[] }) {
     // onMount(async () => {
     //     setList(await getCategories())
     // })
@@ -87,7 +89,7 @@ function CategoriesList() {
                     <p>+</p>
                 </Pill>
             </div>
-            <For each={list()}>{(item) =>
+            <For each={props.list}>{(item) =>
                 <PillGroup categoryItem={item} />
             }</For>
         </>
@@ -97,6 +99,8 @@ function CategoriesList() {
 
 
 const Sidebar = () => {
+    const [list, { mutate, refetch }] = createResource(getCategories);
+
     function barWidth() { return isBarOpen() ? 'w-70 min-w-70' : 'w-15 min-w-15'; }
 
     const milis = 500;
@@ -105,19 +109,26 @@ const Sidebar = () => {
     const BackIcon = (props: { class?: string }) => <BackArrow option={4} class={"w-10 h-10 m-3 cursor-pointer dark:fill-cyan-600 " + props.class} />;
 
     return (
-        <div class={`h-dvh dark:bg-cyan-900 rounded-e-2xl ${barWidth()} select-none`} style={`transition: ${milis}ms`} >
-            <div class="flex flex-row-reverse justify-between ">
-                <img onclick={() => setBarOpen(p => !p)} src={logo} class='w-10 h-10 m-3 cursor-pointer' />
-                <ReloadArrow class="w-10 h-10 m-3 dark:fill-cyan-600" onclick={refetch} />
-                <HomeIcon />
-                <BackIcon />
-            </div>
-            <div class="flex flex-wrap flex-col-reverse content-end">
-                <HomeIcon class={`${isBarOpen() ? 'h-0 w-0 m-0' : ''} transition-discrete delay-75 duration-100 ease-in`} />
-                <BackIcon class={`${isBarOpen() ? 'h-0 w-0 m-0' : ''} transition-discrete delay-75 duration-100 ease-in`} />
-            </div>
-            <CategoriesList />
-        </div>
+        <Switch>
+            <Match when={list.loading}>
+                <></>
+            </Match>
+            <Match when={list()}>
+                <div class={`h-dvh dark:bg-cyan-900 rounded-e-2xl ${barWidth()} select-none`} style={`transition: ${milis}ms`} >
+                    <div class="flex flex-row-reverse justify-between ">
+                        <img onclick={() => setBarOpen(p => !p)} src={logo} class='w-10 h-10 m-3 cursor-pointer' />
+                        <ReloadArrow class="w-10 h-10 m-3 dark:fill-cyan-600" onclick={refetch} />
+                        <HomeIcon />
+                        <BackIcon />
+                    </div>
+                    <div class="flex flex-wrap flex-col-reverse content-end">
+                        <HomeIcon class={`${isBarOpen() ? 'h-0 w-0 m-0' : ''} transition-discrete delay-75 duration-100 ease-in`} />
+                        <BackIcon class={`${isBarOpen() ? 'h-0 w-0 m-0' : ''} transition-discrete delay-75 duration-100 ease-in`} />
+                    </div>
+                    <CategoriesList list={list() || []} />
+                </div>
+            </Match>
+        </Switch>
     );
 }
 

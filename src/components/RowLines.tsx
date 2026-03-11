@@ -1,6 +1,6 @@
 import { Dynamic } from "solid-js/web"
 import type { ParentProps } from 'solid-js';
-import type { JSONPrimitive, LineContent, typeOfInputs } from "../types.tsx";
+import type { lineProps, JSONPrimitive, LineContent, typeOfInputs } from "../types.tsx";
 import { inputs } from "./InputTypes.tsx";
 
 // function Listin(props: { number: number }) {
@@ -10,14 +10,6 @@ import { inputs } from "./InputTypes.tsx";
 //         </div>
 //     )
 // }
-
-type lineProps = {
-    type: typeOfInputs;
-    path: (string | number)[];
-    index: number;
-    data: JSONPrimitive | LineContent[];
-    key?: string | number;
-}
 
 export function NewLine(props: ParentProps & lineProps) {
     return (
