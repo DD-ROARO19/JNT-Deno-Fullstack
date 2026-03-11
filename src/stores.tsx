@@ -1,8 +1,11 @@
+// @ts-types="solid-js"
+import { createSignal } from "solid-js";
 import { createStore } from "solid-js/store";
-import type { newNoteFrame } from "./types.tsx";
+import type { noteFrame } from "./types.tsx";
+import type { SetStoreFunction } from "solid-js/store";
 
 
-export const [newNote, setNewNote] = createStore<newNoteFrame>({
+export const [newNote, setNewNote] = createStore<noteFrame>({
     metadata: {
         title: '',
         author: "User",
@@ -25,3 +28,6 @@ export const [newNote, setNewNote] = createStore<newNoteFrame>({
         ] },
     ]
 })
+
+// Signals for Helper functions control
+export const [currentSetter, setSetter] = createSignal<SetStoreFunction<noteFrame>>(setNewNote)
