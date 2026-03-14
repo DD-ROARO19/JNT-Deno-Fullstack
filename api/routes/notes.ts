@@ -5,11 +5,12 @@ import {
     all_notes, 
     insert_stmt, 
     one_note,
-    delete_stmt
+    delete_stmt,
+    update_stmt
 } from "../statements/notes.ts";
 import type { Note } from "../../types.ts";
 import { getDir_byPath } from "../controllers/dir_controller.ts";
-import { create_note } from "../controllers/notes_controller.ts";
+import { create_note, update_note } from "../controllers/notes_controller.ts";
 import { JSONObject } from '../../src/types.tsx';
 import type { SQLInputValue } from "node:sqlite";
 // import type { StatementResultingChanges } from "node:sqlite";
@@ -23,14 +24,16 @@ const notes = new Hono();
 
 notes.post('/create', async (c) => {
     try {
-        console.log(create_note(await c.req.json()));
+        const res = create_note(await c.req.json())
+        console.log(res);
+
+        // console.log('Create query result: ->\n', res!);
+        return c.json({ msg: 'Note created', id: res.lastInsertRowid }, 201)
     } catch (err) {
         console.error(err);
         return c.json(err, 500)
     }
 
-    // console.log('Create query result: ->\n', res!);
-    return c.json({ msg: 'Note created' }, 201)
 });
 
 // notes.get('/', (c) => { // (FOR TESTING || ERASE LATER!!)
@@ -123,18 +126,9 @@ notes.delete('/:id', (c) => {
     return c.json({ msg: 'Successfully deleted' })
 })
 
-notes.put('/:id', async (c) => {
-    const id = c.req.param('id')
-    const body = await c.req.json()
-    
-    let stmt = `UPDATE notes SET `;
-    if (body.title)     { stmt += 'title = $title ' }
-    if (body.content)   { stmt += 'content = $content ' }
-    if (body.parent)    { stmt += 'parent = $parent ' }
-    stmt += 'WHERE id = ?';
-
+notes.put('/', async (c) => {
     try {
-        db.prepare(stmt).run(id, body)
+        console.debug(update_note(await c.req.json()));
     } catch (err) {
         console.error(err);
     }

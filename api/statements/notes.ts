@@ -13,10 +13,11 @@ const insert_stmt =
 // ---- UPDATE ----
 const update_stmt = `--sql
 UPDATE notes SET
-    title = ?
-    content = ?
-    directory_id = ?
-    last_updated = ?
+    directory_id = ?,
+    title = ?,
+    tags = ?,
+    content = ?,
+    last_updated = datetime('now', 'localtime')
 WHERE id = ?`;
 
 const update_title = `UPDATE notes SET title = ? WHERE id = ?`

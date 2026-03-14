@@ -11,7 +11,7 @@ function App() {
   // const [count, setCount] = createSignal(0)
 
   return (
-    <div class='h-dvh max-h-dvh w-dvw max-w-dvw flex dark:bg-zinc-800 dark:text-white' >
+    <div class='h-dvh max-h-dvh w-dvw max-w-dvw flex dark:bg-zinc-800 dark:text-white overscroll-x-none' >
       <Sidebar />
       <Contents />
     </div>

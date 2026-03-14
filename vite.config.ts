@@ -14,5 +14,8 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+    watch: {
+      ignored: ['/api/database/notebook.db']
+    }
   },
 })

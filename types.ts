@@ -14,6 +14,7 @@ type stringifiedObject = string;
 
 export type Note = Omit<NoteMetadata, 'path' | 'tags'> & 
 { id: number, created_at: Date, last_updated: Date, tags: stringifiedArray, content: stringifiedObject }
+export type newNote = Omit<NoteMetadata, 'directory_id'> & { content: object }
 
 export type cardNote = Omit<Note, 'content'> & { snippet?: string }
 

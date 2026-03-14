@@ -7,8 +7,7 @@ db.exec(initialQuery);
 export default db;
 
 // TYPES
-import type { Note, NoteMetadata } from "../../types.ts";
-type NewNote = Omit<NoteMetadata, 'directory_id'> & { content: {} }
+import type { newNote, } from "../../types.ts";
 
 // For DB file definition.
 import { DatabaseSync } from "node:sqlite";
@@ -22,7 +21,7 @@ import { all_notes } from "../statements/notes.ts";
 if (db.prepare(all_notes).all().length < 1) { // trying to create the wellcome guide.
 	// Initial testing
 	try {
-		const wellcome: NewNote = {
+		const wellcome: newNote = {
 			title: 'Wellcome guide!',
 			author: 'JNT App',
 			path: '/Guides',
@@ -68,7 +67,7 @@ Planned features, object only lists, to add:
 
 			}
 		}
-		const testNote: Omit<NewNote, 'path' | 'title'> = {
+		const testNote: Omit<newNote, 'path' | 'title'> = {
 			author: 'Testing',
 			content: {},
 			tags: ['test']

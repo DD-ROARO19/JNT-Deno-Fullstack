@@ -11,7 +11,7 @@ import type { Note } from "../../types.ts";
 import type { noteFrame } from "../types.tsx";
 
 import { setSetter } from "../stores.tsx";
-import { copyToClipboard, json2Note, SaveNote } from "../helpers.tsx";
+import { copyToClipboard, DeleteNote, json2Note, SaveNote, UpdateNote } from "../helpers.tsx";
 import { ObjectType } from "../components/InputTypes.tsx";
 import Title from "../components/Title.tsx";
 import { OptionsMenu } from "../components/Select.tsx";
@@ -69,9 +69,9 @@ export default function Note() {
                                 hover:text-white place-self-center">
                     {/* Title */}
                     <Title titleSetter={setNote}
-                        onSave={() => SaveNote(note)}
+                        onSave={() => UpdateNote(note)}
                         onCopy={() => copyToClipboard(note.content, 'object', [])}
-                        onErase={() => console.log('Not implemented yet, here: ', note.content)}
+                        onErase={() => DeleteNote(note.metadata.id)}
                     />
 
                     {/* Content */}

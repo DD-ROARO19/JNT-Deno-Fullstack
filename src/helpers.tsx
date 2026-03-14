@@ -215,7 +215,7 @@ function formatValue(
         // if (!key) {
         //     return Object.entries(val).map(([k, v]) => formatValue(v, k))
         // }
-        
+
         if (val == null) {
             return {
                 type: 'object',
@@ -283,9 +283,13 @@ export function json2Note(jv: JSONObject): void {
 
     if (isJNTnote(jv)) {
         setter('metadata', {
+            id: jv.id,
+            directory_id: jv.directory_id,
+            title: jv.title,
             author: jv.author,
             tags: JSON.parse(jv.tags),
-            title: jv.title
+            created_at: jv.created_at,
+            last_updated: jv.last_updated
         });
         setter('content', formatValue(JSON.parse(jv.content)).value as LineContent[]);
         return;
@@ -314,7 +318,59 @@ export async function SaveNote(note: noteFrame) {
             console.error(`${res.status}: ${res.statusText}`, res) // Create error handle for endpoints?
         }
 
+        const data = await res.json() as { msg: string, id: string }
+
+        toast().newNotification(data.msg)
+    } catch (err) {
+        if (err instanceof ObjectCheckError) return;
+        if (err instanceof NoteValError) return;
+        throw err
+    }
+}
+export async function UpdateNote(note: noteFrame) {
+    try {
+        const value = extractNote(note);
+
+        const res = await fetch('/api/notes/', {
+            method: 'PUT',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(value)
+        })
+
+        if (!res.ok) {
+            console.error(`${res.status}: ${res.statusText}`, res) // Create error handle for endpoints?
+        }
+
+        const data = await res.json() as { msg: string }
+
+        toast().newNotification(data.msg)
+    } catch (err) {
+        if (err instanceof ObjectCheckError) return;
+        if (err instanceof NoteValError) return;
+        throw err
+    }
+}
+export async function DeleteNote(id: number | undefined) {
+    if (!id) {
+        throw new NoteValError('No id provided')
+    }
+
+    try {
+        const res = await fetch('/api/notes/' + id, {
+            method: 'DELETE',
+            headers: {
+                "Content-Type": "application/json",
+            }
+        })
+
+        if (!res.ok) {
+            console.error(`${res.status}: ${res.statusText}`, res) // Create error handle for endpoints?
+        }
+
         toast().newNotification((await res.json()).msg as string)
+        globalThis.history.back()
     } catch (err) {
         if (err instanceof ObjectCheckError) return;
         if (err instanceof NoteValError) return;

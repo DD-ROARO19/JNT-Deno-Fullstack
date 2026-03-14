@@ -1,4 +1,4 @@
-import type { NoteMetadata } from "../types.ts";
+import type { Note, NoteMetadata } from "../types.ts";
 import type { Category, CategoryNode } from "../types.ts";
 
 
@@ -36,9 +36,11 @@ export type LineContent = {
     value: JSONPrimitive | LineContent[];
 };
 
+type partialMetadata = Partial<Omit<Note, keyof NoteMetadata | 'content'>> & { directory_id?: number }
+
 /** Frame for creating new notes. */
 export interface noteFrame {
-    metadata: Omit<NoteMetadata, 'directory_id' | 'content'>;
+    metadata: Omit<NoteMetadata, 'directory_id' | 'content'> & partialMetadata;
     content: LineContent[]
 }
 
