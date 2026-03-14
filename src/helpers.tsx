@@ -156,6 +156,7 @@ export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeO
                 navigator.clipboard.writeText(dataValue as string)
                 break;
         }
+        toast().newNotification('Copied to clipboard.');
     } catch (err) {
         if (err instanceof ObjectCheckError) return;
         throw err
