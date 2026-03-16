@@ -1,8 +1,9 @@
+@import './index.css';
 @import "tailwindcss";
 
 /* width */
 ::-webkit-scrollbar {
-    width: 1rem;
+    width: 0.5rem;
 }
 
 /* Track */
@@ -13,13 +14,13 @@
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-    background: #104e64;
-    border-radius: 32px;
+    background: var(--color-app-muted);
+    border-radius: 2px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #005f78;
+  background: var(--color-app-element)
 }
 
 /* Handle corner */

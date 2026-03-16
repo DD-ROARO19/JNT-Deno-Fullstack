@@ -8,7 +8,7 @@ import { useParams } from "@solidjs/router";
 import type { Note } from "../../types.ts";
 import type { fetchParams, otherFetchParams } from "../types.tsx";
 
-import { CardList } from "../components/cards.tsx";
+import { CardList } from "../components/Cards.tsx";
 import SearchBar from "../components/SearchBar.tsx";
 
 const fetchNotesByPath = async (query: fetchParams): Promise<Note[]> => {

@@ -65,17 +65,17 @@ export default function Note() {
             <Match when={res()}>
                 <OptionsMenu />
                 <Toast />
-                <div class="m-4 dark:bg-cyan-800 w-3/4 max-w-215 rounded-2xl p-2 flex flex-col 
-                                hover:text-white place-self-center">
+                <div class="m-4 bg-app-element w-3/4 max-w-215 rounded-2xl p-2 flex flex-col 
+                    place-self-center">
                     {/* Title */}
-                    <Title titleSetter={setNote}
+                    <Title titleSetter={setNote} value={note.metadata.title}
                         onSave={() => UpdateNote(note)}
                         onCopy={() => copyToClipboard(note.content, 'object', [])}
                         onErase={() => DeleteNote(note.metadata.id)}
                     />
 
                     {/* Content */}
-                    <div class="NoteContent bg-stone-800/75 rounded-lg py-3 text-stone-300 pl-8">
+                    <div class="NoteContent bg-app-surface-secondary rounded-lg py-3 pl-8">
                         <ObjectType data={note.content} path={["content"]} no_config full_addButton />
                     </div>
 

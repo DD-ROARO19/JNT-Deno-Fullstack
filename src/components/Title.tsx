@@ -15,6 +15,7 @@ interface titleParams {
     onSave: () => void,
     onCopy: () => void,
     onErase: () => void,
+    value: string,
     titleSetter: SetStoreFunction<noteFrame>,
 }
 
@@ -42,18 +43,21 @@ export default function Title(props: titleParams) {
         onCleanup(() => scrollingContainer.removeEventListener("scroll", handleScroll))
     })
 
+    const btnColors = "bg-app-active/50 hover:bg-app-active active:bg-app-active/10";
+    const onActive = "app-property";
+
     return (
         <>
-            <div ref={titleBarRef} id="title" class={`NoteTitle p-2.5 bg-cyan-800 rounded-4xl flex justify-evenly place-items-center 
+            <div ref={titleBarRef} id="title" class={`NoteTitle p-2.5 bg-app-element rounded-4xl flex justify-evenly place-items-center 
                 transition-discrete duration-150 ease-in-out
                 ${isFixed() ? 'fixed top-0 right-1/10 z-50 shadow-lg w-1/2 place-self-end' : 'relative'}
                 `}
             >
-                <div class="relative w-8/10 p-0.5 text-lg text-slate-200 bg-cyan-900 rounded-lg ps-3 
-                placeholder-slate-500/70 outline-0 focus:border-2 border-slate-500 ">
+                <div class="relative w-8/10 p-0.5 text-lg text-app-muted bg-app-surface-secondary rounded-lg ps-3 
+                placeholder-app-muted/70 outline-0 focus:border-2 border-app-borders ">
                     <input type="text" id="floating_outlined" class="block px-1.5 pb-1 pt-1.5 w-full text-md 
                     bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer"
-                        placeholder="" onChange={e => props.titleSetter('metadata', 'title', e.currentTarget.value)} />
+                        placeholder="" value={props.value} onChange={e => props.titleSetter('metadata', 'title', e.currentTarget.value)} />
                     <label for="floating_outlined" class="absolute text-md text-body duration-300 transform 
                     -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2 peer-focus:px-2 
                     peer-focus:text-fg-brand peer-placeholder-shown:scale-130 peer-placeholder-shown:-translate-y-1/2 
@@ -63,25 +67,22 @@ export default function Title(props: titleParams) {
                 </div>
                 {/* {props.children} */}
                 {/* Save Note */}
-                <button type="button" class='group/save bg-cyan-700/70 hover:bg-cyan-700 
-                active:bg-cyan-900 p-1.5 rounded cursor-pointer place-items-center'
+                <button type="button" class={'group/save p-1.5 rounded cursor-pointer place-items-center '+btnColors}
                     title="Save Note"
                     onClick={props.onSave} >
-                    <Edit2 class="dark:group-active/save:fill-white/70" />
+                    <Edit2 class={`fill-${onActive} group-active/save:fill-${onActive}/70`} />
                 </button>
                 {/* Copy Content */}
-                <button type="button" class='group bg-cyan-700/70 hover:bg-cyan-700 
-                active:bg-cyan-900 p-1.5 rounded cursor-pointer place-items-center'
+                <button type="button" class={'group p-1.5 rounded cursor-pointer place-items-center '+btnColors}
                     title="Copy Note"
                     onClick={props.onCopy} >
-                    <CopySVG class="dark:group-active:stroke-white/70" option={3} />
+                    <CopySVG class={`stroke-${onActive} group-active:stroke-${onActive}/70`} option={3} />
                 </button>
                 {/* Erase Note */}
-                <button type="button" class='group/erase bg-cyan-700/70 hover:bg-cyan-700 
-                active:bg-cyan-900 p-1.5 rounded cursor-pointer place-items-center'
+                <button type="button" class={'group/erase p-1.5 rounded cursor-pointer place-items-center '+btnColors}
                     title="Erase Note"
                     onclick={props.onErase} >
-                    <Erase class="dark:fill-cyan-500 dark:group-active/erase:fill-cyan-500/70" />
+                    <Erase class={`fill-${onActive} group-active/erase:fill-${onActive}/70`} />
                 </button>
             </div>
 

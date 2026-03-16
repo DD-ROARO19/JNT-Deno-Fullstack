@@ -1,69 +1,287 @@
-/* :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}*/
+@theme {
+  --color-app-base: #181818;
+  --color-app-surface: #0a738f;
+  --color-app-surface-secondary: #1f1f1f;
+  --color-app-sidebar: #2d2d3e;
+  --color-app-element: #084354;
+  --color-app-active: #128ba6;
+  --color-app-active-secondary: #4878f6;
+  --color-app-text: #ffffff;
 
-/*
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-} */
-
-/* body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-} */
-
-/* h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  --color-app-muted: #293B49;
+  --color-app-property: #61dafb;
+  --color-app-string: #CE9178;
+  --color-app-function: #e5c07b;
+  --color-app-number: #dcdcaa;
+  --color-app-keyword: #b072d9;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+@layer base {
+  /* --- 2. NORD (Frost & Mint) --- */
+  [data-theme="nord"] {
+    --color-app-base: #242933;
+    --color-app-surface: #3b4252;
+    --color-app-surface-secondary: #2e3440;
+    --color-app-sidebar: #2e3440;
+    --color-app-element: #434c5e;
+    --color-app-active: #88c0d0;
+    --color-app-active-secondary: #a3be8c; /* Mint Green */
+    --color-app-text: #d8dee9;
+    --color-app-muted: #616e88;
+    --color-app-property: #81a1c1;
+    --color-app-string: #a3be8c;
+    --color-app-number: #ebcb8b;
+    --color-app-function: #8fbcbb;
+    --color-app-keyword: #b48ead;
   }
-  a:hover {
-    color: #747bff;
+
+  /* --- 3. DRACULA (Neon Pink & Orange) --- */
+  [data-theme="dracula"] {
+    --color-app-base: #282a36;
+    --color-app-surface: #44475a;
+    --color-app-surface-secondary: #1e1f29;
+    --color-app-sidebar: #1e1f29;
+    --color-app-element: #6272a4;
+    --color-app-active: #bd93f9;
+    --color-app-active-secondary: #ffb86c; /* Warm Orange */
+    --color-app-text: #f8f8f2;
+    --color-app-muted: #6272a4;
+    --color-app-property: #8be9fd;
+    --color-app-string: #f1fa8c;
+    --color-app-number: #bd93f9;
+    --color-app-function: #50fa7b;
+    --color-app-keyword: #ff79c6;
   }
-  button {
-    background-color: #f9f9f9;
+
+  /* --- 4. DEEP SEA (Oceanic & Coral) --- */
+  [data-theme="deep-sea"] {
+    --color-app-base: #0a101f;
+    --color-app-surface: #1c2541;
+    --color-app-surface-secondary: #0b132b;
+    --color-app-sidebar: #0b132b;
+    --color-app-element: #3a506b;
+    --color-app-active: #5bc0be;
+    --color-app-active-secondary: #ff7f50; /* Coral */
+    --color-app-text: #f8fafc;
+    --color-app-muted: #64748b;
+    --color-app-property: #6fffe9;
+    --color-app-string: #34d399;
+    --color-app-number: #fde047;
+    --color-app-function: #818cf8;
+    --color-app-keyword: #c084fc;
   }
-} */
+
+  /* --- 5. MIDNIGHT PURPLE (Violet & Gold) --- */
+  [data-theme="midnight-purple"] {
+    --color-app-base: #09090b;
+    --color-app-surface: #18181b;
+    --color-app-surface-secondary: #000000;
+    --color-app-sidebar: #000000;
+    --color-app-element: #27272a;
+    --color-app-active: #8b5cf6;
+    --color-app-active-secondary: #fcd34d; /* Amber Gold */
+    --color-app-text: #fafafa;
+    --color-app-muted: #a1a1aa;
+    --color-app-property: #c084fc;
+    --color-app-string: #f472b6;
+    --color-app-number: #fcd34d;
+    --color-app-function: #60a5fa;
+    --color-app-keyword: #8b5cf6;
+  }
+
+  /* --- 6. FOREST NIGHT (Moss & Sand) --- */
+  [data-theme="forest-night"] {
+    --color-app-base: #1c1917;
+    --color-app-surface: #292524;
+    --color-app-surface-secondary: #141211;
+    --color-app-sidebar: #0c0a09;
+    --color-app-element: #44403c;
+    --color-app-active: #10b981;
+    --color-app-active-secondary: #eab308; /* Desert Sand */
+    --color-app-text: #f5f5f4;
+    --color-app-muted: #78716c;
+    --color-app-property: #34d399;
+    --color-app-string: #fb923c;
+    --color-app-number: #fcd34d;
+    --color-app-function: #a3e635;
+    --color-app-keyword: #10b981;
+  }
+
+  /* --- 7. IDE MONOKAI (Green & Pink) --- */
+  [data-theme="ide-monokai"] {
+    --color-app-base: #272822;
+    --color-app-surface: #3e3d32;
+    --color-app-surface-secondary: #1e1f1c;
+    --color-app-sidebar: #1e1f1c;
+    --color-app-element: #49483e;
+    --color-app-active: #a6e22e;
+    --color-app-active-secondary: #f92672; /* Monokai Pink */
+    --color-app-text: #f8f8f2;
+    --color-app-muted: #75715e;
+    --color-app-property: #66d9ef;
+    --color-app-string: #e6db74;
+    --color-app-number: #ae81ff;
+    --color-app-function: #a6e22e;
+    --color-app-keyword: #f92672;
+  }
+
+  /* --- 8. CYBER AMBER (Amber & Neon Red) --- */
+  [data-theme="cyber-amber"] {
+    --color-app-base: #050505;
+    --color-app-surface: #111111;
+    --color-app-surface-secondary: #000000;
+    --color-app-sidebar: #000000;
+    --color-app-element: #222222;
+    --color-app-active: #ffb000;
+    --color-app-active-secondary: #ff003c; /* Cyber Red */
+    --color-app-text: #ffb000;
+    --color-app-muted: #886600;
+    --color-app-property: #ffcc00;
+    --color-app-string: #ff6600;
+    --color-app-number: #ffe600;
+    --color-app-function: #ff8800;
+    --color-app-keyword: #ff003c;
+  }
+
+  /* --- 9. ROSE PINE (Foam & Pine) --- */
+  [data-theme="rose-pine"] {
+    --color-app-base: #191724;
+    --color-app-surface: #1f1d2e;
+    --color-app-surface-secondary: #12101b;
+    --color-app-sidebar: #12101b;
+    --color-app-element: #26233a;
+    --color-app-active: #9ccfd8;
+    --color-app-active-secondary: #31748f; /* Pine Blue */
+    --color-app-text: #e0def4;
+    --color-app-muted: #6e6a86;
+    --color-app-property: #9ccfd8;
+    --color-app-string: #f6c177;
+    --color-app-number: #ebbcba;
+    --color-app-function: #ea9a97;
+    --color-app-keyword: #c4a7e7;
+  }
+
+  /* --- 10. SOLARIZED DARK (Cyan & Violet) --- */
+  [data-theme="solarized-dark"] {
+    --color-app-base: #002b36;
+    --color-app-surface: #073642;
+    --color-app-surface-secondary: #001f27;
+    --color-app-sidebar: #001f27;
+    --color-app-element: #586e75;
+    --color-app-active: #2aa198;
+    --color-app-active-secondary: #6c71c4; /* Violet */
+    --color-app-text: #839496;
+    --color-app-muted: #586e75;
+    --color-app-property: #5044ac;
+    --color-app-string: #2aa198;
+    --color-app-number: #cb4b16;
+    --color-app-function: #b58900;
+    --color-app-keyword: #859900;
+  }
+
+  /* --- 11. GRUVBOX MATERIAL (Aqua & Red) --- */
+  [data-theme="gruvbox-material"] {
+    --color-app-base: #282828;
+    --color-app-surface: #32302f;
+    --color-app-surface-secondary: #1d2021;
+    --color-app-sidebar: #1d2021;
+    --color-app-element: #504945;
+    --color-app-active: #8ec07c;
+    --color-app-text: #ebdbb2;
+    --color-app-muted: #a89984;
+    --color-app-active-secondary: #ea6962; /* Soft Red */
+    --color-app-property: #8ec07c;
+    --color-app-string: #b8bb26;
+    --color-app-number: #d3869b;
+    --color-app-function: #fabd2f;
+    --color-app-keyword: #ea6962;
+  }
+
+  [data-theme="github-light"] {
+    /* Depth Layering: Gray base -> White cards -> Light gray code blocks */
+    --color-app-base: #d1d5db;             /* App canvas (gray) */
+    --color-app-sidebar: #f6f8fa;          /* Nav sidebar */
+    --color-app-surface: #ffffff;          /* Main card (pure white) */
+    --color-app-surface-secondary: #f6f8fa;/* Code block background */
+    --color-app-element: #e1e4e8;          /* Borders / inactive */
+    --color-app-active: #0969da;   /* GitHub Blue */
+    --color-app-active-secondary: #2da44e; /* GitHub Green */
+    
+    --color-app-text: #24292f;             /* Deep slate text */
+    --color-app-muted: #57606a;            /* Accessible gray */
+    
+    /* Syntax: Deep, saturated tones for readability */
+    --color-app-property: #0550ae;         /* Deep Blue */
+    --color-app-string: #0a3069;           /* Navy */
+    --color-app-number: #0550ae;           /* Deep Blue */
+    --color-app-function: #8250df;         /* Rich Purple */
+    --color-app-keyword: #cf222e;          /* Crimson Red */
+  }
+
+  /* --- 13. SOLARIZED LIGHT (Warm, Classic, Eye-Strain Reducing) --- */
+  [data-theme="solarized-light"] {
+    /* Depth Layering: Sand -> Cream -> White-Cream -> Sand */
+    --color-app-base: #e4e1d2;             
+    --color-app-sidebar: #eee8d5;          
+    --color-app-surface: #fdf6e3;          
+    --color-app-surface-secondary: #eee8d5;
+    --color-app-element: #93a1a1;
+    --color-app-active: #2aa198;   /* Cyan */
+    --color-app-active-secondary: #d33682; /* Magenta */
+    
+    --color-app-text: #657b83;             /* Deep Teal/Gray */
+    --color-app-muted: #93a1a1;            
+    
+    /* Syntax */
+    --color-app-property: #268bd2;         /* Blue */
+    --color-app-string: #2aa198;           /* Cyan */
+    --color-app-number: #cb4b16;           /* Burnt Orange */
+    --color-app-function: #b58900;         /* Deep Mustard */
+    --color-app-keyword: #859900;          /* Olive Green */
+  }
+
+  /* --- 14. CATPPUCCIN LATTE (Modern, Soft Pastel) --- */
+  [data-theme="catppuccin-latte"] {
+    --color-app-base: #dce0e8;             /* Crust */
+    --color-app-sidebar: #e6e9ef;          /* Mantle */
+    --color-app-surface: #eff1f5;          /* Base */
+    --color-app-surface-secondary: #e6e9ef;/* Surface0 */
+    --color-app-element: #bcc0cc;
+    --color-app-active: #1e66f5;   /* Blue */
+    --color-app-active-secondary: #ea76cb; /* Pink */
+    
+    --color-app-text: #4c4f69;             /* Slate */
+    --color-app-muted: #8c8fa1;            
+    
+    /* Syntax */
+    --color-app-property: #1e66f5;         /* Sapphire Blue */
+    --color-app-string: #40a02b;           /* Leaf Green */
+    --color-app-number: #fe640b;           /* Peach/Orange */
+    --color-app-function: #df8e1d;         /* Goldenrod */
+    --color-app-keyword: #8839ef;          /* Mauve/Purple */
+  }
+
+  /* --- 15. ROSÉ PINE DAWN (Elegant, Low Contrast Warmth) --- */
+  [data-theme="rose-pine-dawn"] {
+    --color-app-base: #eaddd7;             
+    --color-app-sidebar: #f2e9e1;          
+    --color-app-surface: #faf4ed;          
+    --color-app-surface-secondary: #f2e9e1;
+    --color-app-element: #dfdad9;
+    --color-app-active: #286983;   /* Pine Blue */
+    --color-app-active-secondary: #907aa9; /* Iris Purple */
+    
+    --color-app-text: #575279;             /* Deep Purple-Slate */
+    --color-app-muted: #9893a5;            
+    
+    /* Syntax */
+    --color-app-property: #286983;         /* Pine Blue */
+    --color-app-string: #d7827e;           /* Muted Rose */
+    --color-app-number: #ea9d34;           /* Deep Gold */
+    --color-app-function: #b4637a;         /* Crimson/Love */
+    --color-app-keyword: #907aa9;          /* Iris Purple */
+  }
+}

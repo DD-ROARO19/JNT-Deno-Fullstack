@@ -6,6 +6,7 @@ import CardMenu from "../pages/CardMenu.tsx";
 import EditNote from "../pages/EditNote.tsx";
 import NewNote from "../pages/NewNote.tsx";
 import Note from "../pages/Note.tsx";
+import SettingsMenu from "../pages/Settings.tsx";
 
 
 export default function Contents() {
@@ -20,6 +21,7 @@ export default function Contents() {
                     <Route path='/show/*path' component={CardMenu} />
                     <Route path='/note/:id' component={Note} />
                     <Route path='/note/:id/edit' component={EditNote} />
+                    <Route path='/settings' component={SettingsMenu} />
                 </Router>
             {/* </div> */}
         </div>

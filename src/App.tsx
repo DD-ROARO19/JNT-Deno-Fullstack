@@ -4,16 +4,18 @@ import 'solid-js'
 // import viteLogo from '/vite.svg'
 import './App.css'
 
-import Sidebar from './components/sidebar.tsx';
-import Contents from './components/content.tsx';
+import Sidebar from './components/Sidebar.tsx';
+import Content from './components/Contents.tsx';
+import { loadTheme } from "./themes.tsx";
 
 function App() {
   // const [count, setCount] = createSignal(0)
+  loadTheme()
 
   return (
-    <div class='h-dvh max-h-dvh w-dvw max-w-dvw flex dark:bg-zinc-800 dark:text-white overscroll-x-none' >
+    <div class='h-dvh max-h-dvh w-dvw max-w-dvw flex bg-app-base dark:text-white' >
       <Sidebar />
-      <Contents />
+      <Content />
     </div>
   )
 }

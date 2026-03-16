@@ -5,7 +5,9 @@ import {
     For,
     Show,
     onMount,
-    createResource
+    createResource,
+    Switch,
+    Match
 } from 'solid-js';
 // import { A } from "@solidjs/router";
 // import { createStore } from "solid-js/store"
@@ -14,15 +16,15 @@ import logo from '../assets/solid.svg'
 import { BackArrow, DownArrow, Home, ReloadArrow } from '../assets/svgs.tsx';
 // import type { DOMElement } from 'solid-js/jsx-runtime';
 
-import { isBarOpen, setBarOpen } from '../signals.tsx'
+// State of the lateral NavBar
+const [isBarOpen, setBarOpen] = createSignal<boolean>(true)
 
 import { twMerge } from 'tailwind-merge';
 import type { ParentProps } from 'solid-js';
 import type { categoryItem } from "../types.tsx";
+import ThemeSwitcher, { ThemeTest } from "./ThemeSwitcher.tsx";
 // @ts-types="solid-js"
-import { Switch } from "solid-js";
-// @ts-types="solid-js"
-import { Match } from "solid-js";
+import { createEffect } from "solid-js";
 
 // const [list, setList] = createSignal<categoryItem[]>([])
 
@@ -45,11 +47,13 @@ function CategoriesList(props: { list: categoryItem[] }) {
     // })
 
     const Pill = (props: ParentProps & { class?: string, data?: categoryItem, title?: string }) => {
-        const style = twMerge(`w-19/20 h-8 rounded-lg m-2 pl-2 bg-cyan-800 place-self-end flex items-center 
-        justify-between hover:bg-cyan-700 focus:outline-2 focus:outline-cyan-50 cursor-default`, props.class);
+        const style = twMerge(`w-19/20 h-8 rounded-lg m-2 pl-2 place-self-end flex items-center 
+        justify-between focus:outline-2 cursor-default
+        bg-app-active-secondary/40 focus:outline-app-muted text-app-text
+        hover:bg-app-active-secondary active:bg-app-element`, props.class);
 
         return (!props.data) ?
-            <a class={style} title={props.title}> {props.children} </a>
+            <a href={"/" + props.title?.toLowerCase()} class={style} title={props.title}> {props.children} </a>
             :
             <a href={'/show' + props.data.full_path} class={style} title={props.title}>
                 {props.children}
@@ -60,7 +64,6 @@ function CategoriesList(props: { list: categoryItem[] }) {
         const [isOpen, setOpen] = createSignal(true)
 
         function visibility() { return !isBarOpen() ? 'invisible' : 'visible' }
-        function showSubs() { return !isOpen() ? 'hidden' : '' }
 
         return (
             <div class={`w-19/20 place-self-center transition-discrete delay-75 duration-100 ease-in ${visibility()}`}>
@@ -70,11 +73,13 @@ function CategoriesList(props: { list: categoryItem[] }) {
                         <DownArrow isDown={isOpen} setArrow={setOpen} />
                     </Show>
                 </Pill>
-                <For each={props.categoryItem.childs}>{(subItem) =>
-                    <Pill data={subItem} class={`w-13/15 place-self-end ${showSubs()}`}>
-                        <p>{subItem.alias}</p>
-                    </Pill>
-                }</For>
+                <Show when={props.categoryItem.childs && props.categoryItem.childs.length > 0 && isOpen()}>
+                    <For each={props.categoryItem.childs}>{(subItem) =>
+                        <Pill data={subItem} class={`w-13/15 place-self-end`}>
+                            <p>{subItem.alias}</p>
+                        </Pill>
+                    }</For>
+                </Show>
             </div>
         );
     }
@@ -85,8 +90,8 @@ function CategoriesList(props: { list: categoryItem[] }) {
         <>
             {/* <PillGroup categoryItem={ newNote } /> */}
             <div class={`w-19/20 place-self-center transition-discrete delay-75 duration-100 ease-in ${!isBarOpen() ? 'invisible' : 'visible'}`}>
-                <Pill class="justify-center" title="Create new note">
-                    <p>+</p>
+                <Pill class="justify-center" title="settings">
+                    <p>Settings</p>
                 </Pill>
             </div>
             <For each={props.list}>{(item) =>
@@ -99,36 +104,54 @@ function CategoriesList(props: { list: categoryItem[] }) {
 
 
 const Sidebar = () => {
+
+    onMount(() => {
+        const savedNavState = localStorage.getItem('isNavOpen');
+        // console.log('Sidebar Mount', savedNavState, savedNavState == 'false' ? false : true);
+        if (savedNavState) setBarOpen(savedNavState == 'false' ? false : true)
+    })
+
+    createEffect(() => {
+        const navState = isBarOpen();
+        // console.log('SideBar Toggle! (Effect)', navState, String(navState))
+        localStorage.setItem('isNavOpen', String(navState))
+    })
+
     const [list, { mutate, refetch }] = createResource(getCategories);
 
     function barWidth() { return isBarOpen() ? 'w-70 min-w-70' : 'w-15 min-w-15'; }
 
     const milis = 500;
 
-    const HomeIcon = (props: { class?: string }) => <Home class={"w-10 h-10 m-3 cursor-pointer dark:fill-cyan-600 " + props.class} />;
-    const BackIcon = (props: { class?: string }) => <BackArrow option={4} class={"w-10 h-10 m-3 cursor-pointer dark:fill-cyan-600 " + props.class} />;
+    const HomeIcon = (props: { class?: string }) => <Home class={"w-10 h-10 m-3 cursor-pointer fill-app-active " + props.class} />;
+    const BackIcon = (props: { class?: string }) => <BackArrow option={4} class={"w-10 h-10 m-3 cursor-pointer fill-app-active " + props.class} />;
 
     return (
-        <Switch>
-            <Match when={list.loading}>
-                <></>
-            </Match>
-            <Match when={list()}>
-                <div class={`h-dvh dark:bg-cyan-900 rounded-e-2xl ${barWidth()} select-none`} style={`transition: ${milis}ms`} >
-                    <div class="flex flex-row-reverse justify-between ">
-                        <img onclick={() => setBarOpen(p => !p)} src={logo} class='w-10 h-10 m-3 cursor-pointer' />
-                        <ReloadArrow class="w-10 h-10 m-3 dark:fill-cyan-600" onclick={refetch} />
-                        <HomeIcon />
-                        <BackIcon />
-                    </div>
-                    <div class="flex flex-wrap flex-col-reverse content-end">
-                        <HomeIcon class={`${isBarOpen() ? 'h-0 w-0 m-0' : ''} transition-discrete delay-75 duration-100 ease-in`} />
-                        <BackIcon class={`${isBarOpen() ? 'h-0 w-0 m-0' : ''} transition-discrete delay-75 duration-100 ease-in`} />
-                    </div>
+        <div id="sidebar" class={`min-h-dvh bg-app-sidebar rounded-e-2xl ${barWidth()} select-none`} style={`transition: ${milis}ms`}
+            classList={{ 'overflow-scroll': isBarOpen() }}>
+            <div class="flex flex-row-reverse justify-between ">
+                <img onclick={() => setBarOpen(p => !p)} src={logo} class='w-10 h-10 m-3 cursor-pointer' />
+                <ReloadArrow class="w-10 h-10 m-3 fill-app-active" onclick={refetch} />
+                <HomeIcon />
+                <BackIcon />
+            </div>
+            <div class="flex flex-wrap flex-col-reverse content-end">
+                <HomeIcon class={`${isBarOpen() ? 'h-0 w-0 m-0' : ''} transition-discrete delay-75 duration-100 ease-in`} />
+                <BackIcon class={`${isBarOpen() ? 'h-0 w-0 m-0' : ''} transition-discrete delay-75 duration-100 ease-in`} />
+            </div>
+            <Switch>
+                <Match when={list.loading}>
+                    <></>
+                </Match>
+                <Match when={list()}>
                     <CategoriesList list={list() || []} />
-                </div>
-            </Match>
-        </Switch>
+                </Match>
+            </Switch>
+            <Show when={isBarOpen()}>
+                {/* <ThemeTest class="[&>div]:flex-1/3 m-1" /> */}
+                <ThemeSwitcher colorTest colorTest_class="[&>div]:flex-1/3 m-1" />
+            </Show>
+        </div>
     );
 }
 

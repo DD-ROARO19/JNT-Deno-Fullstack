@@ -17,12 +17,13 @@ export const DownArrow = (props: { svg_class?: string, class?: string, isDown: A
     function toggle(e: MouseEvent) {
         e.stopPropagation();
         e.preventDefault();
-        props.setArrow(p => !p);
+        props.setArrow(p => {console.log(p); return !p});
     }
 
     return (
         <button type="button" onclick={e => toggle(e)} class={twMerge(`hover:bg-blend-luminosity 
-        hover:bg-cyan-500 rounded-2xl m-1.5 cursor-pointer active:bg-cyan-600 `, props.class)} >
+        hover:bg-cyan-500 rounded-2xl m-1.5 cursor-pointer active:bg-cyan-600 `, props.class)}
+        title="toggle" >
             <Arrow class={rotation() + " " + props.svg_class} />
         </button>
     )
@@ -30,7 +31,7 @@ export const DownArrow = (props: { svg_class?: string, class?: string, isDown: A
 
 export const SearchSVG = (props: { class?: string }) => {
     return (
-        <svg class={twMerge('h-8 dark:stroke-cyan-950/65', props.class)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg class={twMerge('h-8 stroke-white', props.class)} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
     )
@@ -52,7 +53,7 @@ export const Edit = (props: { class?: string }) => {
 
 export const Edit2 = (props: { class?: string }) => {
     return (
-        <svg class={twMerge('h-6 fill-black dark:fill-white', props.class)} viewBox="0 -0.5 21 21" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <svg class={twMerge('h-6 fill-black', props.class)} viewBox="0 -0.5 21 21" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <g id="Page-1" stroke="none" stroke-width="1" fill-rule="evenodd">
                 <g id="Dribbble-Light-Preview" transform="translate(-99.000000, -400.000000)" >
                     <g id="icons" transform="translate(56.000000, 160.000000)">
@@ -66,7 +67,7 @@ export const Edit2 = (props: { class?: string }) => {
 
 export const Erase = (props: { class?: string }) => {
     return (
-        <svg class={twMerge('h-6 fill-black dark:fill-white', props.class)} viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <svg class={twMerge('h-6 fill-black', props.class)} viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <path d="M18 3H8.446c-.44 0-1.071.236-1.402.525L.248 9.473a.682.682 0 0 0 0 1.053l6.796 5.947c.331.289.962.527 1.402.527H18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2.809 11l-2.557-2.557L10.078 14l-1.443-1.443L11.191 10 8.635 7.443 10.078 6l2.557 2.555L15.19 6l1.444 1.443L14.078 10l2.557 2.555L15.191 14z" />
         </svg>
     )
@@ -75,7 +76,7 @@ export const Erase = (props: { class?: string }) => {
 export const Home = (props: { class?: string, a_class?: string }) => {
     return (
         <a href="/" class={twMerge('', props.a_class)} >
-            <svg class={twMerge('h-6 fill-black dark:fill-white', props.class)} viewBox="0 -0.5 21 21" xmlns="http://www.w3.org/2000/svg"
+            <svg class={twMerge('h-6 fill-black', props.class)} viewBox="0 -0.5 21 21" xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink" >
                 <g id="SVGRepo_bgCarrier" stroke-width="0" />
                 <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
@@ -102,7 +103,7 @@ export const BackArrow = (props: { class?: string, option: 1 | 2 | 3 | 4 | 5 | 6
     function goBack() {
         globalThis.history.back()
     }
-    const defaultClass = 'h-6 fill-black dark:fill-white';
+    const defaultClass = 'h-6 fill-black';
 
     const Arrow = {
         1: (<svg onclick={() => goBack()} class={twMerge(defaultClass, props.class)} id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -250,7 +251,7 @@ export const BackArrow = (props: { class?: string, option: 1 | 2 | 3 | 4 | 5 | 6
 
 export const ReloadArrow = (props: { class?: string, onclick: () => void }) => {
     return (
-        <svg class={twMerge(`h-6 w-6 fill-black dark:fill-white cursor-pointer`, props.class)} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" onclick={() => props.onclick()}>
+        <svg class={twMerge(`h-6 w-6 fill-black cursor-pointer`, props.class)} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" onclick={() => props.onclick()}>
             <path fill-rule="evenodd" clip-rule="evenodd" d="M13.7071 1.29289C14.0976 1.68342 14.0976 2.31658 13.7071 2.70711L12.4053 4.00896C17.1877 4.22089 21 8.16524 21 13C21 
             17.9706 16.9706 22 12 22C7.02944 22 3 17.9706 3 13C3 12.4477 3.44772 12 4 12C4.55228 12 5 12.4477 5 13C5 16.866 8.13401 20 12 20C15.866 20 19 16.866 19 13C19 9.2774 
             16.0942 6.23349 12.427 6.01281L13.7071 7.29289C14.0976 7.68342 14.0976 8.31658 13.7071 8.70711C13.3166 9.09763 12.6834 9.09763 12.2929 8.70711L9.29289 5.70711C9.10536 5.51957 9 5.26522 9 5C9 4.73478 9.10536 4.48043 9.29289 4.29289L12.2929 1.29289C12.6834 0.902369 13.3166 0.902369 13.7071 1.29289Z" />

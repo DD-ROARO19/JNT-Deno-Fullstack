@@ -1,8 +1,5 @@
 import { createSignal } from "solid-js";
 
-// State of the lateral NavBar
-export const [isBarOpen, setBarOpen] = createSignal(true)
-
 // Style Theme
 export const [light, setLight] = createSignal(false)
 
