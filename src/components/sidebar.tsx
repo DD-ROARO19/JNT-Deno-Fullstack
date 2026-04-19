@@ -141,7 +141,8 @@ const Sidebar = () => {
                 <HomeIcon class={`${isBarOpen() ? 'h-0 w-0 m-0' : ''} transition-discrete delay-75 duration-100 ease-in`} />
                 <BackIcon class={`${isBarOpen() ? 'h-0 w-0 m-0' : ''} transition-discrete delay-75 duration-100 ease-in`} />
             </div>
-            <div id="scroll-content" class="flex-1 overflow-y-scroll min-h-0">
+            <div id="scroll-content" class="flex-1 min-h-0"
+            classList={{"overflow-y-scroll": isBarOpen()}} >
                 <Switch>
                     <Match when={list.loading}>
                         <></>
