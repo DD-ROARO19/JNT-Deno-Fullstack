@@ -18,7 +18,7 @@ import type { lineMenu } from "../types.tsx";
 import { ObjectType } from "../components/InputTypes.tsx";
 import { toast } from "../components/notifications.tsx";
 import { useParams } from "@solidjs/router";
-import Title from "../components/Title.tsx";
+import Header from "../components/Header.tsx";
 
 export default function NewNote() {
     setSetter(_ => setNewNote)
@@ -50,7 +50,7 @@ export default function NewNote() {
             <div class="m-4 dark:bg-cyan-800 w-3/4 max-w-215 rounded-2xl p-2 flex flex-col 
             hover:text-white place-self-center">
                 {/* Title */}
-                <Title titleSetter={setNewNote} 
+                <Header titleSetter={setNewNote} value=""
                     onSave={() => SaveNote(newNote)} 
                     onCopy={() => copyToClipboard(newNote.content, 'object', [])} 
                     onErase={() => console.log('Not implemented yet, here: ', newNote)} 

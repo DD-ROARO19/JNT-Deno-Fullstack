@@ -40,6 +40,12 @@
   }
 }
 
+/* color: contrast-color(var(--color-app-base)); */
+/* .auto-contrast p {
+  color: white;
+  mix-blend-mode: difference;
+} */
+
 /* #root {
   max-width: 1280px;
   margin: 0 auto;
