@@ -8,13 +8,6 @@ import {
     Show,
 } from 'solid-js';
 
-export const types_of_inputs = {
-    string: 'string',
-    number: 'number',
-    array: 'array',
-    object: 'object'
-}
-
 
 import {
     menuCoords, setMenuCoords,
@@ -22,12 +15,58 @@ import {
     lineMenuConfig,
     menuOpen, setMenuOpen
 } from "../signals.tsx";
-import type { menuOption } from "../types.tsx";
+import type { menuButtons, menuOption } from "../types.tsx";
 
-export function OptionsMenu() {
+
+// ##  Menu Components  ##
+
+type optionProps = menuButtons & { class?: string; }
+
+export function MenuItem(props: optionProps) {
+    const c = `block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900
+        dark:text-gray-300 dark:hover:bg-slate-700 dark:hover:text-gray-400`;
+
+    if (props.subButtons) {
+        return <MenuTitle title={props.text} buttons={props.subButtons} />
+    }
+
+    return (
+        <option role="menuitem" class={twMerge(c, props.class)}
+            onClick={() => { props.action(); openInputMenu(false); }} >
+            {props.text}
+        </option>
+    )
+}
+
+export function MenuTitle(props: menuOption) {
+
+    return (
+        <>
+            <span class={`flex ${props.open ? '' : 'group/submenu hover:bg-gray-100 dark:hover:bg-slate-700'} 
+            hover:text-gray-900 dark:hover:text-gray-400
+            `}
+                onclick={() => setMenuOpen(pre => (pre == props.title) ? 'none' : props.title)}>
+                <option role="menuitem" class="block pl-4 py-2 text-sm font-bold italic text-gray-700 dark:text-gray-300 
+                group-hover/submenu:text-gray-900 dark:group-hover/submenu:text-gray-400">
+                    {props.title}
+                </option>
+                <Arrow class="rotate-270 place-self-center 
+                group-hover/submenu:fill-gray-900 dark:group-hover/submenu:fill-gray-400" />
+            </span>
+            <Show when={props.open || props.title === menuOpen()}>
+                <For each={props.buttons}>{(option) =>
+                    <MenuItem {...option} class="list-item list-inside" />
+                }</For>
+            </Show>
+        </>
+    )
+}
+
+
+export function OptionsMenu() { // Menu Popover/modal component
     let optionsMenuRef: HTMLDivElement | undefined;
 
-    createEffect(() => {
+    createEffect(() => { // Handle click outside the menu.
         // const menuRef = inputMenuRef();
         const handleOutClick = (e: Event) => {
             // console.log(e.target);
@@ -43,50 +82,7 @@ export function OptionsMenu() {
         onCleanup(() => document.removeEventListener('click', handleOutClick));
     });
 
-    function visibility() { // console.log('isOptionsOpen', showInputMenu());
-        return showInputMenu() ? 'visible' : 'hidden';
-    }
-
-    type optionProps = {
-        text: string;
-        class?: string;
-        action: () => void;
-    }
-
-    const MenuItem = (props: optionProps ) => {
-        const c = `block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900
-        dark:text-gray-300 dark:hover:bg-slate-700 dark:hover:text-gray-400`;
-        return (
-            <option role="menuitem" class={twMerge(c, props.class)} 
-            onClick={() => { props.action(); openInputMenu(false); }} >
-                {props.text}
-            </option>
-        )
-    }
-
-    function MenuTitle(props: menuOption ) { 
-        
-        return (
-        <>
-            <span class={`flex ${props.open ? '':'group/submenu hover:bg-gray-100 dark:hover:bg-slate-700'} 
-            hover:text-gray-900 dark:hover:text-gray-400
-            `} 
-            onclick={() => setMenuOpen(pre => (pre == props.title) ? 'none': props.title)}>
-                <option role="menuitem" class="block pl-4 py-2 text-sm font-bold italic text-gray-700 dark:text-gray-300 
-                group-hover/submenu:text-gray-900 dark:group-hover/submenu:text-gray-400">
-                    {props.title}
-                </option>
-                <Arrow class="rotate-270 place-self-center 
-                group-hover/submenu:fill-gray-900 dark:group-hover/submenu:fill-gray-400" />
-            </span>
-            <Show when={props.open || props.title === menuOpen()}>
-                <For each={props.buttons}>{(option) =>
-                    <MenuItem {...option} class="list-item list-inside" />
-                }</For>
-            </Show>
-        </>
-    )}
-
+    const visibility = () => showInputMenu() ? 'visible' : 'hidden';
 
     return (
         <div ref={optionsMenuRef}
@@ -138,6 +134,7 @@ export function InputButton(props: inputBtn_props) {
         if (selectButtonRef) {
             const rect = selectButtonRef.getBoundingClientRect();
             setMenuCoords({ x: (rect.right - 224), y: (rect.top + selectButtonRef.offsetHeight) });
+            console.log('options: ', props.config );
             setLineMenuConfig(props.config);
             openInputMenu(true);
         }
@@ -160,43 +157,56 @@ export function InputButton(props: inputBtn_props) {
             class={twMerge("cursor-pointer InputMenuButton select-none", props.class)}
         >
             <Show when={props.icon} fallback={<>{props.text || '+'}</>}>
-                <SettingSVG {...props.icon!} /> 
+                <SettingSVG {...props.icon!} />
             </Show>
         </button>
     )
 }
 
-export function InputType(props: { keyList: string[], selected: Accessor<string>, setSelected: Setter<string> }) {
-    // const [isOpen, setOpen] = createSignal(false)
-    // let dropdownRef: HTMLDivElement | undefined;
+// Color Examples
 
-    /*onMount(() => {
-        function handleClickOutside(event: MouseEvent) {
-            console.log('dropdownRef:', dropdownRef, '\ntarget:', event.target);
-            if (dropdownRef && !dropdownRef.contains(event?.target as Node)) {
-                setOpen(false)
-            }
-        }
+// // Comment
+// const boolean = true;
+// const string = "text";
+// const number = 10;
+// type exampleType = [boolean, string, number];
+// function functionName(params: exampleType) {
+//     return ([{props: params}]);
+// }
 
-        if (isOpen()) {
-            document.addEventListener('mousedown', handleClickOutside)
-        }
+// functionName([boolean, string, number])
 
-        onCleanup(() => {
-            document.removeEventListener('mousedown', handleClickOutside)
-        })
-    }) /**/
+// function InputType(props: { keyList: string[], selected: Accessor<string>, setSelected: Setter<string> }) {
+//     // const [isOpen, setOpen] = createSignal(false)
+//     // let dropdownRef: HTMLDivElement | undefined;
 
-    return (
-        <div>
-            <select
-                value={props.selected()}
-                onInput={(e) => props.setSelected(e.currentTarget.value)}
-            >
-                <For each={props.keyList}>{(type) =>
-                    <option value={type}>{type}</option>
-                }</For>
-            </select>
-        </div>
-    )
-}
+//     /*onMount(() => {
+//         function handleClickOutside(event: MouseEvent) {
+//             console.log('dropdownRef:', dropdownRef, '\ntarget:', event.target);
+//             if (dropdownRef && !dropdownRef.contains(event?.target as Node)) {
+//                 setOpen(false)
+//             }
+//         }
+
+//         if (isOpen()) {
+//             document.addEventListener('mousedown', handleClickOutside)
+//         }
+
+//         onCleanup(() => {
+//             document.removeEventListener('mousedown', handleClickOutside)
+//         })
+//     }) /**/
+
+//     return (
+//         <div>
+//             <select
+//                 value={props.selected()}
+//                 onInput={(e) => props.setSelected(e.currentTarget.value)}
+//             >
+//                 <For each={props.keyList}>{(type) =>
+//                     <option value={type}>{type}</option>
+//                 }</For>
+//             </select>
+//         </div>
+//     )
+// }

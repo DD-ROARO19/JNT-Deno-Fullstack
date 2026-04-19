@@ -3,13 +3,17 @@ import {
     For, Show, createSignal,
     Switch, Match
 } from "solid-js"
-import type { inputsProps, JSONPrimitive, LineContent, lineMenu, typeOfInputs } from "../types.tsx";
+import type { inputsProps, JSONPrimitive, LineContent, lineMenu, 
+    typeOfInputs, listsProps
+} from "../types.tsx";
+import type { Accessor, Setter } from "solid-js";
+
 import { DownArrow } from "../assets/svgs.tsx";
 import { InputButton } from "./Select.tsx";
-
-import type { Accessor, Setter } from "solid-js";
-import { addInput, changeInput, updateStore, eraseInput, copyToClipboard } from "../helpers.tsx";
+import { addInput, changeInput, updateStore, eraseInput, copyToClipboard, extractValue } from "../helpers.tsx";
 import { NewLine } from './RowLines.tsx'
+import { LineSettingsBtn } from "./LineSettingsBtn.tsx";
+import { Toggle } from "./Toggle.tsx";
 
 function lineConfig(path: (string | number)[], data: JSONPrimitive | LineContent[], type: typeOfInputs): lineMenu {
     return {
@@ -30,16 +34,6 @@ function lineConfig(path: (string | number)[], data: JSONPrimitive | LineContent
     }
 }
 
-function LineSettingsBtn(props: { config: lineMenu, hover_class: string, text?: string }) {
-    return (
-        <InputButton config={props.config}
-            icon={{ option: 1, class: 'w-3.5 h-3.5 fill-stone-300' }}
-            class={`w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
-            invisible ${props.hover_class} hover:border-slate-600 
-            active:border-slate-600/80 absolute`} />
-    )
-}
-
 
 // ##  PRIMITIVE VALUE COMPONENTS  ##
 
@@ -50,7 +44,13 @@ export function StringType(props: inputsProps & { data: string }) {
     return (
         <span class="StringType group/s-line flex-1 flex relative hover:bg-app-active/5 min-w-3/4">
             <textarea placeholder="Bla Bla Bla..."
-                value={props.data}
+                value={
+                    (typeof props.data === 'object') ? // is an object?
+                    // JSON.stringify(extractValue(props.data, 'object', props.path), undefined, 4) 
+                    JSON.stringify(props.data, undefined, 4) 
+                    : 
+                    props.data
+                }
                 onChange={e => updateStore(props.path, e.currentTarget.value)}
                 class="StringType flex-1 outline-none focus:bg-app-base rounded-md mr-8
                 min-h-6 field-sizing-content text-app-string"
@@ -112,7 +112,7 @@ export function BooleanType(props: inputsProps & { data: boolean, key: string })
                     class={`
                 relative inline-flex h-5 w-10 items-center rounded-full border-1 transition-colors 
                 duration-200 border-app-muted cursor-pointer
-                ${props.data ? "bg-app-active-secondary" : "bg-app-base"}
+                ${props.data ? "bg-app-active-secondary/80" : "bg-app-base"}
                     `} >
                     <span class={`
                     inline-block h-3 w-3 transform rounded-full transition-transform duration-200 
@@ -135,35 +135,6 @@ export function BooleanType(props: inputsProps & { data: boolean, key: string })
             <LineSettingsBtn config={lineConfig(props.path, props.data, 'boolean')}
                 hover_class="group-hover/b-line:visible" />
         </span>
-    )
-}
-
-
-/** Button to hide or open the contents of object components. */
-function Toggle(props: {
-    class: string,
-    text: string, config: lineMenu; end?: boolean, show: boolean;
-    isOpen: Accessor<boolean>, setOpen: Setter<boolean>
-}) {
-    // console.log('toggle props: ', props);
-
-    return (
-        <>
-            <span class="Bracket flex-1 flex group relative"
-                classList={{ 'hover:bg-app-active/5': props.show }}>
-
-                <h2 class={props.class}>{props.text}</h2>
-                <Show when={props.show}>
-                    <DownArrow isDown={props.isOpen} setArrow={props.setOpen} class={`hover:bg-white/0 
-                active:bg-white/0 w-3.5 h-3.5 ${(props.end) ? 'invisible group-hover:visible' : ''} `}
-                        svg_class="dark:fill-stone-300 hover:fill-white active:fill-stone-500 w-4 h-4"
-                    />
-                    <LineSettingsBtn config={props.config}
-                        hover_class="group-hover:visible" />
-                </Show>
-
-            </span>
-        </>
     )
 }
 
@@ -196,11 +167,6 @@ function AddItemBtn(props: { config: lineMenu, isFullWidth: boolean | undefined 
     )
 }
 
-type listsProps = {
-    data: LineContent[];
-    no_config?: boolean;
-    full_addButton?: boolean;
-}
 
 
 // ##  OBJECT COMPONENTS  ##
@@ -225,7 +191,7 @@ export function ArrayType(props: inputsProps & listsProps) {
                 <Toggle text="[" isOpen={showList} setOpen={setList} class="text-app-keyword"
                     config={lineConfig(props.path, props.data, 'array')} show={!props.no_config} />
 
-                <div class="ArrayType w-full relative flex flex-col pl-6
+                <div class="ArrayType w-full relative flex flex-col pl-4
                 border-l-1 border-app-muted my-1 focus-within:border-app-active-secondary/50">
                     <For each={props.data}>{(item, index) => {
                         updateStore([...props.path, index(), 'key'], index())
@@ -274,7 +240,7 @@ export function ObjectType(props: inputsProps & listsProps) {
                         return (
                             <NewLine path={props.path} type={item.type}
                                 index={index()} data={item.value} key={item.key} >
-                                <span class="Key flex justify-between">
+                                <span class="Key flex justify-between hover:bg-app-active/5">
                                     <input value={item.key} type="text" placeholder="Key name"
                                         onChange={e =>
                                             updateStore([...props.path, index(), 'key'],
