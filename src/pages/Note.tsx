@@ -11,11 +11,12 @@ import type { Note } from "../../types.ts";
 import type { noteFrame } from "../types.tsx";
 
 import { setSetter } from "../stores.tsx";
-import { copyToClipboard, DeleteNote, json2Note, SaveNote, UpdateNote } from "../helpers.tsx";
-import { ObjectType } from "../components/InputTypes.tsx";
-import Title from "../components/Title.tsx";
+import { copyToClipboard, DeleteNote, extractNote, extractValue, json2Note, SaveNote, UpdateNote } from "../helpers.tsx";
+import { ObjectType } from "../components/StaticTypes.tsx";
+import Header from "../components/Header.tsx";
 import { OptionsMenu } from "../components/Select.tsx";
 import { toast } from "../components/notifications.tsx";
+import { MenuPopovers } from "../components/LineSettingsBtn.tsx";
 
 async function getNote(id: string): Promise<true> {
     console.log('ID: ', id);
@@ -63,15 +64,17 @@ export default function Note() {
                 <></>
             </Match>
             <Match when={res()}>
-                <OptionsMenu />
+                <MenuPopovers />
+                <OptionsMenu/>
                 <Toast />
                 <div class="m-4 bg-app-element w-3/4 max-w-215 rounded-2xl p-2 flex flex-col 
                     place-self-center">
                     {/* Title */}
-                    <Title titleSetter={setNote} value={note.metadata.title}
+                    <Header titleSetter={setNote} value={note.metadata.title}
                         onSave={() => UpdateNote(note)}
                         onCopy={() => copyToClipboard(note.content, 'object', [])}
-                        onErase={() => DeleteNote(note.metadata.id)}
+                        // onErase={() => DeleteNote(note.metadata.id)}
+                        onErase={() => console.log(extractValue(note.content, 'object', ['content']))}
                     />
 
                     {/* Content */}
