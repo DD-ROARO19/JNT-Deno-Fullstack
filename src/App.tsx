@@ -13,7 +13,7 @@ function App() {
   loadTheme()
 
   return (
-    <div class='h-dvh max-h-dvh w-dvw max-w-dvw flex bg-app-base dark:text-white' >
+    <div class='h-dvh max-h-dvh w-dvw max-w-dvw flex' >
       <Sidebar />
       <Content />
     </div>

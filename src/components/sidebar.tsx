@@ -48,8 +48,8 @@ function CategoriesList(props: { list: categoryItem[] }) {
 
     const Pill = (props: ParentProps & { class?: string, data?: categoryItem, title?: string }) => {
         const style = twMerge(`w-19/20 h-8 rounded-lg m-2 pl-2 place-self-end flex items-center 
-        justify-between focus:outline-2 cursor-default
-        bg-app-active-secondary/40 focus:outline-app-muted text-app-text
+        justify-between focus:outline-2 cursor-default font-bold
+        bg-app-active-secondary/40 focus:outline-app-muted text-app-text/75
         hover:bg-app-active-secondary active:bg-app-element`, props.class);
 
         return (!props.data) ?
@@ -70,7 +70,7 @@ function CategoriesList(props: { list: categoryItem[] }) {
                 <Pill data={props.categoryItem} title={props.categoryItem.created_at.toLocaleString()} >
                     <p class='cursor-default'>{props.categoryItem.alias}</p>
                     <Show when={props.categoryItem.childs && props.categoryItem.childs.length > 0} >
-                        <DownArrow isDown={isOpen} setArrow={setOpen} />
+                        <DownArrow isDown={isOpen} setArrow={setOpen} svg_class="fill-app-text/75" />
                     </Show>
                 </Pill>
                 <Show when={props.categoryItem.childs && props.categoryItem.childs.length > 0 && isOpen()}>
@@ -127,8 +127,10 @@ const Sidebar = () => {
     const BackIcon = (props: { class?: string }) => <BackArrow option={4} class={"w-10 h-10 m-3 cursor-pointer fill-app-active " + props.class} />;
 
     return (
-        <div id="sidebar" class={`min-h-dvh bg-app-sidebar rounded-e-2xl ${barWidth()} select-none`} style={`transition: ${milis}ms`}
-            classList={{ 'overflow-scroll': isBarOpen() }}>
+        <div id="sidebar" class={`h-dvh bg-app-sidebar rounded-e-2xl ${barWidth()} select-none flex flex-col overflow-hidden`} 
+            style={`transition: ${milis}ms`}
+            // classList={{ 'overflow-scroll': isBarOpen() }}
+            >
             <div class="flex flex-row-reverse justify-between ">
                 <img onclick={() => setBarOpen(p => !p)} src={logo} class='w-10 h-10 m-3 cursor-pointer' />
                 <ReloadArrow class="w-10 h-10 m-3 fill-app-active" onclick={refetch} />
@@ -139,18 +141,20 @@ const Sidebar = () => {
                 <HomeIcon class={`${isBarOpen() ? 'h-0 w-0 m-0' : ''} transition-discrete delay-75 duration-100 ease-in`} />
                 <BackIcon class={`${isBarOpen() ? 'h-0 w-0 m-0' : ''} transition-discrete delay-75 duration-100 ease-in`} />
             </div>
-            <Switch>
-                <Match when={list.loading}>
-                    <></>
-                </Match>
-                <Match when={list()}>
-                    <CategoriesList list={list() || []} />
-                </Match>
-            </Switch>
-            <Show when={isBarOpen()}>
-                {/* <ThemeTest class="[&>div]:flex-1/3 m-1" /> */}
-                <ThemeSwitcher colorTest colorTest_class="[&>div]:flex-1/3 m-1" />
-            </Show>
+            <div id="scroll-content" class="flex-1 overflow-y-scroll min-h-0">
+                <Switch>
+                    <Match when={list.loading}>
+                        <></>
+                    </Match>
+                    <Match when={list()}>
+                        <CategoriesList list={list() || []} />
+                    </Match>
+                </Switch>
+                <Show when={isBarOpen()}>
+                    {/* <ThemeTest class="[&>div]:flex-1/3 m-1" /> */}
+                    <ThemeSwitcher colorTest colorTest_class="[&>div]:flex-1/3 m-1" />
+                </Show>
+            </div>
         </div>
     );
 }

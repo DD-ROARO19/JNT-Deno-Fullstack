@@ -12,7 +12,7 @@ import SettingsMenu from "../pages/Settings.tsx";
 export default function Contents() {
 
     return (
-        <div id='Content' class='h-full w-full overflow-y-auto scroll-smooth'>
+        <div id='Content' class='h-full w-full overflow-y-scroll scroll-smooth'>
             {/* <div class='min-w-100 w-3/4 place-self-center-safe flex flex-col'> */}
                 <Router>
                     <Route path='/' component={HomePage} />
