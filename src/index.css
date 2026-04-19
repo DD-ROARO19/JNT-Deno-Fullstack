@@ -170,16 +170,16 @@
     --color-app-surface: #073642;
     --color-app-surface-secondary: #001f27;
     --color-app-sidebar: #001f27;
-    --color-app-element: #586e75;
+    --color-app-element: #0e374d;
     --color-app-active: #2aa198;
     --color-app-active-secondary: #6c71c4; /* Violet */
     --color-app-text: #839496;
     --color-app-muted: #586e75;
     --color-app-property: #5044ac;
     --color-app-string: #2aa198;
-    --color-app-number: #cb4b16;
+    --color-app-number: #859900;
     --color-app-function: #b58900;
-    --color-app-keyword: #859900;
+    --color-app-keyword: #cb4b16;
   }
 
   /* --- 11. GRUVBOX MATERIAL (Aqua & Red) --- */
@@ -207,11 +207,12 @@
     --color-app-surface: #ffffff;          /* Main card (pure white) */
     --color-app-surface-secondary: #f6f8fa;/* Code block background */
     --color-app-element: #e1e4e8;          /* Borders / inactive */
-    --color-app-active: #0969da;   /* GitHub Blue */
+    --color-app-active: #0969da;           /* GitHub Blue */
     --color-app-active-secondary: #2da44e; /* GitHub Green */
     
     --color-app-text: #24292f;             /* Deep slate text */
-    --color-app-muted: #57606a;            /* Accessible gray */
+    /* --color-app-muted: #ecedef;             */
+    --color-app-muted: #a2aab3;            /* Accessible gray */
     
     /* Syntax: Deep, saturated tones for readability */
     --color-app-property: #0550ae;         /* Deep Blue */
@@ -283,5 +284,30 @@
     --color-app-number: #ea9d34;           /* Deep Gold */
     --color-app-function: #b4637a;         /* Crimson/Love */
     --color-app-keyword: #907aa9;          /* Iris Purple */
+  }
+
+  [data-theme="coral-ocean-dark"] {
+    /* --color-app-base: #1a1b26; */
+    --color-app-base: #121314;
+    --color-app-surface: #242533;
+    /* --color-app-surface-secondary: #2f3042; */
+    --color-app-surface-secondary: #121314;
+    /* --color-app-sidebar: #16161e; */
+    --color-app-sidebar: #191a1b;
+    --color-app-element: #41425e;
+    --color-app-active: #82aaff;
+    --color-app-active-secondary: #5e7ec9;
+    --color-app-text: #a6accd;
+    /* --color-app-muted: #676e95; */
+    /* --color-app-muted: #2a2b2c; */
+    --color-app-muted: #383c41;
+    /* --color-app-property: #A5D1D9; */
+    /* --color-app-property: #a5d1cc; */
+    --color-app-property: #d9a64c;
+    --color-app-string: #A5D6FF;
+    /* --color-app-function: #82aaff; */
+    --color-app-function: #f07178;
+    --color-app-number: #91CEA8;
+    --color-app-keyword: #f07178;
   }
 }
