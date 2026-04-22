@@ -65,7 +65,7 @@ type basicProps = inputsProps & { key?: string }
 type primitiveProps = basicProps
 
 /** Component to display text. */
-function StringType(props: primitiveProps & { data: string }) {
+export function StringType(props: primitiveProps & { data: string }) {
 
     if (props.key === undefined) {
         return <span>No metadata for key</span>

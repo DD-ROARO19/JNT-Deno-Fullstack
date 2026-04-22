@@ -191,7 +191,7 @@ function askMyType(v: unknown): typeOfInputs {
 }
 
 
-function formatValue(
+export function formatValue(
     val: JSONValue,
     key?: string | number
 ): LineContent {

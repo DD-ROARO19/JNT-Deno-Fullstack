@@ -3,7 +3,8 @@
 
 @theme {
   --color-app-base: #181818;
-  --color-app-surface: #0a738f;
+  /* --color-app-surface: #0a738f; */
+  --color-app-surface: #09333f;
   --color-app-surface-secondary: #1f1f1f;
   --color-app-sidebar: #2d2d3e;
   --color-app-element: #084354;
@@ -300,6 +301,7 @@
     --color-app-text: #a6accd;
     /* --color-app-muted: #676e95; */
     /* --color-app-muted: #2a2b2c; */
+    /* --color-app-muted: #474b51; */
     --color-app-muted: #383c41;
     /* --color-app-property: #A5D1D9; */
     /* --color-app-property: #a5d1cc; */

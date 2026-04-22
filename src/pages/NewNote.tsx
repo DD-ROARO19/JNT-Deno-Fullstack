@@ -15,6 +15,7 @@ import { addInput, copyToClipboard, SaveNote } from "../helpers.tsx";
 
 import { OptionsMenu } from "../components/Select.tsx";
 import type { lineMenu } from "../types.tsx";
+import { ObjectType as SecondObj } from "../components/StaticTypes.tsx";
 import { ObjectType } from "../components/InputTypes.tsx";
 import { toast } from "../components/notifications.tsx";
 import { useParams } from "@solidjs/router";
@@ -58,7 +59,7 @@ export default function NewNote() {
 
                 {/* Content */}
                 <div class="NoteContent bg-app-surface-secondary rounded-lg py-3 pl-8">
-                    <ObjectType data={newNote.content} path={["content"]} no_config full_addButton />
+                    <SecondObj data={newNote.content} path={["content"]} no_config full_addButton />
                 </div>
 
             </div>
