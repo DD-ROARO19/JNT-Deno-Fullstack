@@ -1,8 +1,10 @@
 // @ts-types="solid-js"
 import {
+    createSignal,
     createResource,
     Switch,
-    Match
+    Match,
+    Show,
 } from "solid-js";
 import { useParams } from "@solidjs/router";
 import { createStore } from "solid-js/store";
@@ -10,18 +12,14 @@ import { createStore } from "solid-js/store";
 import type { Note } from "../../types.ts";
 import type { noteFrame } from "../types.tsx";
 
-import { setSetter } from "../stores.tsx";
-import { copyToClipboard, DeleteNote, extractNote, extractValue, json2Note, SaveNote, UpdateNote } from "../helpers.tsx";
+import { reset_searchParams, setSetter } from "../stores.tsx";
+import { copyToClipboard, DeleteNote, extractValue, json2Note, UpdateNote } from "../helpers.tsx";
 import { ObjectType } from "../components/StaticTypes.tsx";
 import Header from "../components/Header.tsx";
 import { OptionsMenu } from "../components/Select.tsx";
 import { toast } from "../components/notifications.tsx";
 import { MenuPopovers } from "../components/LineSettingsBtn.tsx";
-import { SideCard } from "../components/SideComp.tsx";
-// @ts-types="solid-js"
-import { createSignal } from "solid-js";
-// @ts-types="solid-js"
-import { Show } from "solid-js";
+import { SearchPanel } from "../components/LateralPanels.tsx";
 import { lateralSetter } from "../signals.tsx";
 
 async function getNote(id: string): Promise<true> {
@@ -61,6 +59,7 @@ export default function Note() {
         metadata: { author: '', path: '', tags: [], title: '' }
     })
     setSetter(_ => setNote)
+    reset_searchParams();
 
     const [res, { refetch }] = createResource(() => param.id, getNote)
 
@@ -81,7 +80,7 @@ export default function Note() {
                     <span class="flex-1 shrink-10 transition-discrete delay-75 duration-100 ease-in"
                         classList={{ "grow-0": advCard() }} />
                     <div class="m-4 bg-app-element rounded-2xl p-2 flex flex-col 
-                        flex-3 shrink-0"
+                        flex-3 shrink-0 h-max"
                     >
                         {/* Title */}
                         <Header titleSetter={setNote} value={note.metadata.title}
@@ -99,7 +98,7 @@ export default function Note() {
                     </div>
                     <span class="flex-1 transition-discrete delay-75 duration-100 ease-in"
                         classList={{ "grow-2": advCard() }}
-                    ><Show when={advCard()}> <SideCard /> </Show></span>
+                    ><Show when={advCard()}> <SearchPanel /> </Show></span>
                     <span class="w-1/20 flex-none" />
                 </span>
             </Match>

@@ -9,7 +9,7 @@ import type { SetStoreFunction } from "solid-js/store";
 import type { noteFrame } from "../types.tsx";
 
 import { CopySVG, Edit2, Erase } from "../assets/svgs.tsx";
-import { toggleLateralCard } from "./SideComp.tsx";
+import { toggleLateralCard } from "../Search.tsx";
 // import { copyToClipboard, SaveNote } from "../helpers.tsx";
 
 interface titleParams {

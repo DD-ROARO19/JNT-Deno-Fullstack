@@ -18,6 +18,19 @@
   --color-app-function: #e5c07b;
   --color-app-number: #dcdcaa;
   --color-app-keyword: #b072d9;
+
+  --animate-spin-reverse: spin-back 1s linear infinite;
+  
+  --animate-spin-slow: spin 3s linear infinite;
+  --animate-spin-slow-reverse: spin-back 3s linear infinite;
+  
+  --animate-spin-slower: spin 5s linear infinite;
+  --animate-spin-slower-reverse: spin-back 5s linear infinite;
+
+  @keyframes spin-back {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
 }
 
 @layer base {

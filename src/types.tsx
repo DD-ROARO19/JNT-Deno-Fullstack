@@ -19,6 +19,15 @@ export type lineMenuParams = [path: (string | number)[], data: JSONPrimitive | L
 export type menuConfig = (...args: lineMenuParams) => lineMenu;
 
 
+// ###  LATERAL PANELS  ###
+
+export type patternType = { packet_name?: string, keys: { key: string | number, val: string }[] }
+export type searchParamsType = { 
+    formatedResult?: LineContent;   url?: string; 
+    path?: (string | number)[];     resultName?: string;
+}
+
+
 // ##  JSON TYPES  ##
 
 export type JSONPrimitive = string | number | boolean | null;

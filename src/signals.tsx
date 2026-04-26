@@ -12,6 +12,10 @@ export const [menuOpen, setMenuOpen] = createSignal('none');
 export const [lineMenuConfig, setLineMenuConfig] = createSignal<lineMenu>({
     primary_inputs: { title: 'Inputs', buttons: [] }
 });
+
+// Lateral Search Panel
 import type { Setter } from "solid-js";
-export const [latCardSet, lateralSetter] = createSignal<Setter<boolean> | undefined>(undefined)
-export const [searchURL, upd_searchURL] = createSignal<string | undefined>('https://api.modrinth.com/v2/search?query=Create')
+export const [latCardSet, lateralSetter] = createSignal<Setter<boolean>>()
+
+// Global App State
+export const [isLoading, setLoadingState] = createSignal<'nope' | 'indeed' | 'finished'>("nope")

@@ -4,109 +4,29 @@ import {
     Show,
     For,
     createEffect,
+    Switch,
+    Match, 
 } from "solid-js";
 import { createStore } from "solid-js/store";
-import { latCardSet, searchURL } from "../signals.tsx";
-import { toast } from "./notifications.tsx";
-import { DownArrow, Arrow } from "../assets/svgs.tsx";
-import type { typeOfInputs } from "../types.tsx";
-import type { JSONValue, JSONObject } from "../types.tsx";
+import { isLoading, setLoadingState } from "../signals.tsx";
+import { reset_searchParams, searchParams, upd_searchParams } from "../stores.tsx";
+import { Arrow, Loading, Erase } from "../assets/svgs.tsx";
+import type { patternType, typeOfInputs, JSONValue, JSONObject } from "../types.tsx";
 import { ObjectType } from "./StaticTypes.tsx";
 import { StringType } from "./InputTypes.tsx"
+import { SearchError, searchLink, toggleLateralCard } from "../Search.tsx";
+import { formatValue, updateStore } from "../helpers.tsx";
 
-
-const testObj = {
- "project_id": "LNytGWDc",
- "project_type": "mod",
- "slug": "create",
- "author": "simibubi",
- "title": "Create",
- "description": "Aesthetic Technology that empowers the Player",
- "categories": [
-  "decoration",
-  "forge",
-  "neoforge",
-  "technology",
-  "utility"
- ],
- "display_categories": [
-  "decoration",
-  "forge",
-  "neoforge",
-  "technology",
-  "utility"
- ],
- "versions": [
-  "1.18.2",
-  "1.19.2",
-  "1.20.1",
-  "1.21.1"
- ],
- "downloads": 15556136,
- "follows": 5519,
- "icon_url": "https://cdn.modrinth.com/data/LNytGWDc/61d716699bcf1ec42ed4926a9e1c7311be6087e2_96.webp",
- "date_created": "2022-07-07T21:24:43.018879+00:00",
- "date_modified": "2026-04-21T22:19:59.671226+00:00",
- "latest_version": "UjX6dr61",
- "license": "LicenseRef-Create-Mod-License",
- "client_side": "optional",
- "server_side": "required",
- "gallery": [],
- "featured_gallery": null,
- "color": 6639722
-}
-
-
-class SearchError extends Error {
-    constructor(
-        public code: 'UNDEFINED_TOGGLE_SETTER' | 'BAD_QUERY' | 'SEARCH_FORM_EMPTY' | 'INVALID_PATTERN',
-        // error?: Error,
-        message?: string,
-    ) {
-        super(message);
-        this.name = "Search validation error";
-
-        switch (this.code) {
-            case "UNDEFINED_TOGGLE_SETTER":
-                this.message = 'Setter for lateral card render toggle undefined!';
-                break;
-
-            case "BAD_QUERY":
-                this.message += " - " + this.code;
-                break;
-
-            case "SEARCH_FORM_EMPTY":
-                this.message = "Please fill query pattern form"
-                break;
-
-            case "INVALID_PATTERN":
-                this.message += " - " + this.code;
-                break;
-
-            default:
-                this.code satisfies never;
-                this.message += " - UNDEFINED_CASE";
-                break;
-        }
-
-        console.error(this, { ...this });
-        toast().newNotification(this.message)
-    }
-}
-
-export function toggleLateralCard() {
-    const setterSignal = latCardSet();
-    if (!setterSignal) throw new SearchError("UNDEFINED_TOGGLE_SETTER");
-
-    setterSignal(p => !p);
-};
 
 // type ScardParams = null
-export function SideCard() {
+export function SearchPanel() {
     const [selectedMenu, selectMenu] = createSignal<'existing' | 'new' | 'none'>('new');
-    const [storedPattern, updatePattern] = createStore<patternType>({ keys: [{ key: "", val: "" }] })
-    const [searchResult, setResult] = createSignal<JSONValue | undefined>(testObj)
+    const [storedPattern, updatePattern] = createStore<patternType>({ keys: [] })
+    const [result, setResult] = createSignal<JSONValue>()
+    const [patternName, setPatternName] = createSignal<string>()
 
+    const [patterns, setPatterns] = createSignal<patternType[]>([])
+    if (patterns().length === 0) selectMenu("new");
 
     function addProperty() { updatePattern('keys', list => [...list, { key: "", val: "" }]) };
     function removeProperty(event: MouseEvent, index: number) { 
@@ -137,7 +57,6 @@ export function SideCard() {
 
     const [readSave, setSave] = createSignal<boolean>(false);
     function NewPattern() {
-        const [patternName, setPatternName] = createSignal<string | undefined>(undefined)
 
         function handleSave() {
             readSave() ? savePattern() : setSave(p => !p);
@@ -170,6 +89,10 @@ export function SideCard() {
                         peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 
                         peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto 
                         start-1 pointer-events-none text-app-function">New pattern name</label>
+
+                        <button type="button" class="absolute right-1.5 top-2 cursor-pointer" 
+                        onclick={() => setPatternName("")}>
+                        <Erase class="fill-app-text/30" /></button>
                     </div>
                 </Show>
 
@@ -180,7 +103,7 @@ export function SideCard() {
                         type="text" class="block px-1.5 pb-1 pt-1.5 w-full font-semibold 
                     bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
                     text-app-text not-focus:placeholder-transparent placeholder-app-text/80"
-                        placeholder="Object storing the data (leave empty to extract from root)"
+                        placeholder="Object storing the data (empty = result)"
                         autocomplete="off"
                         value={storedPattern.packet_name || ''} onChange={e => updatePattern('packet_name', e.currentTarget.value)}
                     />
@@ -190,6 +113,10 @@ export function SideCard() {
                     peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 
                     peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto 
                     start-1 pointer-events-none text-app-property">Extract from</label>
+
+                    <button type="button" class="absolute right-1.5 top-2 cursor-pointer" 
+                        onclick={() => updatePattern('packet_name', "") }>
+                        <Erase class="fill-app-text/30" /></button>
                 </div>
 
 
@@ -203,7 +130,7 @@ export function SideCard() {
                             type="text" class="block px-1.5 pb-1 pt-1.5 w-full font-semibold 
                     bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
                     text-app-text not-focus:placeholder-transparent placeholder-app-text/80"
-                            placeholder="Key to look for"
+                            placeholder="Key to look in"
                             autocomplete="off"
                             value={property.key || ''} onChange={e => updatePattern('keys', index(),
                                 property.val === "" ? ['key', 'val'] : ['key'], e.currentTarget.value)}
@@ -226,9 +153,9 @@ export function SideCard() {
                             type="text" class="block px-1.5 pb-1 pt-1.5 w-full font-semibold 
                     bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
                     text-app-text not-focus:placeholder-transparent placeholder-app-text/80"
-                            placeholder="New name for the value"
+                            placeholder="Name for value"
                             autocomplete="off"
-                            value={property.val || property.key || ''} onChange={e => updatePattern('keys', index(), 'val', e.currentTarget.value.toString())}
+                            value={property.val || ''} onChange={e => updatePattern('keys', index(), 'val', e.currentTarget.value.toString())}
                         />
                         <label for="new_name"
                             class="absolute font-bold duration-300 transform -translate-y-4 scale-75 top-3 z-10 origin-[0] 
@@ -236,6 +163,10 @@ export function SideCard() {
                     peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 
                     peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto 
                     start-1 pointer-events-none text-app-string"># Value Name</label>
+
+                    <button type="button" class="absolute right-1.5 top-2 cursor-pointer" 
+                        onclick={() => updatePattern('keys', index(), 'val', "") }>
+                        <Erase class="fill-app-text/30" /></button>
                     </div>
                 </div>}</For>
 
@@ -255,139 +186,130 @@ export function SideCard() {
     }
 
 
-    function closeSearch() { selectMenu('none'); toggleLateralCard(); setSave(false); }
+    function closeSearch() { selectMenu('none'); toggleLateralCard(); setSave(false); setLoadingState("nope"); reset_searchParams() }
     async function search() {
+        setLoadingState("indeed");
         try {
             console.log('Object? ', storedPattern);
             if (storedPattern.keys.length >= 1) {
                 for (let i = 0; i < storedPattern.keys.length; i++) {
 
-                    if (storedPattern.keys[i].key.trim() === "") { console.debug(storedPattern.keys[i]); throw new SearchError("SEARCH_FORM_EMPTY"); }
+                    if (storedPattern.keys[i].key.toString().trim() === "") { console.debug(storedPattern.keys[i]); throw new SearchError("SEARCH_FORM_EMPTY"); }
                 }
             }
             // if(storedPattern.keys.length < 1) throw new SearchError("SEARCH_FORM_EMPTY");
 
-            const newObject = await searchLink(searchURL(), storedPattern)
+            const newObject = await searchLink(storedPattern)
             console.log('Resulting Object > ', newObject);
             setResult(newObject)
+            setLoadingState("finished");
         } catch (err) {
+            // setLoadingState("nope");
             if (err instanceof Error && !(err instanceof SearchError)) console.error(err);
         }
     }
 
+    function applyResult() {
+        const res = result();
+        console.log(searchParams.url, searchParams.path, searchParams.formatedResult);
+        
+        if(!res) throw new SearchError("UNDEFINED_RESULT");
+        if(!searchParams.path) throw new SearchError("UNDEFINED_SEARCH_PARAMS", 'Path missing');
+        
+        setLoadingState("indeed")
+        upd_searchParams("formatedResult", formatValue(res))
+        setLoadingState("finished")
+        if(!searchParams.formatedResult) throw new SearchError("ERROR_WHILE_FORMATING_RESULT") ;
+
+        updateStore(searchParams.path.slice(0, -1), searchParams.formatedResult);
+        if(searchParams.resultName || patternName()) updateStore(searchParams.path.with(-1, 'key'), searchParams.resultName || patternName()!);
+    }
 
     return (
-        <span class="flex flex-col">
+        // Lateral Panel
+        <span class="flex flex-col overflow-y-scroll">
         
-        {/* Pattern Panel */}
+        {/* Search Pattern */}
         <div class="mt-4 mr-2 bg-app-element w-auto rounded-2xl p-3 flex flex-col" >
             <h1 class="text-app-function text-xl font-semibold">Search Patterns</h1>
 
-            <Show when={selectedMenu() === 'existing'} fallback={<TabBtn option="existing" title="Existing query patterns" />}>
-                <TabBtn option="existing" title="Existing search patterns" />
-                <div class="bg-app-surface-secondary rounded-lg py-3 pl-8">
-                </div>
-            </Show>
+            <input disabled value={searchParams.url} 
+            class="text-app-string" />
+
+            <Switch >
+                <Match when={patterns.length > 0}> <TabBtn option="existing" title="Existing query patterns" /> </Match>
+                <Match when={selectedMenu() === 'existing'}>
+                    <TabBtn option="existing" title="Existing search patterns" />
+                    <div class="bg-app-surface-secondary rounded-lg py-3 pl-8">
+                    </div>
+                </Match>
+            </Switch>
 
             <Show when={selectedMenu() === 'new'} fallback={<TabBtn option="new" title="New query patterns" />}>
                 <TabBtn option="new" title="New search patterns" />
                 <div class="bg-app-surface-secondary rounded-lg py-3 p-2 pt-4 -mt-3 z-0">
                     <NewPattern />
                 </div>
-                <span class="w-auto flex justify-between mt-1.5 px-5">
-                    {/* 1st Space */} <span class="flex-1" />
-
-                    <button type="button" class="flex-10 shrink bg-app-active rounded-2xl p-0.5 font-medium border-2 
-                    border-app-muted/50 active:bg-app-active-secondary/70 hover:bg-app-active-secondary text-app-surface-secondary"
-                        onclick={closeSearch}
-                    >Cancel</button>
-
-                    {/* 2nd Space */} <span class="flex-6" />
-
-                    <button type="button" class="flex-10 shrink bg-app-active rounded-2xl p-0.5 font-medium border-2 
-                    border-app-muted/50 active:bg-app-active-secondary/70 hover:bg-app-active-secondary text-app-surface-secondary"
-                        onclick={search}
-                    >Search</button>
-
-                    {/* 3rd Space */} <span class="flex-1" />
-                </span>
             </Show>
 
+            <span class="w-auto flex justify-between mt-1.5 px-5">
+                {/* 1st Space */} <span class="flex-1" />
+
+                <button type="button" class="flex-10 shrink bg-app-active rounded-2xl p-0.5 font-medium border-2 
+                border-app-muted/50 active:bg-app-active-secondary/70 hover:bg-app-active-secondary text-app-surface-secondary"
+                    onclick={closeSearch}
+                >Cancel</button>
+
+                {/* 2nd Space */} <span class="flex-6" />
+
+                <button type="button" class="flex-10 shrink bg-app-active rounded-2xl p-0.5 font-medium border-2 
+                border-app-muted/50 active:bg-app-active-secondary/70 hover:bg-app-active-secondary text-app-surface-secondary"
+                    onclick={search}
+                >Search</button>
+
+                {/* 3rd Space */} <span class="flex-1" />
+            </span>
             {/* <div class="bg-app-surface-secondary rounded-lg py-3 pl-8"></div> */}
         </div>
         
         {/* Search Result */}
-        <Show when={searchResult()}>
-            <div class="mt-4 mr-2 bg-app-element w-auto rounded-2xl p-3 flex flex-col" >
-            <h1 class="text-app-function text-xl font-semibold">Search Result</h1>
-                {/* Content */}
-                <div class="search_content bg-app-surface-secondary max-w-full rounded-lg py-3 pl-8">
-                    <textarea disabled value={JSON.stringify(searchResult(), undefined, 2)} 
-                    class="text-app-string w-full"/>
-                </div>
-            </div>
+        <Show when={isLoading() !== "nope" }>
+            <ResultPanel result={result()} apply_func={applyResult} />
         </Show>
         </span>
     )
 }
 
 
+function ResultPanel(props: { result: JSONValue | undefined, apply_func(): void, sub_title?: string }) {
+    return (
+    <div class="mt-4 mr-2 bg-app-element w-auto rounded-2xl p-3 flex flex-col" >
 
-type patternType = { packet_name?: string, keys: { key: string, val: string }[] }
-// type searchParams = {  }
-async function searchLink(url: string | undefined, patter: patternType) {
-    if (!url) throw new SearchError("BAD_QUERY", 'No URL given!')
+        {/* SubTitle & Button */}
+        <span class="flex place-content-between mr-1 mb-2"> 
+            <h1 class="text-app-function text-xl font-semibold mt-0.5">{props.sub_title || 'Result'}</h1>
+            <Show when={props.result} >
+                <button type="button" 
+                class="px-13 bg-app-active rounded-2xl p-0.5 font-medium border-2 
+                border-app-muted/50 active:bg-app-active-secondary/70 hover:bg-app-active-secondary 
+                text-app-surface-secondary" 
+                onclick={props.apply_func}
+                >Apply</button>
+            </Show>
+        </span>
 
-    try {
-        let response = await queryURL(url);
-        if (patter.packet_name) response = response[patter.packet_name]
+        <div class="search_content bg-app-surface-secondary rounded-lg py-3 pl-8"> {/* Content */}
 
-        // (patter.packet_name && patter.packet_name.trim() !== "") ?
-        //     (await queryURL(url))[patter.packet_name]
-        //     : await queryURL(url);
+        <Switch fallback={ <Loading option={1} class="place-self-center h-6 w-6" /> }>
+            <Match when={props.result} >
+                <textarea disabled rows={10}
+                value={JSON.stringify(props.result, undefined, 2)} 
+                class="text-app-string w-full"/>
+            </Match>
+        </Switch>
 
-        if (Array.isArray(response)) response = response[0]
-
-        console.log('response ', response);
-
-        const result: JSONObject = {};
-        // return patter.keys.reduce((acc, {key, val}) => {
-        //     acc[val] = response[key]; return acc;
-        // }, {} as JSONObject);
-
-        if (patter.keys.length >= 1) {
-            for (let i = 0; i < patter.keys.length; i++) {
-                const { key, val } = patter.keys[i];
-                result[val] = response[key] || null;
-            }
-        } else {
-            console.log('search: ', response);
-            return response;
-        }
-
-        console.log('search: ', result);
-        return result;
-    } catch (err) {
-        if (err instanceof Error) throw new SearchError('BAD_QUERY', err.message)
-    }
+        </div>
+    </div>
+    ); 
 }
 
-async function queryURL(url: string) {
-
-    const res = await fetch(url, {
-        method: 'GET',
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
-
-    if (!res.ok) {
-        console.error(`queryURL: ${res.status} - ${res.statusText}`);
-        throw new Error(await res.json())
-    }
-
-    const data = await res.json();
-    console.debug('api response: ', data);
-
-    return data
-}

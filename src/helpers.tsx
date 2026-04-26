@@ -13,7 +13,7 @@ import type { Note } from "../types.ts"
 
 // # Update store values # //
 //
-export function updateStore(path: (string | number)[], change: JSONPrimitive) {
+export function updateStore(path: (string | number)[], change: JSONPrimitive | LineContent) {
     const setter = currentSetter()
 
     console.group('updateStore')

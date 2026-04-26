@@ -1,7 +1,7 @@
 // @ts-types="solid-js"
 import { createSignal } from "solid-js";
-import { createStore } from "solid-js/store";
-import type { lineMenuParams, noteFrame } from "./types.tsx";
+import { createStore, reconcile } from "solid-js/store";
+import type { LineContent, lineMenuParams, noteFrame, searchParamsType } from "./types.tsx";
 import type { SetStoreFunction } from "solid-js/store";
 import { popoverMenu } from "./components/popover.tsx";
 import { changeInput, copyToClipboard, eraseInput, addInput } from "./helpers.tsx";
@@ -35,6 +35,9 @@ export const [newNote, setNewNote] = createStore<noteFrame>({
 // Signals for Helper functions control
 export const [currentSetter, setSetter] = createSignal<SetStoreFunction<noteFrame>>(setNewNote)
 
+// ##  Search Panel Store
+export const [searchParams, upd_searchParams] = createStore<searchParamsType>()
+export function reset_searchParams() { upd_searchParams(reconcile({})) };
 
 // ##  Settings Menus  ##
 

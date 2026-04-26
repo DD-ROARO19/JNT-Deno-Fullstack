@@ -21,9 +21,9 @@ import { InputButton } from "./Select.tsx";
 import { LineSettingsBtn,
     MA_settingsBtn, Obj_settingsBtn, Prim_settingsBtn 
 } from "./LineSettingsBtn.tsx";
+import { prepareSearchPanel } from "../Search.tsx";
 
-
-
+const search_term = "__SEARCH"
 
 // function lineConfig(path: (string | number)[], data: JSONPrimitive | LineContent[], type: typeOfInputs): lineMenu {
 //     return {
@@ -82,7 +82,11 @@ export function StringType(props: primitiveProps & { data: string }) {
                         :
                         props.data
                 }
-                onChange={e => updateStore(props.path, e.currentTarget.value)}
+                onChange={e => { updateStore(props.path, e.currentTarget.value); 
+                    if(props.key?.toString().toLocaleUpperCase() === search_term && props.data.toString().trim() !== "") {
+                        prepareSearchPanel(e.currentTarget.value, props.path)
+                    } 
+                }}
                 class="StringType flex-1 outline-none focus:bg-app-base rounded-md mr-8
                     min-h-6 field-sizing-content text-app-string"
             ></textarea>
