@@ -1,7 +1,9 @@
 import { toast } from "./components/notifications.tsx";
 import { latCardSet } from "./signals.tsx";
 import { searchParams, upd_searchParams } from "./stores.tsx";
-import type { JSONObject, patternType } from "./types.tsx";
+import type { JSONObject, new_patternType } from "./types.tsx";
+import type { pattern } from "../types.ts";
+
 
 export class SearchError extends Error {
     constructor(
@@ -71,7 +73,7 @@ export function prepareSearchPanel(new_url:string, path: (string | number)[]) {
 
 const pattern_title_term = "TITLE__";
 const search_url_term = "URL__";
-export async function searchLink(patter: patternType) {
+export async function searchLink(patter: new_patternType) {
     upd_searchParams("resultName", undefined);
     try {
         let response = await queryURL();
@@ -141,4 +143,26 @@ async function queryURL() {
     console.debug('api response: ', data);
 
     return data
+}
+
+export async function query_patterns(id: string): Promise<pattern>;
+export async function query_patterns(): Promise<pattern[]>;
+export async function query_patterns(id?: string): Promise<pattern | pattern[]> {
+    const url = id ? `/api/patterns/${id}` : '/api/patterns/query';
+    const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+
+    if (!res.ok) {
+        console.error(`queryURL: ${res.status} - ${res.statusText}`);
+        throw new Error(await res.json())
+    }
+
+    const data = await res.json();
+    console.debug('Patterns => ', data);
+    
+    return data;
 }

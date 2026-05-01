@@ -1,4 +1,4 @@
-import type { Note, NoteMetadata } from "../types.ts";
+import type { Note, NoteMetadata, pattern } from "../types.ts";
 import type { Category, CategoryNode } from "../types.ts";
 
 
@@ -21,7 +21,7 @@ export type menuConfig = (...args: lineMenuParams) => lineMenu;
 
 // ###  LATERAL PANELS  ###
 
-export type patternType = { packet_name?: string, keys: { key: string | number, val: string }[] }
+export type new_patternType = Omit<pattern, 'title'>
 export type searchParamsType = { 
     formatedResult?: LineContent;   url?: string; 
     path?: (string | number)[];     resultName?: string;
