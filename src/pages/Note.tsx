@@ -21,6 +21,7 @@ import { toast } from "../components/notifications.tsx";
 import { MenuPopovers } from "../components/LineSettingsBtn.tsx";
 import { SearchPanel } from "../components/LateralPanels.tsx";
 import { lateralSetter } from "../signals.tsx";
+// import { NewLine2 } from "../components/RowLines.tsx";
 
 async function getNote(id: string): Promise<true> {
     console.log('ID: ', id);
@@ -75,13 +76,12 @@ export default function Note() {
                 <MenuPopovers />
                 <OptionsMenu />
                 <Toast />
-                <span class="flex">
-                    <span class="w-1/20 flex-none" />
+                <div class="flex h-max">
+                    <aside class="w-1/20 flex-none" />
                     <span class="flex-1 shrink-10 transition-discrete delay-75 duration-100 ease-in"
                         classList={{ "grow-0": advCard() }} />
                     <div class="m-4 bg-app-element rounded-2xl p-2 flex flex-col 
-                        flex-3 shrink-0 h-max"
-                    >
+                    flex-3 shrink-0 h-max" >
                         {/* Title */}
                         <Header titleSetter={setNote} value={note.metadata.title}
                             onSave={() => UpdateNote(note)}
@@ -96,11 +96,12 @@ export default function Note() {
                         </div>
 
                     </div>
-                    <span class="flex-1 transition-discrete delay-75 duration-100 ease-in"
-                        classList={{ "grow-2": advCard() }}
-                    ><Show when={advCard()}> <SearchPanel /> </Show></span>
-                    <span class="w-1/20 flex-none" />
-                </span>
+                    <div class="flex-1 transition-discrete delay-75 duration-100 ease-in
+                    sticky top-0 h-fit max-h-[calc(100vh)] overflow-y-auto scrollbar-thin pb-4"
+                    classList={{ "grow-2": advCard() }}
+                    ><Show when={advCard()}> <SearchPanel /> </Show></div>
+                    <aside class="w-1/20 flex-none" />
+                </div>
             </Match>
         </Switch>
     )

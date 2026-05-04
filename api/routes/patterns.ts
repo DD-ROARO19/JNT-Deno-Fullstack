@@ -10,11 +10,16 @@ patterns.post('/new', async (c) => {
     const body = await c.req.json()
     
     try {
-        const res = db.prepare(insert_stmt).run(body.title, body.packet_name || '', JSON.stringify(body.keys));
+        const res = db.prepare(insert_stmt).run(body.author || '', JSON.stringify(body.pattern));
         console.debug(res)
         return c.json({ msg: 'New pattern saved', id: res.lastInsertRowid }, 201);
     } catch (err) {
         console.error(err)
+        console.error('insert_stmt => ', insert_stmt)
+        console.error('body => ', body)
+        // console.error('title =>', body?.title)
+        // console.error('packet =>', body?.packet_name)
+        // console.error('keys =>', body?.keys)
         return c.json(err, 500);
     }
 });
@@ -29,10 +34,13 @@ patterns.get('/query', (c) => {
     };
 
     const binds: bindObject = {};
-    let stmt = 'SELECT p.* FROM patterns AS p';
+    
+    // const cols = `p.id, p.title, p.author, p.pattern, p.created_at, p.last_updated`;
+    const cols = `p.*`;
+    let stmt = `SELECT ${cols} FROM patterns AS p`;
 
     if (q.search) {
-        stmt = `SELECT s.* FROM patterns_fts($search) AS s 
+        stmt = `SELECT ${cols} FROM patterns_fts($search) AS s 
             JOIN patterns AS p ON s.rowid = p.id`;  
         binds['search'] = q.search;
     }

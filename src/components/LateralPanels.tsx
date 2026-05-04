@@ -12,12 +12,12 @@ import {
 import { createStore } from "solid-js/store";
 import { isLoading, setLoadingState } from "../signals.tsx";
 import { reset_searchParams, searchParams, upd_searchParams } from "../stores.tsx";
-import { Arrow, Loading, Erase } from "../assets/svgs.tsx";
+import { Arrow, Loading, Erase, ReloadArrow } from "../assets/svgs.tsx";
 import { ObjectType } from "./StaticTypes.tsx";
 import { StringType } from "./InputTypes.tsx"
 import { query_patterns, SearchError, searchLink, toggleLateralCard, uploadPattern } from "../Search.tsx";
 import { formatValue, updateStore } from "../helpers.tsx";
-import type { new_patternType, typeOfInputs, JSONValue, JSONObject } from "../types.tsx";
+import type { typeOfInputs, JSONValue, JSONObject, patternQuery } from "../types.tsx";
 import type { pattern } from "../../types.ts";
 import type { SetStoreFunction } from "solid-js/store";
 
@@ -27,15 +27,20 @@ import type { SetStoreFunction } from "solid-js/store";
 //     updater: SetStoreFunction<pattern>
 // }
 export function SearchPanel() {
-    const [selectedMenu, selectMenu] = createSignal<'existing' | 'new' | 'none'>('existing');
-    const [currentStore, changeCurrentStore] = createSignal<pattern>()
-    const [storeSetter, changeStoreSetter] = createSignal<SetStoreFunction<pattern>>()
+    const [selectedMenu, selectMenu] = createSignal<'existing' | 'new' | 'none'>('none');
+    const [newPattern, updateNewPattern] = createStore<pattern>({ title: '', keys: [] })
+    const [currentStore, changeCurrentStore] = createSignal<pattern>(newPattern)
+    const [storeSetter, changeStoreSetter] = createSignal<SetStoreFunction<pattern>>(updateNewPattern)
     const [result, setResult] = createSignal<JSONValue>()
+    const [areNewSignal, set_areNewSignal] = createSignal(false)
 
-    const [patterns, { refetch, mutate }] = createResource(() => query_patterns())
+    const [patterns, { refetch }] = createResource(() => query_patterns())
     
-    const pttrns = patterns();
-    if (pttrns && pttrns.length === 0) selectMenu("new");
+    createEffect(() => {
+        if (patterns.state === 'ready' && patterns().length === 0) selectMenu("new");
+    });
+
+    function reset_panel() { updateNewPattern({ title: '', keys: [] }); refetch() }
 
     function addProperty() {
         const updater = storeSetter()
@@ -58,23 +63,28 @@ export function SearchPanel() {
     };
 
 
-    const TabBtn = (props: { option: 'new' | 'existing', title: string }) => <span
-        class="bg-app-element rounded-xl transition-discrete duration-100 ease-in z-1">
-        <button type="button" class="rounded-md active:bg-transparent flex w-full"
+    function TabBtn(props: { option: 'new' | 'existing', title: string }) {
+        const selected_menu = createMemo(() => selectedMenu() === props.option);
+
+        return (
+        <span class="bg-app-element rounded-xl transition-discrete duration-100 ease-in z-1" >
+            <button type="button" class="rounded-md active:bg-transparent flex w-full"
             classList={{
-                "bg-app-active/60 rounded-xl hover:bg-app-active/80": selectedMenu() === props.option,
-                "hover:bg-app-active/30": selectedMenu() !== props.option
+                "rounded-xl bg-app-active/60 hover:bg-app-active/80": selected_menu(),
+                "hover:bg-app-active/30": !selected_menu(),
+                "bg-app-active-secondary/50": areNewSignal() && props.option === 'existing'
             }}
-            onclick={() => selectMenu(p => p === props.option ? 'none' : props.option)} >
-            <Arrow class={"fill-app-surface-secondary " + (selectedMenu() === props.option ? 'rotate-0' : 'rotate-270 fill-app-text/60')} />
-            <p class={"font-medium " + (selectedMenu() === props.option ? 'text-app-surface-secondary' : 'text-app-text/60')} >{props.title}</p>
-        </button>
-    </span>;
+            onclick={() => { selectMenu(p => p === props.option ? 'none' : props.option); if(selected_menu()) set_areNewSignal(false); }} >
+                <Arrow class={"fill-app-surface-secondary " + (selected_menu() ? 'rotate-0' : 'rotate-270 fill-app-text/60')} />
+                <p class={"font-medium " + (selected_menu() ? 'text-app-surface-secondary' : 'text-app-text/60')} >{props.title}</p>
+            </button>
+        </span>
+        )
+    };
 
 
     const [saveValidation, toggle_saveValidation] = createSignal<boolean>(false);
     function NewPattern() {
-        const [newPattern, updateNewPattern] = createStore<pattern>({ title: '', keys: [] })
         // const [patternName, setPatternName] = createSignal<string>()
 
         createEffect(() => { if (selectedMenu() === 'new') {
@@ -85,13 +95,22 @@ export function SearchPanel() {
         // Toggle between fist validating the selection & then saving when re-validated.
         function handleSave() { saveValidation() ? savePattern() : toggle_saveValidation(p => !p) };
         
-        function savePattern() {
-            if (newPattern.title.trim() === "") throw new SearchError("INVALID_PATTERN", 'Please fill a name to save this pattern');
-
-            uploadPattern(newPattern)
-
-            console.debug('saved!', newPattern);
-            toggle_saveValidation(false);
+        async function savePattern() {
+            try {
+                if (newPattern.title.trim() === "") throw new SearchError("INVALID_PATTERN", 'Please fill a name to save this pattern');
+    
+                await uploadPattern(newPattern)
+    
+                console.debug('saved!', newPattern);
+                toggle_saveValidation(false);
+                // mutate(
+                //     prev => prev ? 
+                //     [...prev, { id: prev.at(-1)!.id + 1, author: 'USER', title: newPattern.title, pattern: newPattern}] 
+                //     : [{ id: 0, author: 'USER', title: newPattern.title, pattern: newPattern}]
+                // )
+                refetch()
+                set_areNewSignal(true)
+            } catch (_) {/* not on use */}
         }
 
         return (
@@ -210,7 +229,7 @@ export function SearchPanel() {
         )
     }
 
-    function CurrentPatterns(props: { list: pattern[] }) {
+    function CurrentPatterns(props: { list: patternQuery[] }) {
         const [filedPattern, updateFiledPattern] = createStore<pattern>({ title: '', keys: [] })
 
         createEffect(() => { if (selectedMenu() === 'existing') {
@@ -225,15 +244,15 @@ export function SearchPanel() {
             openPattern(p => (p === pattern_index && p !== undefined) ? undefined : pattern_index )
         }
 
-        createEffect(() => { 
-            const index = openedPattern();
-            (index !== undefined) ? 
-                updateFiledPattern(props.list[index])
-                : updateFiledPattern({ title: '', keys: [] })
-        })
+        // createEffect(() => { 
+        //     const index = openedPattern();
+        //     (index !== undefined) ? 
+        //         updateFiledPattern(props.list[index].pattern)
+        //         : updateFiledPattern({ title: '', keys: [] })
+        // })
         
         return (
-            <For each={props.list}>{(pattern, i) => {
+            <For each={props.list}>{(item, i) => {
                 const isOpen = createMemo(() => openedPattern() === i())
                 
                 return (
@@ -243,14 +262,14 @@ export function SearchPanel() {
                 >
                     <span class="flex w-full hover:bg-app-active/50 rounded-md">
                         <Arrow class={"fill-app-text/60 " + (isOpen() ? 'rotate-0' : 'rotate-270')} />
-                        <h2 class="text-app-function">{pattern.title}</h2>
+                        <h2 class="text-app-function">{item.title}</h2>
                     </span>
                     <div class="grid transition-[grid-template-rows] duration-250 ease-in-out grid-rows-[0fr] invisible"
                     classList={{ "grid-rows-[1fr] visible": isOpen() }}
                     >
                         <span class="overflow-hidden" >
                             <textarea class="text-app-string w-full field-sizing-content" 
-                            value={JSON.stringify(pattern, undefined, 2)} disabled />
+                            value={JSON.stringify(item.pattern, undefined, 2)} disabled />
                             {/* <Show when={isOpen()}>
                             </Show> */}
                             {/* <For each={pattern.keys}>{(property) =>
@@ -314,29 +333,28 @@ export function SearchPanel() {
 
     return (
         // Lateral Panel
-        <span class="flex flex-col overflow-y-scroll select-none">
+        <span class="flex flex-col select-none">
         
         {/* Search Pattern */}
         <div class="mt-4 mr-2 bg-app-element w-auto rounded-2xl p-3 flex flex-col" >
-            <h1 class="text-app-function text-xl font-semibold">Search / Patterns</h1>
+            <span class="flex place-content-between">
+                <h1 class="text-app-function text-xl font-semibold">Search / Patterns</h1>
+                <ReloadArrow onclick={reset_panel} class="fill-app-text/60" />
+            </span>
 
             <input disabled value={searchParams.url} 
             class="text-app-string" />
-
-            <Show when={patterns()}>
-            {(pattern_list) => (
-                <>
-                <TabBtn option="existing" title="Existing search patterns" />
+            
+            <Show when={patterns.state === 'ready' && patterns().length > 0}>
+                <TabBtn option="existing" title={"Existing search patterns" + (areNewSignal() ? ' (new patterns!)' : '')} />
                 <div class="grid transition-[grid-template-rows] duration-200 ease-in-out grid-rows-[0fr] -mt-3 mb-3"
                 classList={{ "grid-rows-[1fr]": selectedMenu() === 'existing' }}>
                     <div class="overflow-hidden">
                         <div class="bg-app-surface-secondary rounded-lg py-3 p-2 pt-4 z-0">
-                            <CurrentPatterns list={pattern_list()} />
+                            <CurrentPatterns list={patterns()!} />
                         </div>
                     </div>
                 </div>
-                </>
-            )}
             </Show>
 
             <TabBtn option="new" title="New search patterns" />

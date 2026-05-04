@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS notes (
 -- Table of patterns for data extraction.
 CREATE TABLE IF NOT EXISTS patterns (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
+    title TEXT NOT NULL GENERATED ALWAYS AS (pattern ->> '$.title') VIRTUAL,
     author TEXT DEFAULT 'NO_AUTHOR',
-    pattern TEXT,
+    pattern TEXT CHECK (json_valid(pattern)),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
 );

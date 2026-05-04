@@ -20,8 +20,11 @@ export type menuConfig = (...args: lineMenuParams) => lineMenu;
 
 
 // ###  LATERAL PANELS  ###
-
-export type new_patternType = Omit<pattern, 'title'>
+type StringyfiedPattern = string
+export type patternQuery = { 
+    id:number, title: string, author: string, 
+    pattern: StringyfiedPattern//, created_at: Date, last_updated: Date 
+};
 export type searchParamsType = { 
     formatedResult?: LineContent;   url?: string; 
     path?: (string | number)[];     resultName?: string;

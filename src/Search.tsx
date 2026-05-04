@@ -1,7 +1,7 @@
 import { toast } from "./components/notifications.tsx";
 import { latCardSet } from "./signals.tsx";
 import { searchParams, upd_searchParams } from "./stores.tsx";
-import type { JSONObject, new_patternType } from "./types.tsx";
+import type { JSONObject, patternQuery } from "./types.tsx";
 import type { pattern } from "../types.ts";
 
 
@@ -153,9 +153,9 @@ async function queryURL() {
     return data
 }
 
-export async function query_patterns(id: string): Promise<pattern>;
-export async function query_patterns(): Promise<pattern[]>;
-export async function query_patterns(id?: string): Promise<pattern | pattern[]> {
+export async function query_patterns(id: string): Promise<patternQuery>;
+export async function query_patterns(): Promise<patternQuery[]>;
+export async function query_patterns(id?: string): Promise<patternQuery | patternQuery[]> {
     const url = id ? `/api/patterns/${id}` : '/api/patterns/query';
     const res = await fetch(url, {
         method: 'GET',
@@ -181,11 +181,14 @@ export async function uploadPattern(pattern: pattern, id?: number | string) {
     const response = await fetch(url, {
         method: id ? 'PUT' : 'POST',
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(pattern)
+        body: JSON.stringify({
+            author: 'USER', // TEMPORARY | will need to query cache for username.
+            pattern
+        })
     })
 
     if (!response.ok) {
-        throw new SearchError("BAD_QUERY", await response.json());
+        throw new SearchError("BAD_QUERY", (await response.json())?.code);
     }
 
     console.debug(`Pattern ${pattern.title} successfully saved!`);
@@ -199,7 +202,7 @@ export async function deletePattern(id: number | string) {
     })
 
     if (!res.ok) {
-        throw new SearchError("BAD_QUERY", await res.json());
+        throw new SearchError("BAD_QUERY", (await res.json())?.code);
     }
 
     console.debug(await res.json());

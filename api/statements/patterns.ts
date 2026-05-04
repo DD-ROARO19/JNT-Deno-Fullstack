@@ -4,9 +4,9 @@
  * @param {string} pattern
 */
 const insert_stmt = `--sql
-INSERT INTO (
-    title, author, pattern
-) VALUES (?, ?, ?)
+INSERT INTO patterns (
+    author, pattern
+) VALUES (?, ?)
 `;
 
 
