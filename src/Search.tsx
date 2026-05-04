@@ -9,7 +9,7 @@ export class SearchError extends Error {
     constructor(
         public code: 'UNDEFINED_TOGGLE_SETTER' | 'BAD_QUERY' | 'SEARCH_FORM_EMPTY' 
         | 'INVALID_PATTERN' | 'UNDEFINED_SEARCH_PARAMS' | 'UNDEFINED_RESULT'
-        | 'ERROR_WHILE_FORMATING_RESULT',
+        | 'ERROR_WHILE_FORMATING_RESULT' | 'BAD_POST',
         // error?: Error,
         message?: string,
     ) {
@@ -44,6 +44,10 @@ export class SearchError extends Error {
                 
             case "ERROR_WHILE_FORMATING_RESULT":
                 this.message = 'Error while formating result';
+                break;
+                
+            case "BAD_POST":
+                this.message += " - " + this.code;
                 break;
 
             default:

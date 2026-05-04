@@ -7,6 +7,7 @@ import {
     createEffect,
     Switch,
     Match,
+    createMemo
 } from "solid-js";
 import { createStore } from "solid-js/store";
 import { isLoading, setLoadingState } from "../signals.tsx";
@@ -46,7 +47,7 @@ export function SearchPanel() {
 
 
     const TabBtn = (props: { option: 'new' | 'existing', title: string }) => <span
-        class="bg-app-element rounded-xl select-none transition-discrete duration-100 ease-in z-1">
+        class="bg-app-element rounded-xl transition-discrete duration-100 ease-in z-1">
         <button type="button" class="rounded-md active:bg-transparent flex w-full"
             classList={{
                 "bg-app-active/60 rounded-xl hover:bg-app-active/80": selectedMenu() === props.option,
@@ -61,15 +62,25 @@ export function SearchPanel() {
 
     const [saveValidation, toggle_saveValidation] = createSignal<boolean>(false);
     function NewPattern() {
-
+        // Toggle between fist validating the selection & then saving when re-validated.
         function handleSave() { saveValidation() ? savePattern() : toggle_saveValidation(p => !p) };
-
+        
         async function savePattern() {
             if (patternName() === undefined || patternName()?.trim() === "") throw new SearchError("INVALID_PATTERN", 'Please fill a name to save this pattern');
 
-            // fetch()
+            const response = await fetch('/api/patterns/new', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    
+                })
+            })
 
-            console.log('saved!', { name: patternName(), ...storedPattern });
+            if (!response.ok) {
+                throw new SearchError("BAD_QUERY", await response.json());
+            }
+
+            console.debug('saved!', { name: patternName(), ...storedPattern });
             toggle_saveValidation(false);
         }
 
@@ -191,18 +202,44 @@ export function SearchPanel() {
 
     function CurrentPatterns(props: { list: pattern[] }) {
         console.log('log list => ', props.list);
+        const [openPattern, selectPattern] = createSignal<number>();
+
+        function select_pattern(pattern_index: number) {
+            selectPattern(p => (p === pattern_index && p !== undefined) ? undefined : pattern_index )
+        }
         
         return (
-            <For each={props.list}>{(pattern) =>
-                <>
-                <div class="relative p-0.5 bg-app-surface border-app-element border-2 rounded-lg ps-3 text-md font-semibold
-                outline-0 mt-2 text-app-function">
-                    <span>
-                        <h2>{pattern.title}</h2>
-
+            <For each={props.list}>{(pattern, i) => {
+                const isOpen = createMemo(() => openPattern() === i())
+                
+                return (
+                <div class="relative bg-app-surface border-app-element border-2 rounded-lg text-md font-semibold
+                outline-0 mt-2 flex flex-col"
+                onclick={ () => select_pattern(i()) }
+                >
+                    <span class="flex w-full hover:bg-app-active/50 rounded-md">
+                        <Arrow class={"fill-app-text/60 " + (isOpen() ? 'rotate-0' : 'rotate-270')} />
+                        <h2 class="text-app-function">{pattern.title}</h2>
                     </span>
+                    <div class="grid transition-[grid-template-rows] duration-250 ease-in-out grid-rows-[0fr] invisible"
+                    classList={{ "grid-rows-[1fr] visible": isOpen() }}
+                    >
+                        <span class="overflow-hidden" >
+                            <textarea class="text-app-string w-full field-sizing-content" 
+                            value={JSON.stringify(pattern, undefined, 2)} disabled />
+                            {/* <Show when={isOpen()}>
+                            </Show> */}
+                            {/* <For each={pattern.keys}>{(property) =>
+                                <span class="flex">
+                                    <p class="flex-2">{property.key}</p>
+                                    <p>{'>>'}</p>
+                                    <p class="flex-2">{property.val}</p>
+                                </span>
+                            }</For> */}
+                        </span>
+                    </div>
                 </div>
-                </>
+                )}
             }</For>
         );
     }
@@ -249,7 +286,7 @@ export function SearchPanel() {
 
     return (
         // Lateral Panel
-        <span class="flex flex-col overflow-y-scroll">
+        <span class="flex flex-col overflow-y-scroll select-none">
         
         {/* Search Pattern */}
         <div class="mt-4 mr-2 bg-app-element w-auto rounded-2xl p-3 flex flex-col" >
@@ -259,22 +296,30 @@ export function SearchPanel() {
             class="text-app-string" />
 
             <Show when={patterns()}>
-            {(pattern_list) => (<Switch fallback={<TabBtn option="existing" title="Existing query patterns" />}>
-                <Match when={selectedMenu() === 'existing'}>
-                    <TabBtn option="existing" title="Existing search patterns" />
-                    <div class="bg-app-surface-secondary rounded-lg py-3 p-2 pt-4 -mt-3 z-0">
-                        <CurrentPatterns list={pattern_list()} />
+            {(pattern_list) => (
+                <>
+                <TabBtn option="existing" title="Existing search patterns" />
+                <div class="grid transition-[grid-template-rows] duration-200 ease-in-out grid-rows-[0fr] -mt-3 mb-3"
+                classList={{ "grid-rows-[1fr]": selectedMenu() === 'existing' }}>
+                    <div class="overflow-hidden">
+                        <div class="bg-app-surface-secondary rounded-lg py-3 p-2 pt-4 z-0">
+                            <CurrentPatterns list={pattern_list()} />
+                        </div>
                     </div>
-                </Match>
-            </Switch>)}
+                </div>
+                </>
+            )}
             </Show>
 
-            <Show when={selectedMenu() === 'new'} fallback={<TabBtn option="new" title="New query pattern" />}>
-                <TabBtn option="new" title="New search patterns" />
-                <div class="bg-app-surface-secondary rounded-lg py-3 p-2 pt-4 -mt-3 z-0">
-                    <NewPattern />
+            <TabBtn option="new" title="New search patterns" />
+            <div class="grid transition-[grid-template-rows] duration-200 ease-in-out grid-rows-[0fr] -mt-3 mb-3"
+            classList={{ "grid-rows-[1fr]": selectedMenu() === 'new' }}>
+                <div class="overflow-hidden">
+                    <div class="bg-app-surface-secondary rounded-lg p-2 py-3 pt-4 z-0">
+                        <NewPattern />
+                    </div>
                 </div>
-            </Show>
+            </div>
 
             <span class="w-auto flex justify-between mt-1.5 px-5">
                 {/* 1st Space */} <span class="flex-1" />
