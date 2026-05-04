@@ -9,7 +9,7 @@ export class SearchError extends Error {
     constructor(
         public code: 'UNDEFINED_TOGGLE_SETTER' | 'BAD_QUERY' | 'SEARCH_FORM_EMPTY' 
         | 'INVALID_PATTERN' | 'UNDEFINED_SEARCH_PARAMS' | 'UNDEFINED_RESULT'
-        | 'ERROR_WHILE_FORMATING_RESULT' | 'BAD_POST',
+        | 'ERROR_WHILE_FORMATING_RESULT' | 'BAD_POST' | 'UNDEFINED_STORE',
         // error?: Error,
         message?: string,
     ) {
@@ -50,6 +50,10 @@ export class SearchError extends Error {
                 this.message += " - " + this.code;
                 break;
 
+            case "UNDEFINED_STORE":
+                this.message = 'Either store or storeSetter undefined!';
+                break;
+
             default:
                 this.code satisfies never;
                 this.message += " - UNDEFINED_CASE";
@@ -77,7 +81,7 @@ export function prepareSearchPanel(new_url:string, path: (string | number)[]) {
 
 const pattern_title_term = "TITLE__";
 const search_url_term = "URL__";
-export async function searchLink(patter: new_patternType) {
+export async function searchLink(patter: pattern) {
     upd_searchParams("resultName", undefined);
     try {
         let response = await queryURL();
@@ -89,7 +93,7 @@ export async function searchLink(patter: new_patternType) {
 
         // if (Array.isArray(response)) response = response[0]
 
-        console.log('response ', response);
+        console.log('searchLink pattern', patter);
 
         const result: JSONObject = {};
         // return patter.keys.reduce((acc, {key, val}) => {
@@ -121,7 +125,7 @@ export async function searchLink(patter: new_patternType) {
         }
         if(Object.keys(result).length === 0 || Object.values(result).includes(searchParams.url!)) Object.assign(result, response);
 
-        console.log('search: ', result);
+        // console.log('search: ', result);
         return result;
     } catch (err) {
         if (err instanceof Error) throw new SearchError('BAD_QUERY', err.message)
@@ -144,7 +148,7 @@ async function queryURL() {
     }
 
     const data = await res.json();
-    console.debug('api response: ', data);
+    console.debug('QueryURL response: ', data);
 
     return data
 }
@@ -170,3 +174,33 @@ export async function query_patterns(id?: string): Promise<pattern | pattern[]> 
     
     return data;
 }
+
+export async function uploadPattern(pattern: pattern, id?: number | string) {
+    const url = id ? `/api/patterns/${id}/update` : '/api/patterns/new'
+
+    const response = await fetch(url, {
+        method: id ? 'PUT' : 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pattern)
+    })
+
+    if (!response.ok) {
+        throw new SearchError("BAD_QUERY", await response.json());
+    }
+
+    console.debug(`Pattern ${pattern.title} successfully saved!`);
+};
+export async function deletePattern(id: number | string) {
+    const url = `/api/patterns/${id}/erase`;
+
+    const res = await fetch(url, {
+        method: 'DELETE',
+        headers: { "Content-Type": "application/json" }
+    })
+
+    if (!res.ok) {
+        throw new SearchError("BAD_QUERY", await res.json());
+    }
+
+    console.debug(await res.json());
+};

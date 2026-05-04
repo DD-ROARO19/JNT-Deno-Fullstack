@@ -15,33 +15,45 @@ import { reset_searchParams, searchParams, upd_searchParams } from "../stores.ts
 import { Arrow, Loading, Erase } from "../assets/svgs.tsx";
 import { ObjectType } from "./StaticTypes.tsx";
 import { StringType } from "./InputTypes.tsx"
-import { query_patterns, SearchError, searchLink, toggleLateralCard } from "../Search.tsx";
+import { query_patterns, SearchError, searchLink, toggleLateralCard, uploadPattern } from "../Search.tsx";
 import { formatValue, updateStore } from "../helpers.tsx";
 import type { new_patternType, typeOfInputs, JSONValue, JSONObject } from "../types.tsx";
 import type { pattern } from "../../types.ts";
+import type { SetStoreFunction } from "solid-js/store";
 
 
-// type ScardParams = null
+// type patternStoreType = {
+//     pattern: pattern,
+//     updater: SetStoreFunction<pattern>
+// }
 export function SearchPanel() {
     const [selectedMenu, selectMenu] = createSignal<'existing' | 'new' | 'none'>('existing');
-    const [storedPattern, updatePattern] = createStore<new_patternType>({ keys: [] })
+    const [currentStore, changeCurrentStore] = createSignal<pattern>()
+    const [storeSetter, changeStoreSetter] = createSignal<SetStoreFunction<pattern>>()
     const [result, setResult] = createSignal<JSONValue>()
-    const [patternName, setPatternName] = createSignal<string>()
 
     const [patterns, { refetch, mutate }] = createResource(() => query_patterns())
     
     const pttrns = patterns();
     if (pttrns && pttrns.length === 0) selectMenu("new");
 
-    function addProperty() { updatePattern('keys', list => [...list, { key: "", val: "" }]) };
+    function addProperty() {
+        const updater = storeSetter()
+        if(!updater) throw new SearchError("UNDEFINED_STORE");
+
+        updater('keys', list => [...list, { key: "", val: "" }]) 
+    };
     function removeProperty(event: MouseEvent, index: number) { 
+        const updater = storeSetter()
+        if(!updater) throw new SearchError("UNDEFINED_STORE");
+
         if (index === -1) {
-            updatePattern('keys', list => list.slice(0, -1)) 
+            updater('keys', list => list.slice(0, -1)) 
         }
         
         if (event.button === 1) {
             event.preventDefault();
-            updatePattern('keys', list => list.filter((_, i) => i !== index )) 
+            updater('keys', list => list.filter((_, i) => i !== index )) 
         }
     };
 
@@ -62,25 +74,23 @@ export function SearchPanel() {
 
     const [saveValidation, toggle_saveValidation] = createSignal<boolean>(false);
     function NewPattern() {
+        const [newPattern, updateNewPattern] = createStore<pattern>({ title: '', keys: [] })
+        // const [patternName, setPatternName] = createSignal<string>()
+
+        createEffect(() => { if (selectedMenu() === 'new') {
+            changeCurrentStore(newPattern)
+            changeStoreSetter(_ => updateNewPattern)
+        } })
+
         // Toggle between fist validating the selection & then saving when re-validated.
         function handleSave() { saveValidation() ? savePattern() : toggle_saveValidation(p => !p) };
         
-        async function savePattern() {
-            if (patternName() === undefined || patternName()?.trim() === "") throw new SearchError("INVALID_PATTERN", 'Please fill a name to save this pattern');
+        function savePattern() {
+            if (newPattern.title.trim() === "") throw new SearchError("INVALID_PATTERN", 'Please fill a name to save this pattern');
 
-            const response = await fetch('/api/patterns/new', {
-                method: 'POST',
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    
-                })
-            })
+            uploadPattern(newPattern)
 
-            if (!response.ok) {
-                throw new SearchError("BAD_QUERY", await response.json());
-            }
-
-            console.debug('saved!', { name: patternName(), ...storedPattern });
+            console.debug('saved!', newPattern);
             toggle_saveValidation(false);
         }
 
@@ -96,7 +106,7 @@ export function SearchPanel() {
                         text-app-text not-focus:placeholder-transparent placeholder-app-text/80"
                             placeholder="A name for this new query pattern"
                             autocomplete="off"
-                            value={patternName() || ''} onChange={e => setPatternName(e.currentTarget.value)}
+                            value={newPattern.title} onChange={e => updateNewPattern('title', e.currentTarget.value)}
                         />
                         <label for="pattern_name"
                             class="absolute font-bold duration-300 transform -translate-y-4 scale-75 top-2.5 z-10 origin-[0] 
@@ -106,7 +116,7 @@ export function SearchPanel() {
                         start-1 pointer-events-none text-app-function">New pattern name</label>
 
                         <button type="button" class="absolute right-1.5 top-2 cursor-pointer" 
-                        onclick={() => setPatternName("")}>
+                        onclick={() => updateNewPattern('title', "")}>
                         <Erase class="fill-app-text/30" /></button>
                     </div>
                 </Show>
@@ -120,7 +130,7 @@ export function SearchPanel() {
                     text-app-text not-focus:placeholder-transparent placeholder-app-text/80"
                         placeholder="Object storing the data (empty = result)"
                         autocomplete="off"
-                        value={storedPattern.packet_name || ''} onChange={e => updatePattern('packet_name', e.currentTarget.value)}
+                        value={newPattern.packet_name || ''} onChange={e => updateNewPattern('packet_name', e.currentTarget.value)}
                     />
                     <label for="packet_name"
                         class="absolute font-bold duration-300 transform -translate-y-4 scale-75 top-2.5 z-10 origin-[0] 
@@ -130,13 +140,13 @@ export function SearchPanel() {
                     start-1 pointer-events-none text-app-property">Extract from</label>
 
                     <button type="button" class="absolute right-1.5 top-2 cursor-pointer" 
-                        onclick={() => updatePattern('packet_name', "") }>
+                        onclick={() => updateNewPattern('packet_name', "") }>
                         <Erase class="fill-app-text/30" /></button>
                 </div>
 
 
                 {/* Aditional properties */}
-                <For each={storedPattern.keys}>{(property, index) => <div class="flex mt-2 gap-2 cursor-cell"
+                <For each={newPattern.keys}>{(property, index) => <div class="flex mt-2 gap-2 cursor-cell"
                     onAuxClick={e => removeProperty(e, index())}>
 
                     <div class="relative p-0.5 bg-app-surface border-app-element border-2 rounded-lg ps-3 text-md
@@ -147,7 +157,7 @@ export function SearchPanel() {
                     text-app-text not-focus:placeholder-transparent placeholder-app-text/80"
                             placeholder="Key to look in"
                             autocomplete="off"
-                            value={property.key || ''} onChange={e => updatePattern('keys', index(),
+                            value={property.key || ''} onChange={e => updateNewPattern('keys', index(),
                                 property.val === "" ? ['key', 'val'] : ['key'], e.currentTarget.value)}
                         />
                         <label for="search_key"
@@ -170,7 +180,7 @@ export function SearchPanel() {
                     text-app-text not-focus:placeholder-transparent placeholder-app-text/80"
                             placeholder="Name for value"
                             autocomplete="off"
-                            value={property.val || ''} onChange={e => updatePattern('keys', index(), 'val', e.currentTarget.value.toString())}
+                            value={property.val || ''} onChange={e => updateNewPattern('keys', index(), 'val', e.currentTarget.value.toString())}
                         />
                         <label for="new_name"
                             class="absolute font-bold duration-300 transform -translate-y-4 scale-75 top-3 z-10 origin-[0] 
@@ -180,7 +190,7 @@ export function SearchPanel() {
                     start-1 pointer-events-none text-app-string"># Value Name</label>
 
                     <button type="button" class="absolute right-1.5 top-2 cursor-pointer" 
-                        onclick={() => updatePattern('keys', index(), 'val', "") }>
+                        onclick={() => updateNewPattern('keys', index(), 'val', "") }>
                         <Erase class="fill-app-text/30" /></button>
                     </div>
                 </div>}</For>
@@ -201,16 +211,30 @@ export function SearchPanel() {
     }
 
     function CurrentPatterns(props: { list: pattern[] }) {
+        const [filedPattern, updateFiledPattern] = createStore<pattern>({ title: '', keys: [] })
+
+        createEffect(() => { if (selectedMenu() === 'existing') {
+            changeCurrentStore(filedPattern)
+            changeStoreSetter(_ => updateFiledPattern)
+        } })
+
         console.log('log list => ', props.list);
-        const [openPattern, selectPattern] = createSignal<number>();
+        const [openedPattern, openPattern] = createSignal<number | undefined>(undefined);
 
         function select_pattern(pattern_index: number) {
-            selectPattern(p => (p === pattern_index && p !== undefined) ? undefined : pattern_index )
+            openPattern(p => (p === pattern_index && p !== undefined) ? undefined : pattern_index )
         }
+
+        createEffect(() => { 
+            const index = openedPattern();
+            (index !== undefined) ? 
+                updateFiledPattern(props.list[index])
+                : updateFiledPattern({ title: '', keys: [] })
+        })
         
         return (
             <For each={props.list}>{(pattern, i) => {
-                const isOpen = createMemo(() => openPattern() === i())
+                const isOpen = createMemo(() => openedPattern() === i())
                 
                 return (
                 <div class="relative bg-app-surface border-app-element border-2 rounded-lg text-md font-semibold
@@ -249,22 +273,26 @@ export function SearchPanel() {
     async function search() {
         setLoadingState("indeed");
         try {
-            console.log('Object? ', storedPattern);
-            if (storedPattern.keys.length >= 1) {
-                for (let i = 0; i < storedPattern.keys.length; i++) {
+            const store = currentStore();
+            if(!store) throw new SearchError("UNDEFINED_STORE");
+            
+            console.log('Object? ', store);
+            if (store.keys.length >= 1) {
+                for (let i = 0; i < store.keys.length; i++) {
 
-                    if (storedPattern.keys[i].key.toString().trim() === "") { console.debug(storedPattern.keys[i]); throw new SearchError("SEARCH_FORM_EMPTY"); }
+                    if (store.keys[i].key.toString().trim() === "") { console.debug(store.keys[i]); throw new SearchError("SEARCH_FORM_EMPTY"); }
                 }
             }
             // if(storedPattern.keys.length < 1) throw new SearchError("SEARCH_FORM_EMPTY");
 
-            const newObject = await searchLink(storedPattern)
+            const newObject = await searchLink(store)
             console.log('Resulting Object > ', newObject);
             setResult(newObject)
             setLoadingState("finished");
         } catch (err) {
             // setLoadingState("nope");
             if (err instanceof Error && !(err instanceof SearchError)) console.error(err);
+            setLoadingState("nope");
         }
     }
 
@@ -281,7 +309,7 @@ export function SearchPanel() {
         if(!searchParams.formatedResult) throw new SearchError("ERROR_WHILE_FORMATING_RESULT") ;
 
         updateStore(searchParams.path.slice(0, -1), searchParams.formatedResult);
-        if(searchParams.resultName || patternName()) updateStore(searchParams.path.with(-1, 'key'), searchParams.resultName || patternName()!);
+        if(searchParams.resultName || currentStore()?.title) updateStore(searchParams.path.with(-1, 'key'), searchParams.resultName || currentStore()?.title || '');
     }
 
     return (
