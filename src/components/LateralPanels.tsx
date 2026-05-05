@@ -40,6 +40,10 @@ export function SearchPanel() {
         if (patterns.state === 'ready' && patterns().length === 0) selectMenu("new");
     });
 
+    createEffect(() => {
+        if(selectedMenu() === 'none') changeCurrentStore({ title: '', keys: [] });
+    })
+
     function reset_panel() { updateNewPattern({ title: '', keys: [] }); refetch() }
 
     function addProperty() {
