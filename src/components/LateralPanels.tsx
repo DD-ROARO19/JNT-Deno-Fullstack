@@ -12,10 +12,10 @@ import {
 import { createStore } from "solid-js/store";
 import { isLoading, setLoadingState } from "../signals.tsx";
 import { reset_searchParams, searchParams, upd_searchParams } from "../stores.tsx";
-import { Arrow, Loading, Erase, ReloadArrow } from "../assets/svgs.tsx";
+import { Arrow, Loading, Erase, ReloadArrow, Edit } from "../assets/svgs.tsx";
 import { ObjectType } from "./StaticTypes.tsx";
 import { StringType } from "./InputTypes.tsx"
-import { query_patterns, SearchError, searchLink, toggleLateralCard, uploadPattern } from "../Search.tsx";
+import { deletePattern, query_patterns, SearchError, searchLink, toggleLateralCard, uploadPattern } from "../Search.tsx";
 import { formatValue, updateStore } from "../helpers.tsx";
 import type { typeOfInputs, JSONValue, JSONObject, patternQuery } from "../types.tsx";
 import type { pattern } from "../../types.ts";
@@ -34,7 +34,7 @@ export function SearchPanel() {
     const [result, setResult] = createSignal<JSONValue>()
     const [areNewSignal, set_areNewSignal] = createSignal(false)
 
-    const [patterns, { refetch }] = createResource(() => query_patterns())
+    const [patterns, { refetch, mutate }] = createResource(() => query_patterns())
     
     createEffect(() => {
         if (patterns.state === 'ready' && patterns().length === 0) selectMenu("new");
@@ -223,7 +223,7 @@ export function SearchPanel() {
                     text-app-text" onclick={addProperty}>+</button>
                     <button type="button" class="flex-1 bg-app-surface border-app-element border-2 rounded-2xl hover:bg-app-active/70 active:bg-app-active
                     active:text-app-surface-secondary
-                    text-app-text" onclick={handleSave} >{saveValidation() ? 'Save' : 'Save?'}</button>
+                    text-app-text" onclick={handleSave} classList={{ "grow-2": saveValidation() }} >{saveValidation() ? 'Confirm Save' : 'Save?'}</button>
                 </span>
             </>
         )
@@ -240,50 +240,154 @@ export function SearchPanel() {
         console.log('log list => ', props.list);
         const [openedPattern, openPattern] = createSignal<number | undefined>(undefined);
 
-        function select_pattern(pattern_index: number) {
-            openPattern(p => (p === pattern_index && p !== undefined) ? undefined : pattern_index )
+        createEffect(() => { 
+            const index = openedPattern();
+            (index !== undefined) ? 
+                updateFiledPattern(JSON.parse(props.list[index].pattern) as pattern)
+                : updateFiledPattern({ title: '', keys: [] })
+        })
+
+        function PatternProperties(p: pattern) {
+            // console.log('pattern: ', p);
+            return (
+                <div class="grid grid-cols-1">
+                    <Show when={p.packet_name && p.packet_name?.trim() !== ""}>
+                        {/* <p class="text-app-property">Packet Name: {p.packet_name}</p> */}
+                        <div class="relative p-0.5 mx-2 bg-app-surface-secondary border-app-element border-2 rounded-lg ps-3 text-md outline-0 flex-2">
+                            <input id="new_name" type="text" class="block px-1.5 pb-1 pt-1.5 w-full font-semibold 
+                            bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
+                            text-app-text not-focus:placeholder-transparent placeholder-app-text/80"
+                            placeholder="Name for value" disabled value={p.packet_name || ''} />
+                            <label for="new_name" class="absolute font-bold duration-300 transform -translate-y-4 scale-75 
+                            top-3 z-10 origin-[0] px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-120 
+                            peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 
+                            peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto 
+                            start-1 pointer-events-none text-app-property">
+                                Extract filter
+                            </label>
+                        </div>
+                    </Show>
+                    <Show when={p.keys && p.keys.length >= 1} fallback={ <h2 class="text-app-keyword ps-2.5">keys: [0]</h2> }>
+                        <h2 class="text-app-keyword ps-2.5">keys: [</h2>
+                        <For each={p.keys}>{(property) =>
+                            <span class="flex px-2 mt-1">
+                                {/* <p class="flex-2 text-app-property">{property.key}</p> */}
+                                <div class="relative bg-app-surface-secondary border-app-element border-2 rounded-lg ps-3 text-md outline-0 flex-2">
+                                    <input id="get_from" type="text" class="block px-1.5 pb-1 pt-1.5 w-full font-semibold 
+                                    bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
+                                    text-app-property not-focus:placeholder-transparent placeholder-app-text/80"
+                                    placeholder="Name for value" disabled value={property.key} />
+                                    {/* <label for="get_from" class="absolute font-bold duration-300 transform -translate-y-4 scale-75 
+                                    top-3 z-10 origin-[0] px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-120 
+                                    peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 
+                                    peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto 
+                                    start-1 pointer-events-none text-app-property/70">
+                                        Get_From
+                                    </label> */}
+                                </div>
+
+                                <span >
+                                    {/* 2nd Space */} <p class="text-2xl font-bold text-center text-app-property select-none">{'>>'}</p>
+                                </span>
+
+                                {/* <p class="flex-2 text-app-string">{property.val}</p> */}
+                                <div class="relative bg-app-surface-secondary border-app-element border-2 rounded-lg ps-3 text-md outline-0 flex-2">
+                                    <input id="new_key_name" type="text" class="block px-1.5 pb-1 pt-1.5 w-full font-semibold 
+                                    bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
+                                    text-app-string not-focus:placeholder-transparent placeholder-app-text/80"
+                                    placeholder="Name for value" disabled value={property.val} />
+                                    {/* <label for="new_key_name" class="absolute font-bold duration-300 transform -translate-y-4 scale-75 
+                                    top-3 z-10 origin-[0] px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-120 
+                                    peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 
+                                    peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto 
+                                    start-1 pointer-events-none text-app-string/70">
+                                        New Key_Name
+                                    </label> */}
+                                </div>
+                            </span>
+                        }</For>
+                        <h2 class="text-app-keyword ps-2.5">]</h2>
+                    </Show>
+                </div>
+            )
         }
 
-        // createEffect(() => { 
-        //     const index = openedPattern();
-        //     (index !== undefined) ? 
-        //         updateFiledPattern(props.list[index].pattern)
-        //         : updateFiledPattern({ title: '', keys: [] })
-        // })
+        function PatternItem(p: { item: patternQuery, index: number }) {
+            const isOpen = createMemo(() => openedPattern() === p.index)
+            // const patternValue = createMemo(() => { if(isOpen()) return JSON.parse(item.pattern) as pattern } )
+            const [patternValue, set_patternValue] = createSignal<pattern>()
+            const [confirm, set_confirmation] = createSignal<'inactive' | 'needed_del' | 'needed_upd'>('inactive')
+
+            function select_pattern(pattern_index: number, pattern: string) { openPattern(p => {
+                if (p === pattern_index && p !== undefined) return undefined; 
+                // const formated = JSON.parse(pattern) as pattern; 
+                // console.log('Formated pattern =>', formated); 
+                if (!patternValue()) set_patternValue(JSON.parse(pattern) as pattern); 
+                return pattern_index;
+            })}
+
+            function handle_action(e: MouseEvent, action: () => void) {
+                e.stopPropagation();
+                e.preventDefault();
+                action()
+            }
+
+            function erase_pattern() { 
+                if(confirm() !== 'needed_del') return set_confirmation('needed_del');
+                try{ 
+                    deletePattern(p.item.id); 
+                    console.debug(`Pattern ${p.item.title} (id: ${p.item.id}) deleted!`); 
+                    mutate(prev => [...prev!.slice(0, p.index), ...prev!.slice(p.index +1)])
+                    openPattern(undefined);
+                    set_confirmation('inactive')
+                }catch(err){ console.error(err) } 
+            };
+            function toggle_edit_pattern() {
+                if(confirm() !== 'needed_upd') return set_confirmation('needed_upd');
+                
+                console.debug('Edit pattern!') 
+                set_confirmation('inactive');
+            };
+            
+            const confirmation_strings = {
+                inactive: '',
+                needed_del: "re-confirm delete: ",
+                needed_upd: "re-confirm update: ",
+            }
+            const Class = `fill-app-text h-4 w-4 group-hover:fill-app-text/50 group-active:fill-app-surface-secondary/50`;
+            return (
+            <div class="relative bg-app-surface border-app-element border-2 rounded-lg text-md font-semibold
+            outline-0 mt-2 flex flex-col"
+            onclick={() => select_pattern(p.index, p.item.pattern) } >
+                <span class="flex w-full hover:bg-app-active/50 rounded-md">
+                    <Arrow class={"fill-app-text/60 " + (isOpen() ? 'rotate-0' : 'rotate-270')} />
+                    <h2 class="text-app-function">{p.item.title}</h2>
+                    <span class="invisible absolute end-0 grid grid-flow-col gap-2 pt-1 pe-2" classList={{
+                        "visible": isOpen()
+                    }}>
+                        <p class="text-sm text-app-text -mb-1" classList={{ "col-start-[none]": confirm() === 'needed_upd' }}>{ confirmation_strings[confirm()] }</p>
+                        <button type="button" class="cursor-pointer group" onclick={e => handle_action(e, erase_pattern)}> <Erase class={Class} /> </button>
+                        <button type="button" class="cursor-pointer group" onclick={e => handle_action(e, toggle_edit_pattern)}> <Edit  class={Class} option={1} /> </button>
+                    </span>
+                </span>
+                <div class="grid transition-[grid-template-rows] duration-250 ease-in-out grid-rows-[0fr] invisible"
+                classList={{ "grid-rows-[1fr] visible": isOpen() }}
+                >
+                    <span class="overflow-hidden" >
+                        {/* <textarea class="text-app-string w-full field-sizing-content" 
+                        value={p.item.pattern} disabled /> */}
+                        <Show when={patternValue()}>
+                        {(pattern) => <PatternProperties {...pattern()} />}
+                        </Show>
+                    </span>
+
+                </div>
+            </div>
+            )
+        }
         
         return (
-            <For each={props.list}>{(item, i) => {
-                const isOpen = createMemo(() => openedPattern() === i())
-                
-                return (
-                <div class="relative bg-app-surface border-app-element border-2 rounded-lg text-md font-semibold
-                outline-0 mt-2 flex flex-col"
-                onclick={ () => select_pattern(i()) }
-                >
-                    <span class="flex w-full hover:bg-app-active/50 rounded-md">
-                        <Arrow class={"fill-app-text/60 " + (isOpen() ? 'rotate-0' : 'rotate-270')} />
-                        <h2 class="text-app-function">{item.title}</h2>
-                    </span>
-                    <div class="grid transition-[grid-template-rows] duration-250 ease-in-out grid-rows-[0fr] invisible"
-                    classList={{ "grid-rows-[1fr] visible": isOpen() }}
-                    >
-                        <span class="overflow-hidden" >
-                            <textarea class="text-app-string w-full field-sizing-content" 
-                            value={JSON.stringify(item.pattern, undefined, 2)} disabled />
-                            {/* <Show when={isOpen()}>
-                            </Show> */}
-                            {/* <For each={pattern.keys}>{(property) =>
-                                <span class="flex">
-                                    <p class="flex-2">{property.key}</p>
-                                    <p>{'>>'}</p>
-                                    <p class="flex-2">{property.val}</p>
-                                </span>
-                            }</For> */}
-                        </span>
-                    </div>
-                </div>
-                )}
-            }</For>
+            <For each={props.list}>{(item, i) => <PatternItem index={i()} item={item} /> }</For>
         );
     }
 

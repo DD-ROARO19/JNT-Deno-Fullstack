@@ -8,7 +8,7 @@ import {
 import type { SetStoreFunction } from "solid-js/store";
 import type { noteFrame } from "../types.tsx";
 
-import { CopySVG, Edit2, Erase } from "../assets/svgs.tsx";
+import { CopySVG, Edit, Erase } from "../assets/svgs.tsx";
 import { toggleLateralCard } from "../Search.tsx";
 // import { copyToClipboard, SaveNote } from "../helpers.tsx";
 
@@ -72,7 +72,7 @@ export default function Title(props: titleParams) {
                 {/* <button type="button" class={'group/save p-1.5 rounded cursor-pointer place-items-center '+btnColors}
                     title="Save Note"
                     onClick={props.onSave} >
-                    <Edit2 class={`fill-app-surface-secondary group-active/save:fill-app-surface-secondary/70`} />
+                    <Edit option={2} class={`fill-app-surface-secondary group-active/save:fill-app-surface-secondary/70`} />
                 </button> */}
                 {/* Copy Content */}
                 <button type="button" class={'group p-1.5 rounded cursor-pointer place-items-center '+btnColors}

@@ -106,9 +106,9 @@ export const SearchSVG = (props: { class?: string }) => {
     )
 }
 
-export const Edit = (props: { class?: string }) => {
-    return (
-        <svg class={twMerge('h-6 fill-black', props.class)} viewBox="0 -0.5 21 21" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+export const Edit = (props: { option: 1 | 2, class?: string, classList?: Record<string, boolean> }) => {
+    return [
+        (<svg class={twMerge('h-6 fill-black', props.class)} viewBox="0 -0.5 21 21" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <g id="Page-1" stroke="none" stroke-width="1" fill-rule="evenodd">
                 <g id="Dribbble-Light-Preview" transform="translate(-59.000000, -400.000000)" >
                     <g id="icons" transform="translate(56.000000, 160.000000)">
@@ -116,13 +116,8 @@ export const Edit = (props: { class?: string }) => {
                     </g>
                 </g>
             </g>
-        </svg>
-    )
-}
-
-export const Edit2 = (props: { class?: string }) => {
-    return (
-        <svg class={twMerge('h-6 fill-black', props.class)} viewBox="0 -0.5 21 21" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        </svg>),
+        (<svg class={twMerge('h-6 fill-black', props.class)} viewBox="0 -0.5 21 21" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <g id="Page-1" stroke="none" stroke-width="1" fill-rule="evenodd">
                 <g id="Dribbble-Light-Preview" transform="translate(-99.000000, -400.000000)" >
                     <g id="icons" transform="translate(56.000000, 160.000000)">
@@ -130,8 +125,8 @@ export const Edit2 = (props: { class?: string }) => {
                     </g>
                 </g>
             </g>
-        </svg>
-    )
+        </svg>)
+    ].at(props.option - 1)
 }
 
 export const Erase = (props: { class?: string }) => {
