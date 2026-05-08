@@ -9,7 +9,8 @@ export class SearchError extends Error {
     constructor(
         public code: 'UNDEFINED_TOGGLE_SETTER' | 'BAD_QUERY' | 'SEARCH_FORM_EMPTY' 
         | 'INVALID_PATTERN' | 'UNDEFINED_SEARCH_PARAMS' | 'UNDEFINED_RESULT'
-        | 'ERROR_WHILE_FORMATING_RESULT' | 'BAD_POST' | 'UNDEFINED_STORE',
+        | 'ERROR_WHILE_FORMATING_RESULT' | 'BAD_POST' | 'UNDEFINED_STORE'
+        | 'APPLY_ERROR',
         // error?: Error,
         message?: string,
     ) {
@@ -54,6 +55,10 @@ export class SearchError extends Error {
                 this.message = 'Either store or storeSetter undefined!';
                 break;
 
+            case "APPLY_ERROR":
+                this.message = this.code + ' - ' + this.message;
+                break;
+
             default:
                 this.code satisfies never;
                 this.message += " - UNDEFINED_CASE";
@@ -79,13 +84,24 @@ export function prepareSearchPanel(new_url:string, path: (string | number)[]) {
     toggleLateralCard(true);
 }
 
-const pattern_title_term = "TITLE__";
-const search_url_term = "URL__";
+const terms = {
+    keys: {
+        current_url: "__URL",
+        current_title: "__TITLE",
+    },
+    vals: {
+        pattern_title: "TITLE_ADD__",
+        newline_value: "ADD_IN__",
+    }
+} as const
+// const pattern_title_term = "TITLE__";
+// const search_url_term = "URL__";
+// const newline_term = "ADD_IN__*";
 export async function searchLink(patter: pattern) {
     upd_searchParams("resultName", undefined);
     try {
         let response = await queryURL();
-        if (patter.packet_name) response = response[patter.packet_name]
+        // if (patter.packet_name) response = response[patter.packet_name]
 
         // (patter.packet_name && patter.packet_name.trim() !== "") ?
         //     (await queryURL(url))[patter.packet_name]
@@ -100,17 +116,42 @@ export async function searchLink(patter: pattern) {
         //     acc[val] = response[key]; return acc;
         // }, {} as JSONObject);
 
-        if (patter.keys.length >= 1) {
+        if (patter.keys.length >= 1) { // ## We need to make shure there is keys to filter the response.
             for (let i = 0; i < patter.keys.length; i++) {
                 const { key, val } = patter.keys[i];
-                if(pattern_title_term === val.toLocaleUpperCase()) { 
+                if(terms.vals.pattern_title === val.toLocaleUpperCase()) { // ## USE this value for the key of property. 
                     upd_searchParams("resultName", pv => !pv ? pv = (response[key] || undefined) 
-                    : pv += '_' + (response[key] || undefined)); 
+                    : pv += '_' + (response[key] || '')); 
                     continue; 
                 }
-
-                if(search_url_term === key.toString().toLocaleUpperCase()) {
+                
+                // ## ADDs the current url used for the query search to the result object.
+                if(terms.keys.current_url === key.toString().toLocaleUpperCase()) { 
                     result[val] = searchParams.url!;
+                    continue;
+                }
+
+                // # IN PROGRESS: Desire to add a NewLine with this value to the note
+                if (val.toLocaleUpperCase().startsWith(terms.vals.newline_value)) {
+                    if (val.toLocaleUpperCase().startsWith(terms.vals.newline_value + '{')
+                    && val.toLocaleUpperCase().endsWith('}')) {
+                        const name = val.slice(terms.vals.newline_value.length +1, -1)
+                        upd_searchParams("extra_results", pv => (!pv)
+                            ? Object.fromEntries([ [name, response[key]] ]) // if the object doesn't exist: create it with this! 
+                            : ( pv[name] && Array.isArray(pv[name]) )       // vv -- for this -- vv
+                            ? pv[name] = [...pv[name], response[key]]       // if it's already an array: add one item! 
+                            : (pv[name]) ? [pv[name], response[key]]        // if it isn't an array: transform it to one!
+                            : pv[name] = response[key]                      // else: add this value to the object.
+                        ); 
+                        continue;
+                        /* # TODO: Function to search thro parent, or root, object 
+                        *  for an already existing property with this name to add this new value 
+                        *  (NOT for use in this place - FOR USE in `ApplyResult`) 
+                        */
+                    }
+                    
+                    upd_searchParams("extra_results", pv => !pv ? { '': response[key] } 
+                        : pv[''] = response[key] );
                     continue;
                 }
                 
@@ -123,6 +164,7 @@ export async function searchLink(patter: pattern) {
                 // console.log(key, ': ', val, ' => ', response[key]);
             }
         }
+        // ## Yeah for if you need the URL as a property you get everything else, or, assigning the `response` to the `result` when you've only been unwrapping.
         if(Object.keys(result).length === 0 || Object.values(result).includes(searchParams.url!)) Object.assign(result, response);
 
         // console.log('search: ', result);

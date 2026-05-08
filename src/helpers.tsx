@@ -32,11 +32,16 @@ export function addInput(path: (string | number)[], input_type: typeOfInputs) {
     console.debug('type: ', input_type);
     console.groupEnd()
 
+    const process = { index: -1 };
     // @ts-ignore: May I get some path, pls?
-    setter(...path, list => [...list, {
-        type: input_type, key: '',
-        value: (input_type == 'array' || input_type === 'object') ? [] : ''
-    }])
+    setter(...path, list => { 
+        process.index = (list as LineContent[]).length;
+        return [...list, {
+            type: input_type, key: '',
+            value: (input_type === 'array' || input_type === 'object') ? [] : ''
+        }] 
+    })
+    return process.index !== -1 ? process.index : undefined
 }
 export function eraseInput(path: (string | number)[]) {
     const setter = currentSetter()
@@ -169,7 +174,7 @@ export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeO
 /** Get the approximate `typeOfInputs` type of a value. 
  * @param v Value to compare type.
 */
-function askMyType(v: unknown): typeOfInputs {
+export function askMyType(v: unknown): typeOfInputs {
     const myType = typeof v;
 
     console.groupCollapsed('askMyType')

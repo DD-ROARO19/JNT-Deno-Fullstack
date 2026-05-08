@@ -28,6 +28,7 @@ export type patternQuery = {
 export type searchParamsType = { 
     formatedResult?: LineContent;   url?: string; 
     path?: (string | number)[];     resultName?: string;
+    extra_results?: Record<string, JSONValue>;
 }
 
 
