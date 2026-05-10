@@ -1,7 +1,7 @@
 import { Hono } from "@hono/hono";
 import db from "../database/db_start.ts"
 import { insert_stmt, query_one, update_stmt, delete_stmt } from "../statements/patterns.ts";
-import type { bindObject } from "../../types.ts";
+import type { bindObject, pattern } from "../../types.ts";
 import type { SQLInputValue } from "node:sqlite";
 
 const patterns = new Hono();
@@ -82,13 +82,14 @@ patterns.get('/:id', (c) => {
     }
 })
 
-
+type pattern_reqBody = { author: string, pattern: pattern };
 patterns.put('/:id/update', async (c) => {
     const id = c.req.param('id');
     if(!id) return c.json({ error_msg: 'No id specified!' }, 400);
+    const b = (await c.req.json()) as unknown as pattern_reqBody;
     
     try {
-        console.debug(db.prepare(update_stmt).run(await c.req.json()));
+        console.debug(db.prepare(update_stmt).run(b.author, JSON.stringify(b.pattern), id));
     } catch (err) {
         console.error(err)
         return c.json(err, 500);

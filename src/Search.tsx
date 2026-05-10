@@ -9,7 +9,7 @@ export class SearchError extends Error {
     constructor(
         public code: 'UNDEFINED_TOGGLE_SETTER' | 'BAD_QUERY' | 'SEARCH_FORM_EMPTY' 
         | 'INVALID_PATTERN' | 'UNDEFINED_SEARCH_PARAMS' | 'UNDEFINED_RESULT'
-        | 'ERROR_WHILE_FORMATING_RESULT' | 'BAD_POST' | 'UNDEFINED_STORE'
+        | 'ERROR_WHILE_FORMATING_RESULT' | 'UNDEFINED_STORE'
         | 'APPLY_ERROR',
         // error?: Error,
         message?: string,
@@ -46,10 +46,6 @@ export class SearchError extends Error {
             case "ERROR_WHILE_FORMATING_RESULT":
                 this.message = 'Error while formating result';
                 break;
-                
-            case "BAD_POST":
-                this.message += " - " + this.code;
-                break;
 
             case "UNDEFINED_STORE":
                 this.message = 'Either store or storeSetter undefined!';
@@ -59,6 +55,35 @@ export class SearchError extends Error {
                 this.message = this.code + ' - ' + this.message;
                 break;
 
+            default:
+                this.code satisfies never;
+                this.message += " - UNDEFINED_CASE";
+                break;
+        }
+
+        console.error(this, { ...this });
+        toast().newNotification(this.message)
+    }
+}
+
+export class UploadError extends Error {
+    constructor(
+        public code: 'EMPTY_PATTERN_TITLE' | 'BAD_UPLOAD',
+        message?: string
+    ) {
+        super(message);
+        this.name = "Search validation error";
+
+        switch (this.code) {
+            case 'EMPTY_PATTERN_TITLE':
+                this.message = "Please make shure to include any title!";
+                break;
+
+            case "BAD_UPLOAD":
+                this.message = this.message ? this.message + " - " + this.code 
+                : "Error while uploading pattern :(";
+                break;
+        
             default:
                 this.code satisfies never;
                 this.message += " - UNDEFINED_CASE";
@@ -185,8 +210,8 @@ async function queryURL() {
     })
 
     if (!res.ok) {
-        console.error(`queryURL: ${res.status} - ${res.statusText}`);
-        throw new Error(await res.json())
+        // console.error(`queryURL: ${res.status} - ${res.statusText}`);
+        throw new Error((await res.json())?.error)
     }
 
     const data = await res.json();
@@ -218,6 +243,8 @@ export async function query_patterns(id?: string): Promise<patternQuery | patter
 }
 
 export async function uploadPattern(pattern: pattern, id?: number | string) {
+    if(pattern.title.trim() === "") throw new UploadError("EMPTY_PATTERN_TITLE");
+    
     const url = id ? `/api/patterns/${id}/update` : '/api/patterns/new'
 
     const response = await fetch(url, {
@@ -230,7 +257,8 @@ export async function uploadPattern(pattern: pattern, id?: number | string) {
     })
 
     if (!response.ok) {
-        throw new SearchError("BAD_QUERY", (await response.json())?.code);
+        console.error({ url, method: id ? 'PUT' : 'POST', pattern })
+        throw new UploadError("BAD_UPLOAD", (await response.json())?.code);
     }
 
     console.debug(`Pattern ${pattern.title} successfully saved!`);

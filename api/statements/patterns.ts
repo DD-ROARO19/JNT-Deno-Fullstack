@@ -17,8 +17,7 @@ INSERT INTO patterns (
 */
 const update_stmt = `--sql
 UPDATE patterns SET
-    title = ?, 
-    --author = ?,
+    author = ?,
     pattern = ?, 
     last_updated = datetime('now', 'localtime')
 WHERE id = ?
