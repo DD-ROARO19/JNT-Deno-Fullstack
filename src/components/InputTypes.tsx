@@ -3,9 +3,7 @@ import {
     For, Show, createSignal,
     Switch, Match
 } from "solid-js"
-import type { inputsProps, JSONPrimitive, LineContent, lineMenu, 
-    typeOfInputs, listsProps
-} from "../types.tsx";
+import type { inputsProps, JSONPrimitive, LineContent, lineMenu, typeOfInputs, listsProps, quickOptions } from "../types.tsx";
 import type { Accessor, Setter } from "solid-js";
 
 import { DownArrow } from "../assets/svgs.tsx";
@@ -14,6 +12,7 @@ import { addInput, changeInput, updateStore, eraseInput, copyToClipboard, extrac
 import { NewLine } from './RowLines.tsx'
 import { LineSettingsBtn } from "./LineSettingsBtn.tsx";
 import { Toggle } from "./Toggle.tsx";
+import { QuickMenuBtn } from "./QuickMenu.tsx";
 
 function lineConfig(path: (string | number)[], data: JSONPrimitive | LineContent[], type: typeOfInputs): lineMenu {
     return {
@@ -154,13 +153,17 @@ function addButtonConfig(path: (string | number)[]): lineMenu {
     }
 }
 
-function AddItemBtn(props: { config: lineMenu, isFullWidth: boolean | undefined }) {
+function AddItemBtn(props: { path: (string | number)[], type: 'object' | 'array', isFullWidth: boolean | undefined }) {
     return (
-        <div class="w-full group" classList={{ 'hover:bg-app-active/5': props.isFullWidth != true }}>
-            <InputButton config={props.config} text={props.isFullWidth ? undefined : '+1'}
-                class={`rounded-xl border-2 border-app-muted/50 
-                    hover:border-app-property/30 active:border-app-muted active:bg-app-surface-secondary
-                    ${props.isFullWidth ? 'w-[95%]' : 'w-15 group-hover:border-app-property/10'}
+        <div class="w-full group" classList={{ 'hover:bg-gray-700/50': props.isFullWidth != true }}>
+            {/* <InputButton config={props.config} text={props.isFullWidth ? undefined : '+1'}
+                class={`rounded-xl border-2 hover:border-slate-600 active:border-slate-700
+                    ${props.isFullWidth ? 'w-[95%] border-slate-700' : 'w-15 border-[#293B49] group-hover:border-slate-700'}
+                `}
+            /> */}
+            <QuickMenuBtn type={props.isFullWidth ? "null" : props.type} path={props.path} text={props.isFullWidth ? undefined : '+1'}
+                class={`rounded-xl border-2 hover:border-slate-600 active:border-slate-700
+                    ${props.isFullWidth ? 'w-[95%] border-slate-700' : 'w-15 border-[#293B49] group-hover:border-slate-700'}
                 `}
             />
         </div>
@@ -207,7 +210,7 @@ export function ArrayType(props: inputsProps & listsProps) {
                             </div>
                         )
                     }}</For>
-                    <AddItemBtn config={addButtonConfig(props.path)} isFullWidth={props.full_addButton} />
+                    <AddItemBtn path={props.path} type="array" isFullWidth={props.full_addButton}/>
                 </div>
 
                 <Toggle text="]" isOpen={showList} setOpen={setList} class="text-app-keyword"
@@ -254,7 +257,7 @@ export function ObjectType(props: inputsProps & listsProps) {
                             </NewLine>
                         )
                     }}</For>
-                    <AddItemBtn config={addButtonConfig(props.path)} isFullWidth={props.full_addButton} />
+                    <AddItemBtn path={props.path} type="object" isFullWidth={props.full_addButton}/>
                 </div>
 
                 <Toggle text="}" isOpen={isShowing} setOpen={setShow} class="text-app-function"
