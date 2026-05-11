@@ -33,10 +33,13 @@ export type searchParamsType = {
     extra_results?: Record<string, JSONValue>;
 }
 export type quickButtons = {
-    text: string; icon?: JSXElement;
+    text: string;   icon?: JSXElement;
     action(): void
 }
-export type quickOptions = { title: string; buttons: quickButtons[]; render: 'same_menu' | 'collapse_menu' | 'another_menu' } 
+export type quickOptions = { 
+    title: string;  render: 'same_menu' | 'collapse_menu' | 'another_menu' 
+    buttons: quickButtons[]; 
+} 
 
 
 // ##  JSON TYPES  ##
@@ -70,6 +73,7 @@ export interface noteFrame {
 export type path_list = (string | number)[];
 // export type path_list = ( "content" | number | ("value" | "key" | "type") )[];
 export type inputsProps = { path: path_list }
+// export type valid_data = JSONPrimitive | LineContent[];
 export type lineProps = inputsProps & { 
     type: typeOfInputs;     path: path_list;
     index: number;          data: JSONPrimitive | LineContent[];
