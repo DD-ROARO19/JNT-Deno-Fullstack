@@ -258,6 +258,24 @@ export function ObjectType(props: objectProps) {
     )
 }
 
+function NullType(props: primitiveProps & { data: string }) {
+
+    if (props.key === undefined) {
+        return <span>No metadata for key</span>
+    }
+
+    return (
+        <span class="StringType group/s-line flex-1 flex relative hover:bg-app-active/5 min-w-3/4">
+            <KeyComp value={props.key} path={props.path.with(-1, 'key')} />
+            <p
+                class="NullType flex-1 outline-none focus:bg-app-base rounded-md mr-8
+                    min-h-6 field-sizing-content text-app-keyword"
+            >null</p>
+            <Prim_settingsBtn config={[props.path, props.data, 'string']}
+                hover_class="group-hover/s-line:visible" />
+        </span>
+    )
+}
 
 export const statics = {
     string: StringType,

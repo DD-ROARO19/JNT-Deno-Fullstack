@@ -71,7 +71,7 @@ export interface noteFrame {
 }
 
 // >> #  Input render components props  #
-export type keyType = string | number
+export type keyType = string | number;
 export type path_list = (string | number)[];
 // export type path_list = ( "content" | number | ("value" | "key" | "type") )[];
 export type inputsProps = { path: path_list }
@@ -79,7 +79,7 @@ export type inputsProps = { path: path_list }
 export type lineProps = inputsProps & { 
     type: typeOfInputs;     path: path_list;
     index: number;          data: JSONPrimitive | LineContent[];
-    key?: string | number;
+    key?: keyType;
 } 
 export type listsProps = {
     data: LineContent[];
