@@ -175,6 +175,7 @@ export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeO
  * @param v Value to compare type.
 */
 export function askMyType(v: unknown): typeOfInputs {
+    if(v === null) return 'null';
     const myType = typeof v;
 
     console.groupCollapsed('askMyType')

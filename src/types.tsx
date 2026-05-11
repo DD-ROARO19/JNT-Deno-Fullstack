@@ -60,10 +60,11 @@ export interface noteFrame {
 }
 
 // >> #  Input render components props  #
+export type keyType = string | number;
 export type inputsProps = { path: (string | number)[] }
 export type lineProps = inputsProps & { 
     type: typeOfInputs;     data: JSONPrimitive | LineContent[];
-    index: number;          key?: string | number;
+    index: number;          key?: keyType;
 } 
 export type listsProps = {
     data: LineContent[];
