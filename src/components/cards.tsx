@@ -82,7 +82,7 @@ export function CardList(props: { list: cardNote[] }) {
                     class="[&>p]:text-app-string">
 
                         <span class='group/edit opacity-0 group-hover/card:opacity-100 relative place-self-end mt-auto flex gap-1.5 transition-discrete delay-50 duration-150 ease-in-out' >
-                            <button type="button" onclick={e => editNote(e, item.id)} title='Edit' class='group cursor-pointer rounded p-1 hover:bg-app-text/10 active:bg-app-base' ><Edit class="fill-app-function group-active:fill-app-active-secondary" /></button>
+                            <button type="button" onclick={e => editNote(e, item.id)} title='Edit' class='group cursor-pointer rounded p-1 hover:bg-app-text/10 active:bg-app-base' ><Edit option={1} class="fill-app-function group-active:fill-app-active-secondary" /></button>
                             <button type="button" onclick={e => deleteNote(e, item.id)} title='Erase' class='group cursor-pointer rounded p-1 hover:bg-app-text/10 active:bg-app-base' ><Erase class="fill-app-function group-active:fill-app-active-secondary" /></button>
                         </span>
 

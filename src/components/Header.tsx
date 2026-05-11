@@ -8,7 +8,8 @@ import {
 import type { SetStoreFunction } from "solid-js/store";
 import type { noteFrame } from "../types.tsx";
 
-import { CopySVG, Edit2, Erase } from "../assets/svgs.tsx";
+import { CopySVG, Edit, Erase } from "../assets/svgs.tsx";
+import { toggleLateralCard } from "../Search.tsx";
 // import { copyToClipboard, SaveNote } from "../helpers.tsx";
 
 interface titleParams {
@@ -47,9 +48,9 @@ export default function Title(props: titleParams) {
 
     return (
         <>
-            <div ref={titleBarRef} id="title" class={`NoteTitle p-2.5 rounded-4xl flex justify-evenly 
-            place-items-center transition-discrete duration-150 ease-in-out
-                ${isFixed() ? 'bg-app-element fixed top-2 self-center-safe z-50 shadow-lg w-1/2' 
+            <div ref={titleBarRef} id="title" class={`NoteTitle p-2.5 rounded-4xl flex justify-between 
+            transition-discrete duration-150 ease-in-out
+                ${isFixed() ? 'bg-app-element fixed top-2 self-center-safe z-50 shadow-lg w-1/2 justify-evenly' 
                     : 'relative'}
                 `}
             >
@@ -71,7 +72,7 @@ export default function Title(props: titleParams) {
                 {/* <button type="button" class={'group/save p-1.5 rounded cursor-pointer place-items-center '+btnColors}
                     title="Save Note"
                     onClick={props.onSave} >
-                    <Edit2 class={`fill-app-surface-secondary group-active/save:fill-app-surface-secondary/70`} />
+                    <Edit option={2} class={`fill-app-surface-secondary group-active/save:fill-app-surface-secondary/70`} />
                 </button> */}
                 {/* Copy Content */}
                 <button type="button" class={'group p-1.5 rounded cursor-pointer place-items-center '+btnColors}
@@ -81,7 +82,7 @@ export default function Title(props: titleParams) {
                 </button>
                 <button type="button" class={'group p-1.5 rounded cursor-pointer place-items-center '+btnColors}
                     title="Copy Note"
-                    onClick={props.onCopy} >
+                    onClick={() => toggleLateralCard()} >
                     <CopySVG class={`stroke-app-surface-secondary group-active:stroke-app-surface-secondary/70`} option={3} />
                 </button>
                 {/* Erase Note */}

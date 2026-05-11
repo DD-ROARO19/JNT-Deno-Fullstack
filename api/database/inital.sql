@@ -19,12 +19,22 @@ CREATE TABLE IF NOT EXISTS notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     directory_id INTEGER NOT NULL,
     title TEXT NOT NULL,
-    author TEXT DEFAULT 'No author',
+    author TEXT DEFAULT 'NO_AUTHOR',
     tags TEXT,
     content TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (directory_id) REFERENCES directories (id) ON DELETE CASCADE
+);
+
+-- Table of patterns for data extraction.
+CREATE TABLE IF NOT EXISTS patterns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL GENERATED ALWAYS AS (pattern ->> '$.title') VIRTUAL,
+    author TEXT DEFAULT 'NO_AUTHOR',
+    pattern TEXT CHECK (json_valid(pattern)),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Virtual table for full-text search on notes.
@@ -33,6 +43,16 @@ CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
     tags,
     content,
     content='notes',
+    content_rowid='id',
+    prefix='2 3 4 5',
+    tokenize = 'unicode61'
+);
+
+-- Virtual table for full-text search on patterns.
+CREATE VIRTUAL TABLE IF NOT EXISTS patterns_fts USING fts5(
+    title,
+    pattern,
+    content='patterns',
     content_rowid='id',
     prefix='2 3 4 5',
     tokenize = 'unicode61'
@@ -88,12 +108,17 @@ SELECT * FROM all_paths;
 
 -- A view with all existing tags on all notes.
 CREATE VIEW IF NOT EXISTS v_tags AS
-SELECT DISTINCT UPPER(j.value) AS tag
+SELECT 
+    UPPER(j.value) AS tag, 
+    COUNT(*)
 FROM notes AS n
-JOIN json_each(n.tags) AS j;
+JOIN json_each(n.tags) AS j
+GROUP BY tag;
+
 
 
 ---- TRIGGERS ----
+
 -- Craetes a new FTS entry for text search after a notes is inserted into 'notes'.
 CREATE TRIGGER IF NOT EXISTS notes_add AFTER INSERT ON notes BEGIN
     INSERT INTO notes_fts(rowid, title, tags, content) 
@@ -115,18 +140,40 @@ CREATE TRIGGER IF NOT EXISTS notes_upd AFTER UPDATE ON notes BEGIN
     VALUES (new.id, new.title, new.tags, new.content);
 END;
 
----- OLD ----
 
--- CREATE VIEW IF NOT EXISTS categories AS
--- SELECT 
---     d.*,
---     (
---         SELECT COUNT(n.id)
---         FROM notes AS n
---         JOIN directories AS sd 
---             ON sd.id = n.directory_id
---         WHERE 
---             sd.alias = d.alias
---             OR sd.alias LIKE d.alias || '/%'
---     ) AS note_count
--- FROM directories AS d;
+-- Craetes a new FTS entry for text search after a pattern is inserted into 'patterns'.
+CREATE TRIGGER IF NOT EXISTS patterns_add AFTER INSERT ON patterns BEGIN
+    INSERT INTO patterns_fts(rowid, title, pattern) 
+    VALUES (new.id, new.title, new.pattern);
+END;
+
+-- Deletes the FTS entry after a patterns is deleted.
+CREATE TRIGGER IF NOT EXISTS patterns_del AFTER DELETE ON patterns BEGIN
+    INSERT INTO patterns_fts(patterns_fts, rowid, title, pattern) 
+    VALUES ('delete', old.id, old.title, old.pattern);
+END;
+
+-- Updates an FTS entry by deleting and re-inserting the new data.
+CREATE TRIGGER IF NOT EXISTS patterns_upd AFTER UPDATE ON patterns BEGIN
+    INSERT INTO patterns_fts(patterns_fts, rowid, title, pattern) 
+    VALUES ('delete', old.id, old.title, old.pattern);
+
+    INSERT INTO patterns_fts(rowid, title, pattern) 
+    VALUES (new.id, new.title, new.pattern);
+END;
+
+
+CREATE TRIGGER IF NOT EXISTS prevent_note_creation_time_update
+BEFORE UPDATE OF created_at ON notes BEGIN
+    SELECT RAISE(ABORT, 'created_at is read-only and cannot be updated');
+END;
+
+CREATE TRIGGER IF NOT EXISTS prevent_directory_creation_time_update
+BEFORE UPDATE OF created_at ON directories BEGIN
+    SELECT RAISE(ABORT, 'created_at is read-only and cannot be updated');
+END;
+
+CREATE TRIGGER IF NOT EXISTS prevent_pattern_creation_time_update
+BEFORE UPDATE OF created_at ON patterns BEGIN
+    SELECT RAISE(ABORT, 'created_at is read-only and cannot be updated');
+END;

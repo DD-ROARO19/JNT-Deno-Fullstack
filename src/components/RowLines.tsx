@@ -30,11 +30,11 @@ export function NewLine(props: ParentProps & lineProps) {
 export function NewLine2(props: ParentProps & lineProps) {
     return (
         <>
-            <Dynamic component={statics[props.type || -1]}
+            <Dynamic component={statics[props.type || 'null']}
                 data={props.data}
                 index={props.index}
                 path={[...props.path, props.index, 'value']}
-                key = { props.key || '' }
+                key={props.key}
             />
             <div class="Brake w-full"></div>
         </>
