@@ -29,7 +29,7 @@ import { Dynamic } from "solid-js/web";
 //     updater: SetStoreFunction<pattern>
 // }
 export function SearchPanel() {
-    const [selectedMenu, selectMenu] = createSignal<'existing' | 'new' | 'none'>('new');
+    const [selectedMenu, selectMenu] = createSignal<'existing' | 'new' | 'none'>('none');
     const [newPattern, updateNewPattern] = createStore<pattern>({ title: '', keys: [] })
     const [currentStore, changeCurrentStore] = createSignal<pattern>(newPattern)
     const [storeSetter, changeStoreSetter] = createSignal<SetStoreFunction<pattern>>(updateNewPattern)
@@ -413,22 +413,29 @@ export function SearchPanel() {
         }
     }
 
-    function add_newline(value: Record<string, JSONValue>, where: 'on_parent' | 'on_root' = 'on_parent') {
+    function add_newline(value: JSONValue | undefined, where: 'on_parent' | 'on_root' = 'on_parent') {
+        if(!value) return;
         if(!searchParams.path) throw new SearchError("UNDEFINED_SEARCH_PARAMS", 'Path missing');
 
         const path = (where === 'on_root') ? ["content"] : searchParams.path.slice(0, -2);
         console.log('NewLine path => ', path);
 
         try {
-            for(const [k, v] of Object.entries(value)) {
-                console.log('add_nl {} =>', [k, v]);
+            const index = addInput(path, askMyType(value)); console.log('index? => ', index);
+            if(!index) throw new SearchError("APPLY_ERROR", 'Could get new item index!');
 
-                const index = addInput(path, 'array'); console.log('index? => ', index);
-                if(!index) throw new SearchError("APPLY_ERROR", 'Could get new item index!')
+            updateStore([...path, index], formatValue(value));
+            updateStore([...path, index, 'key'], searchParams.resultName || currentStore()?.title || '')
 
-                updateStore([...path, index], formatValue(v))
-                updateStore([...path, index, 'key'], k)
-            }
+            // for(const [k, v] of Object.entries(value)) {
+            //     console.log('add_nl {} =>', [k, v]);
+
+            //     const index = addInput(path, 'array'); console.log('index? => ', index);
+            //     if(!index) throw new SearchError("APPLY_ERROR", 'Could get new item index!')
+
+            //     updateStore([...path, index], formatValue(v))
+            //     updateStore([...path, index, 'key'], k)
+            // }
         } catch (err) { console.error(err) }
     }
     function applyResult() {
@@ -445,7 +452,7 @@ export function SearchPanel() {
 
         updateStore(searchParams.path.slice(0, -1), searchParams.formatedResult);
         if(searchParams.resultName || currentStore()?.title) updateStore(searchParams.path.with(-1, 'key'), searchParams.resultName || currentStore()?.title || '');
-        if(searchParams.extra_results) add_newline(searchParams.extra_results);
+        add_newline(searchParams.extra_results);
     }
 
     // ### RETURN: `SearchPanel()` JSXElement Result
@@ -517,6 +524,11 @@ export function SearchPanel() {
                 text-app-surface-secondary" 
                 onclick={applyResult}
                 >Apply</button>
+                <button type="button" 
+                class="px-13 bg-app-active rounded-2xl p-0.5 font-medium border-2 
+                border-app-muted/50 active:bg-app-active-secondary/70 hover:bg-app-active-secondary 
+                text-app-surface-secondary" 
+                onclick={() => add_newline(result())}>New Line</button>
             </>
             } />
         </Show>

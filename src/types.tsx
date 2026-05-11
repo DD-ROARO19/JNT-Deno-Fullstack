@@ -41,6 +41,15 @@ export type quickOptions = {
     buttons: quickButtons[]; 
 } 
 
+export type quickButtons = {
+    text: string;   icon?: JSXElement;
+    action(): void
+}
+export type quickOptions = { 
+    title: string;  render: 'same_menu' | 'collapse_menu' | 'another_menu' 
+    buttons: quickButtons[]; 
+} 
+
 
 // ##  JSON TYPES  ##
 
@@ -57,7 +66,7 @@ export type JSONArray = JSONValue[];
 
 export type typeOfInputs = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object';
 export type LineContent = { 
-    type: typeOfInputs;     key: string | number;
+    type: typeOfInputs;     key: keyType;
     value: JSONPrimitive | LineContent[];
 };
 
@@ -70,6 +79,7 @@ export interface noteFrame {
 }
 
 // >> #  Input render components props  #
+export type keyType = string | number;
 export type path_list = (string | number)[];
 // export type path_list = ( "content" | number | ("value" | "key" | "type") )[];
 export type inputsProps = { path: path_list }
@@ -77,7 +87,7 @@ export type inputsProps = { path: path_list }
 export type lineProps = inputsProps & { 
     type: typeOfInputs;     path: path_list;
     index: number;          data: JSONPrimitive | LineContent[];
-    key?: string | number;
+    key?: keyType;
 } 
 export type listsProps = {
     data: LineContent[];

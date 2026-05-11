@@ -115,8 +115,8 @@ const terms = {
         current_title: "__TITLE",
     },
     vals: {
-        pattern_title: "TITLE_ADD__",
-        newline_value: "ADD_IN__",
+        pattern_title: "+TITLE",
+        newline_value: "ADD__",
     }
 } as const
 // const pattern_title_term = "TITLE__";
@@ -143,7 +143,7 @@ export async function searchLink(patter: pattern) {
 
         if (patter.keys.length >= 1) { // ## We need to make shure there is keys to filter the response.
             for (let i = 0; i < patter.keys.length; i++) {
-                const { key, val } = patter.keys[i];
+                const { key, val, type } = patter.keys[i];
                 if(terms.vals.pattern_title === val.toLocaleUpperCase()) { // ## USE this value for the key of property. 
                     upd_searchParams("resultName", pv => !pv ? pv = (response[key] || undefined) 
                     : pv += '_' + (response[key] || '')); 
@@ -180,7 +180,7 @@ export async function searchLink(patter: pattern) {
                     continue;
                 }
                 
-                if (!val) {
+                if (!val || type === 'unwrap') {
                     // Object.assign(result, response[key]) 
                     // result = response[key]
                     response = response[key]

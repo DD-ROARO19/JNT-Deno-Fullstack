@@ -3,7 +3,7 @@ import {
     createResource,
     createSignal,
 } from "solid-js";
-import { CardList } from "../components/Cards.tsx";
+import { CardList } from "../components/cards.tsx";
 import SearchBar from "../components/SearchBar.tsx";
 
 import type { Note } from '../../types.ts';
