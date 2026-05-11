@@ -44,6 +44,17 @@ import { QuickMenuBtn } from "./QuickMenu.tsx";
 //     )
 // }
 
+function LineSettingsBtn(props: { path: path_list, type: typeOfInputs, data: JSONPrimitive | LineContent[], hover_class: string, text?: string }) {
+    return (
+        <QuickMenuBtn type={props.type} path={props.path} data={props.data}
+            icon={{ option: 1, class: 'w-3.5 h-3.5 fill-stone-300' }}
+            class={`w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
+            invisible ${props.hover_class} hover:border-slate-600 
+            active:border-slate-600/80 absolute`} 
+        />
+    )
+}
+
 
 // ##  PRIMITIVE VALUE COMPONENTS  ##
 
