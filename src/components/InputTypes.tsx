@@ -10,39 +10,39 @@ import { DownArrow } from "../assets/svgs.tsx";
 import { InputButton } from "./Select.tsx";
 import { addInput, changeInput, updateStore, eraseInput, copyToClipboard, extractValue } from "../helpers.tsx";
 import { NewLine } from './RowLines.tsx'
-import { LineSettingsBtn } from "./LineSettingsBtn.tsx";
+import { LineSettingsBtn } from "./Toggle.tsx"; 
 import { Toggle } from "./Toggle.tsx";
 import { QuickMenuBtn } from "./QuickMenu.tsx";
 
-function lineConfig(path: path_list, data: JSONPrimitive | LineContent[], type: typeOfInputs): lineMenu {
-    return {
-        primary_inputs: {
-            title: 'Change type',
-            buttons: [
-                { text: 'str', action: () => changeInput(path, 'string') },
-                { text: 'num', action: () => changeInput(path, 'number') },
-                { text: 'boo', action: () => changeInput(path, 'boolean') },
-                { text: 'arr', action: () => changeInput(path, 'array') },
-                { text: 'obj', action: () => changeInput(path, 'object') }
-            ]
-        },
-        extra_options: [
-            { text: 'Erase item', action: () => eraseInput(path) },
-            { text: 'Copy value', action: () => copyToClipboard(data, type, path) },
-        ]
-    }
-}
+// function lineConfig(path: path_list, data: JSONPrimitive | LineContent[], type: typeOfInputs): lineMenu {
+//     return {
+//         primary_inputs: {
+//             title: 'Change type',
+//             buttons: [
+//                 { text: 'str', action: () => changeInput(path, 'string') },
+//                 { text: 'num', action: () => changeInput(path, 'number') },
+//                 { text: 'boo', action: () => changeInput(path, 'boolean') },
+//                 { text: 'arr', action: () => changeInput(path, 'array') },
+//                 { text: 'obj', action: () => changeInput(path, 'object') }
+//             ]
+//         },
+//         extra_options: [
+//             { text: 'Erase item', action: () => eraseInput(path) },
+//             { text: 'Copy value', action: () => copyToClipboard(data, type, path) },
+//         ]
+//     }
+// }
 
-function LineSettingsBtn(props: { path: path_list, type: typeOfInputs, data: JSONPrimitive | LineContent[], hover_class: string, text?: string }) {
-    return (
-        <QuickMenuBtn type={props.type} path={props.path} data={props.data}
-            icon={{ option: 1, class: 'w-3.5 h-3.5 fill-stone-300' }}
-            class={`w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
-            invisible ${props.hover_class} hover:border-slate-600 
-            active:border-slate-600/80 absolute`} 
-        />
-    )
-}
+// function LineSettingsBtn(props: { path: path_list, type: typeOfInputs, data: JSONPrimitive | LineContent[], hover_class: string, text?: string }) {
+//     return (
+//         <QuickMenuBtn type={props.type} path={props.path} data={props.data}
+//             icon={{ option: 1, class: 'w-3.5 h-3.5 fill-stone-300' }}
+//             class={`w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
+//             invisible ${props.hover_class} hover:border-slate-600 
+//             active:border-slate-600/80 absolute`} 
+//         />
+//     )
+// }
 
 
 // ##  PRIMITIVE VALUE COMPONENTS  ##
@@ -153,34 +153,34 @@ export function BooleanType(props: inputsProps & { data: boolean, key: string })
 
 
 /** Button to hide or open the contents of object components. */
-function Toggle(props: {
-    // config: lineMenu; 
-    text: string; 
-    end?: boolean, show: boolean;
-    isOpen: Accessor<boolean>, setOpen: Setter<boolean>,
-    path: path_list, type: 'object' | 'array', data: LineContent[]
-}) {
-    // console.log('toggle props: ', props);
+// function Toggle(props: {
+//     // config: lineMenu; 
+//     text: string; 
+//     end?: boolean, show: boolean;
+//     isOpen: Accessor<boolean>, setOpen: Setter<boolean>,
+//     path: path_list, type: 'object' | 'array', data: LineContent[]
+// }) {
+//     // console.log('toggle props: ', props);
 
-    return (
-        <>
-            <span class="Bracket flex-1 flex group relative"
-            classList={{'hover:bg-gray-700/50': props.show}}>
+//     return (
+//         <>
+//             <span class="Bracket flex-1 flex group relative"
+//             classList={{'hover:bg-gray-700/50': props.show}}>
 
-                <h2 class="">{props.text}</h2>
-                <Show when={props.show}>
-                    <DownArrow isDown={props.isOpen} setArrow={props.setOpen} class={`hover:bg-white/0 
-                active:bg-white/0 w-3.5 h-3.5 ${(props.end) ? 'invisible group-hover:visible' : ''} `}
-                        svg_class="dark:fill-stone-300 hover:fill-white active:fill-stone-500 w-4 h-4"
-                    />
-                    <LineSettingsBtn path={props.path} type={props.type} data={props.data}
-                        hover_class="group-hover:visible" />
-                </Show>
+//                 <h2 class="">{props.text}</h2>
+//                 <Show when={props.show}>
+//                     <DownArrow isDown={props.isOpen} setArrow={props.setOpen} class={`hover:bg-white/0 
+//                 active:bg-white/0 w-3.5 h-3.5 ${(props.end) ? 'invisible group-hover:visible' : ''} `}
+//                         svg_class="dark:fill-stone-300 hover:fill-white active:fill-stone-500 w-4 h-4"
+//                     />
+//                     <LineSettingsBtn path={props.path} type={props.type} data={props.data}
+//                         hover_class="group-hover:visible" />
+//                 </Show>
 
-            </span>
-        </>
-    )
-}
+//             </span>
+//         </>
+//     )
+// }
 
 // function addButtonConfig(path: (string | number)[]): lineMenu {
 //     return {

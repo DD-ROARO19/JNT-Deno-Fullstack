@@ -14,7 +14,7 @@ import { Arrow, SettingSVG } from "../assets/svgs.tsx";
 import { twMerge } from "tailwind-merge";
 import type { JSONPrimitive, LineContent, path_list, quickButtons, quickOptions, typeOfInputs } from "../types.tsx";
 
-import { addInput, changeInput, updateStore, eraseInput, copyToClipboard } from "../helpers.tsx";
+import { addInput, changeInput, eraseInput, copyToClipboard } from "../helpers.tsx";
 
 
 type qMenu_config = {
@@ -105,7 +105,7 @@ type QuickMenuBtn_Params = {
 
 export function QuickMenu() {
     let optionsMenuRef: HTMLDivElement | undefined;
-    // const options_config = createMemo(() => quickMenu_store[quickMenuConfig.active_menu]);
+    const [openSubMenu, set_openSubMenu] = createSignal<string>();
 
     createEffect(() => {
         // const menuRef = inputMenuRef();
@@ -125,53 +125,52 @@ export function QuickMenu() {
     });
 
 
-    const MenuItem = (props: quickButtons & { class?: string } ) => {
+    const MenuButtons = (props: quickButtons & { class?: string } ) => {
         return (
-            <option role="menuitem" class={twMerge(`px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 
-            hover:text-gray-900 dark:text-gray-300 dark:hover:bg-slate-700 dark:hover:text-gray-400`, props.class)} 
+            <option role="menuitem" class={twMerge(`px-4 py-2 text-sm text-app-text/70 
+            hover:bg-app-active/20 hover:text-app-text`, props.class)} 
             onClick={() => { props.action(); set_quickMenuConfig("show_menu", false); }} >
                 {props.text}
             </option>
         )
     }
-    function MenuTitle(opt: quickOptions) { 
+    function MenuSection(opt: quickOptions) { 
         return (
         <Switch>
         <Match when={opt.render === 'another_menu'}> <></> </Match>
         <Match when={opt.render === 'same_menu'}> <div>
             <Show when={opt.title.trim() !== ''}>
-                <option role="menuitem" class="block pl-4 py-2 text-sm font-bold italic text-gray-700 dark:text-gray-300 
-                group-hover/submenu:text-gray-900 dark:group-hover/submenu:text-gray-400">
+                <option role="menuitem" class="block pl-4 py-2 text-sm font-bold italic text-app-text">
                     {opt.title}
                 </option>
             </Show>
-            <For each={opt.buttons}>{ (option) => <MenuItem {...option} /> }</For>
+            <For each={opt.buttons}>{ (option) => <MenuButtons {...option} /> }</For>
         </div> </Match>
         <Match when={opt.render === 'collapse_menu'}>{(_) => {
-        const [isOpen, setOpen] = createSignal(false);
+        const isOpen = createMemo(() => openSubMenu() === opt.title);
 
         createEffect(() => {
             const _lastestElement = lastClicked()
-            setOpen(false)
+            set_openSubMenu(undefined)
         })
 
         return <div class="h-auto">
-            <span class="flex hover:text-gray-900 dark:hover:text-gray-400" 
-            classList={{ "group/submenu hover:bg-gray-100 dark:hover:bg-slate-700" : !isOpen() }}
-            onclick={() => setOpen(p => !p)}>
-                <option role="menuitem" class="block pl-4 py-2 text-sm font-bold italic text-gray-700 dark:text-gray-300 
-                group-hover/submenu:text-gray-900 dark:group-hover/submenu:text-gray-400">
+            <span class="group/submenu flex hover:bg-app-active/20"
+            classList={{ "bg-app-active/10": isOpen() }} 
+            onclick={() => set_openSubMenu(opt.title)}>
+                <option role="menuitem" class={`block pl-4 py-2 text-sm font-bold italic group-hover/submenu:text-app-text
+                ${isOpen() ? 'text-app-active/70' : 'text-app-text/70'}`}>
                     {opt.title}
                 </option>
-                <Arrow class="rotate-270 place-self-center 
-                group-hover/submenu:fill-gray-900 dark:group-hover/submenu:fill-gray-400" />
+                <Arrow class={`place-self-center transition-[rotate] duration-100 ease-in group-hover/submenu:fill-app-text 
+                ${isOpen() ? 'rotate-360 fill-app-active/70' : 'rotate-270 fill-app-text/70'}`} />
             </span>
             <div class="h-auto grid transition-[grid-template-rows] duration-200 ease-in-out grid-rows-[0fr]"
             classList={{ "grid-rows-[1fr]": isOpen() }}>
                 <div class="overflow-hidden">
                     {/* <Show when={isOpen}>
                     </Show> */}
-                    <For each={opt.buttons}>{ (option) => <MenuItem class="list-item list-inside" {...option} /> }</For>
+                    <For each={opt.buttons}>{ (option) => <MenuButtons class="list-item list-inside" {...option} /> }</For>
                 </div>
             </div>
         </div>}}</Match>
@@ -182,8 +181,9 @@ export function QuickMenu() {
     return (
         <div ref={optionsMenuRef}
             id="InputMenu"
-            class="absolute h-auto z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 
-            ring-black ring-opacity-5 focus:outline-none dark:bg-stone-800 "
+            class="absolute h-auto z-10 mt-2 w-56 origin-top-right rounded-md shadow-lg ring-1 ring-opacity-5 focus:outline-none 
+            ring-app-sidebar/50 bg-app-surface
+            "
             style={{
                 top: `${quickMenuConfig.coords.y}px`,
                 left: `${quickMenuConfig.coords.x}px`,
@@ -195,7 +195,7 @@ export function QuickMenu() {
             aria-labelledby="menu-button"
         >
             <div class="py-1 h-auto select-none" role="none">
-                <For each={quickMenu_store[quickMenuConfig.active_menu].options}>{ (option) => <MenuTitle {...option} /> }</For>
+                <For each={quickMenu_store[quickMenuConfig.active_menu].options}>{ (option) => <MenuSection {...option} /> }</For>
             </div>
         </div>
     )

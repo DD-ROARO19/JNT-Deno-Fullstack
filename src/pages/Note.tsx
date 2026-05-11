@@ -18,7 +18,7 @@ import { ObjectType } from "../components/StaticTypes.tsx";
 import Header from "../components/Header.tsx";
 import { OptionsMenu } from "../components/Select.tsx";
 import { toast } from "../components/notifications.tsx";
-import { MenuPopovers } from "../components/LineSettingsBtn.tsx";
+// import { MenuPopovers } from "../components/LineSettingsBtn.tsx";
 import { SearchPanel } from "../components/LateralPanels.tsx";
 import { lateralSetter } from "../signals.tsx";
 // import { NewLine2 } from "../components/RowLines.tsx";

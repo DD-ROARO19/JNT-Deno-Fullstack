@@ -32,6 +32,7 @@ export type searchParamsType = {
     path?: (string | number)[];     resultName?: string;
     extra_results?: Record<string, JSONValue>;
 }
+
 export type quickButtons = {
     text: string;   icon?: JSXElement;
     action(): void
