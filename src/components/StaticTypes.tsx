@@ -271,7 +271,7 @@ function NullType(props: primitiveProps & { data: string }) {
                 class="NullType flex-1 outline-none focus:bg-app-base rounded-md mr-8
                     min-h-6 field-sizing-content text-app-keyword"
             >null</p>
-            <Prim_settingsBtn config={[props.path, props.data, 'string']}
+            <LineSettingsBtn path={props.path} data={props.data} type="string"
                 hover_class="group-hover/s-line:visible" />
         </span>
     )

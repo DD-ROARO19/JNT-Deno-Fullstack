@@ -10,50 +10,9 @@ import { DownArrow } from "../assets/svgs.tsx";
 import { InputButton } from "./Select.tsx";
 import { addInput, changeInput, updateStore, eraseInput, copyToClipboard, extractValue } from "../helpers.tsx";
 import { NewLine } from './RowLines.tsx'
-import { LineSettingsBtn } from "./Toggle.tsx"; 
-import { Toggle } from "./Toggle.tsx";
+// import { LineSettingsBtn } from "./Toggle.tsx"; 
+import { Toggle, LineSettingsBtn } from "./Toggle.tsx";
 import { QuickMenuBtn } from "./QuickMenu.tsx";
-
-// function lineConfig(path: path_list, data: JSONPrimitive | LineContent[], type: typeOfInputs): lineMenu {
-//     return {
-//         primary_inputs: {
-//             title: 'Change type',
-//             buttons: [
-//                 { text: 'str', action: () => changeInput(path, 'string') },
-//                 { text: 'num', action: () => changeInput(path, 'number') },
-//                 { text: 'boo', action: () => changeInput(path, 'boolean') },
-//                 { text: 'arr', action: () => changeInput(path, 'array') },
-//                 { text: 'obj', action: () => changeInput(path, 'object') }
-//             ]
-//         },
-//         extra_options: [
-//             { text: 'Erase item', action: () => eraseInput(path) },
-//             { text: 'Copy value', action: () => copyToClipboard(data, type, path) },
-//         ]
-//     }
-// }
-
-// function LineSettingsBtn(props: { path: path_list, type: typeOfInputs, data: JSONPrimitive | LineContent[], hover_class: string, text?: string }) {
-//     return (
-//         <QuickMenuBtn type={props.type} path={props.path} data={props.data}
-//             icon={{ option: 1, class: 'w-3.5 h-3.5 fill-stone-300' }}
-//             class={`w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
-//             invisible ${props.hover_class} hover:border-slate-600 
-//             active:border-slate-600/80 absolute`} 
-//         />
-//     )
-// }
-
-function LineSettingsBtn(props: { path: path_list, type: typeOfInputs, data: JSONPrimitive | LineContent[], hover_class: string, text?: string }) {
-    return (
-        <QuickMenuBtn type={props.type} path={props.path} data={props.data}
-            icon={{ option: 1, class: 'w-3.5 h-3.5 fill-stone-300' }}
-            class={`w-6.5 h-6.5 right-1 border-2 border-slate-800 rounded-sm
-            invisible ${props.hover_class} hover:border-slate-600 
-            active:border-slate-600/80 absolute`} 
-        />
-    )
-}
 
 
 // ##  PRIMITIVE VALUE COMPONENTS  ##
@@ -193,21 +152,6 @@ export function BooleanType(props: inputsProps & { data: boolean, key: string })
 //     )
 // }
 
-// function addButtonConfig(path: (string | number)[]): lineMenu {
-//     return {
-//         primary_inputs: {
-//             open: true,
-//             title: 'Add input',
-//             buttons: [
-//                 { text: 'String', action: () => addInput(path, 'string') },
-//                 { text: 'Number', action: () => addInput(path, 'number') },
-//                 { text: 'Boolean', action: () => addInput(path, 'boolean') },
-//                 { text: 'Array', action: () => addInput(path, 'array') },
-//                 { text: 'Object', action: () => addInput(path, 'object') },
-//             ]
-//         }
-//     }
-// }
 
 function AddItemBtn(props: { path: path_list, type: 'object' | 'array', isFullWidth: boolean | undefined }) {
     return (
