@@ -28,20 +28,6 @@ export default function NewNote() {
     setNewNote('metadata', 'path', `/${params.path}`)
     const rootPath = ['content']
 
-    // const addConfig: lineMenu = {
-    //     primary_inputs: {
-    //         open: true,
-    //         title: 'Select type',
-    //         buttons: [
-    //             { text: 'String', action: () => addInput(rootPath, 'string') },
-    //             { text: 'Number', action: () => addInput(rootPath, 'number') },
-    //             { text: 'Boolean', action: () => addInput(rootPath, 'boolean') },
-    //             { text: 'Array', action: () => addInput(rootPath, 'array') },
-    //             { text: 'Object', action: () => addInput(rootPath, 'object') },
-    //         ]
-    //     }
-    // }
-
     const Toast = () => toast().Content();
 
     return (
@@ -51,7 +37,7 @@ export default function NewNote() {
             <div class="m-4 bg-app-element w-3/4 max-w-215 rounded-2xl p-2 flex flex-col 
                 place-self-center">
                 {/* Title */}
-                <Header titleSetter={setNewNote} value={newNote.metadata}
+                <Header titleSetter={setNewNote} value={newNote.metadata.title}
                     onSave={() => SaveNote(newNote)} 
                     onCopy={() => copyToClipboard(newNote.content, 'object', [])} 
                     onErase={() => {setNewNote("metadata", "title", ""); setNewNote("content", [])}} 

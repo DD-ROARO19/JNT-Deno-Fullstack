@@ -1,3 +1,5 @@
+// @ts-types="solid-js"
+import type { JSXElement } from "solid-js";
 import type { Note, NoteMetadata, pattern } from "../types.ts";
 import type { Category, CategoryNode } from "../types.ts";
 
@@ -31,6 +33,15 @@ export type searchParamsType = {
     extra_results?: Record<string, JSONValue>;
 }
 
+export type quickButtons = {
+    text: string;   icon?: JSXElement;
+    action(): void
+}
+export type quickOptions = { 
+    title: string;  render: 'same_menu' | 'collapse_menu' | 'another_menu' 
+    buttons: quickButtons[]; 
+} 
+
 
 // ##  JSON TYPES  ##
 
@@ -47,7 +58,7 @@ export type JSONArray = JSONValue[];
 
 export type typeOfInputs = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object';
 export type LineContent = { 
-    type: typeOfInputs;     key: string | number;
+    type: typeOfInputs;     key: keyType;
     value: JSONPrimitive | LineContent[];
 };
 
@@ -61,10 +72,14 @@ export interface noteFrame {
 
 // >> #  Input render components props  #
 export type keyType = string | number;
-export type inputsProps = { path: (string | number)[] }
+export type path_list = (string | number)[];
+// export type path_list = ( "content" | number | ("value" | "key" | "type") )[];
+export type inputsProps = { path: path_list }
+// export type valid_data = JSONPrimitive | LineContent[];
 export type lineProps = inputsProps & { 
-    type: typeOfInputs;     data: JSONPrimitive | LineContent[];
-    index: number;          key?: keyType;
+    type: typeOfInputs;     path: path_list;
+    index: number;          data: JSONPrimitive | LineContent[];
+    key?: keyType;
 } 
 export type listsProps = {
     data: LineContent[];

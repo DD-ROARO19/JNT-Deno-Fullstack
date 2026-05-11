@@ -5,7 +5,8 @@ import type {
     JSONValue, typeOfInputs, LineContent, JSONPrimitive,
     JSONArray,
     JSONObject,
-    noteFrame
+    noteFrame,
+    path_list
 } from "./types.tsx";
 import { toast } from "./components/notifications.tsx";
 import type { Note } from "../types.ts"
@@ -43,7 +44,7 @@ export function addInput(path: (string | number)[], input_type: typeOfInputs) {
     })
     return process.index !== -1 ? process.index : undefined
 }
-export function eraseInput(path: (string | number)[]) {
+export function eraseInput(path: path_list) {
     const setter = currentSetter()
 
     console.debug('erase in path', path);
@@ -84,7 +85,7 @@ export class ObjectCheckError extends Error {
  * @param type Specify type of the value.
  * @param path Path taken to get to the value.
 */
-export function extractValue(data: JSONPrimitive | LineContent[], type: typeOfInputs, path: (string | number)[]): JSONValue {
+export function extractValue(data: JSONPrimitive | LineContent[], type: typeOfInputs, path: path_list): JSONValue {
     switch (type) {
         case 'array':
             return (data as LineContent[]).map((item, index) => extractValue(item.value, item.type, [...path, index]))
@@ -139,7 +140,8 @@ export function extractNote(note: noteFrame) {
  * @param type Specify type of the value.
  * @param path Path taken to get to the value.
  */
-export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeOfInputs, path: (string | number)[]) {
+export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeOfInputs, path: path_list) {
+    console.debug('- Copy: ',{type, path, data})
     try {
         const dataValue = extractValue(data, type, path);
         switch (type) {
