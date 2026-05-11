@@ -7,12 +7,12 @@ import {
     createEffect,
     onCleanup,
     Switch,
-    Match
-} from "solid-js"; 
+    Match,
+    createMemo } from "solid-js"; 
 import { createStore } from "solid-js/store";
 import { Arrow, SettingSVG } from "../assets/svgs.tsx";
 import { twMerge } from "tailwind-merge";
-import type { path_list, quickButtons, quickOptions, typeOfInputs } from "../types.tsx";
+import type { JSONPrimitive, LineContent, path_list, quickButtons, quickOptions, typeOfInputs } from "../types.tsx";
 
 import { addInput, changeInput, updateStore, eraseInput, copyToClipboard } from "../helpers.tsx";
 
@@ -20,7 +20,7 @@ import { addInput, changeInput, updateStore, eraseInput, copyToClipboard } from 
 type qMenu_config = {
     // path: (string | number)[];
     options: quickOptions[],
-    type: typeOfInputs
+    // type: typeOfInputs
 }
 type quick_menu_options = {
     primitive:  qMenu_config,
@@ -31,7 +31,7 @@ type menu_key_options = keyof quick_menu_options;
 type quick_menu_params = {
     coords: { x: number, y: number };   path: path_list;
     show_menu: boolean;                 active_menu: menu_key_options; 
-    type: typeOfInputs;
+    type: typeOfInputs;                 data: JSONPrimitive | LineContent[];
 }
 // Discriminated Unions to ascertain data.
 type qPrimitive_config =    quick_menu_params & { active_menu: 'primitive', type: Extract<typeOfInputs, 'string' | 'number' | 'boolean'> }
@@ -44,10 +44,15 @@ const [quickMenuConfig, set_quickMenuConfig] = createStore<qMenu_params>({
     show_menu: false,
     coords: { x: 0, y: 0 },
     active_menu: 'Adder',
-    type: 'null'
+    type: 'null',
+    data: null
 })
-const quickMenu_store: quick_menu_options = {
-    primitive: { type: 'string', options: [
+const [quickMenu_store] = createStore<quick_menu_options>({
+    primitive: { options: [
+        { title: '', render: 'same_menu', buttons: [
+            { text: 'Copy',     action: () => copyToClipboard(quickMenuConfig.data, quickMenuConfig.type, quickMenuConfig.path) },
+            { text: 'Remove',   action: () => eraseInput(quickMenuConfig.path) },
+        ] },
         { title: 'Change Input', render: 'collapse_menu', buttons: [
             { text: 'String',   action: () => changeInput(quickMenuConfig.path, 'string') },
             { text: 'Number',   action: () => changeInput(quickMenuConfig.path, 'number') },
@@ -56,7 +61,11 @@ const quickMenu_store: quick_menu_options = {
             { text: 'Object',   action: () => changeInput(quickMenuConfig.path, 'object') }
         ] }
     ] },
-    object: { type: 'object', options: [
+    object: { options: [
+        { title: '', render: 'same_menu', buttons: [
+            { text: 'Copy',     action: () => copyToClipboard(quickMenuConfig.data, quickMenuConfig.type, quickMenuConfig.path) },
+            { text: 'Remove',   action: () => eraseInput(quickMenuConfig.path) },
+        ] },
         { title: 'Add Input', render: 'collapse_menu', buttons: [
             { text: 'String',   action: () => addInput(quickMenuConfig.path, 'string') },
             { text: 'Number',   action: () => addInput(quickMenuConfig.path, 'number') },
@@ -72,7 +81,7 @@ const quickMenu_store: quick_menu_options = {
             { text: 'Object',   action: () => changeInput(quickMenuConfig.path, 'object') }
         ] }
     ] },
-    Adder: { type: 'null', options: 
+    Adder: { options: 
         [{ title: 'Add Input', buttons: [
             { text: 'String',   action: () => addInput(quickMenuConfig.path, 'string') },
             { text: 'Number',   action: () => addInput(quickMenuConfig.path, 'number') },
@@ -81,7 +90,7 @@ const quickMenu_store: quick_menu_options = {
             { text: 'Object',   action: () => addInput(quickMenuConfig.path, 'object') }
         ], render: 'same_menu' 
     }] }
-} as const;
+});
 
 const [lastClicked, setLastClicked] = createSignal<HTMLButtonElement>()
 
@@ -91,11 +100,12 @@ type QuickMenuBtn_Params = {
     icon?: (Parameters<typeof SettingSVG>)[0];
     type: typeOfInputs;
     path: path_list;
+    data: JSONPrimitive | LineContent[]
 }
 
 export function QuickMenu() {
     let optionsMenuRef: HTMLDivElement | undefined;
-    const options_config = quickMenu_store[quickMenuConfig.active_menu]
+    // const options_config = createMemo(() => quickMenu_store[quickMenuConfig.active_menu]);
 
     createEffect(() => {
         // const menuRef = inputMenuRef();
@@ -118,8 +128,7 @@ export function QuickMenu() {
     const MenuItem = (props: quickButtons & { class?: string } ) => {
         return (
             <option role="menuitem" class={twMerge(`px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 
-            hover:text-gray-900 dark:text-gray-300 dark:hover:bg-slate-700 dark:hover:text-gray-400 
-            list-item list-inside`, props.class)} 
+            hover:text-gray-900 dark:text-gray-300 dark:hover:bg-slate-700 dark:hover:text-gray-400`, props.class)} 
             onClick={() => { props.action(); set_quickMenuConfig("show_menu", false); }} >
                 {props.text}
             </option>
@@ -130,19 +139,23 @@ export function QuickMenu() {
         <Switch>
         <Match when={opt.render === 'another_menu'}> <></> </Match>
         <Match when={opt.render === 'same_menu'}> <div>
-            <span class="flex hover:text-gray-900 dark:hover:text-gray-400" >
+            <Show when={opt.title.trim() !== ''}>
                 <option role="menuitem" class="block pl-4 py-2 text-sm font-bold italic text-gray-700 dark:text-gray-300 
                 group-hover/submenu:text-gray-900 dark:group-hover/submenu:text-gray-400">
                     {opt.title}
                 </option>
-                {/* <Arrow class="rotate-270 place-self-center 
-                group-hover/submenu:fill-gray-900 dark:group-hover/submenu:fill-gray-400" /> */}
-            </span>
+            </Show>
             <For each={opt.buttons}>{ (option) => <MenuItem {...option} /> }</For>
         </div> </Match>
         <Match when={opt.render === 'collapse_menu'}>{(_) => {
         const [isOpen, setOpen] = createSignal(false);
-        return <div>
+
+        createEffect(() => {
+            const _lastestElement = lastClicked()
+            setOpen(false)
+        })
+
+        return <div class="h-auto">
             <span class="flex hover:text-gray-900 dark:hover:text-gray-400" 
             classList={{ "group/submenu hover:bg-gray-100 dark:hover:bg-slate-700" : !isOpen() }}
             onclick={() => setOpen(p => !p)}>
@@ -153,12 +166,12 @@ export function QuickMenu() {
                 <Arrow class="rotate-270 place-self-center 
                 group-hover/submenu:fill-gray-900 dark:group-hover/submenu:fill-gray-400" />
             </span>
-            <div class="h-auto grid transition-[grid-template-columns] duration-100 ease-in-out grid-cols-[0fr]"
-            classList={{ "grid-cols-[1fr]": isOpen() }}>
+            <div class="h-auto grid transition-[grid-template-rows] duration-200 ease-in-out grid-rows-[0fr]"
+            classList={{ "grid-rows-[1fr]": isOpen() }}>
                 <div class="overflow-hidden">
                     {/* <Show when={isOpen}>
                     </Show> */}
-                    <For each={opt.buttons}>{ (option) => <MenuItem {...option} /> }</For>
+                    <For each={opt.buttons}>{ (option) => <MenuItem class="list-item list-inside" {...option} /> }</For>
                 </div>
             </div>
         </div>}}</Match>
@@ -169,20 +182,20 @@ export function QuickMenu() {
     return (
         <div ref={optionsMenuRef}
             id="InputMenu"
-            class="absolute z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 
+            class="absolute h-auto z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 
             ring-black ring-opacity-5 focus:outline-none dark:bg-stone-800 "
             style={{
                 top: `${quickMenuConfig.coords.y}px`,
                 left: `${quickMenuConfig.coords.x}px`,
-                visibility: quickMenuConfig.show_menu ? 'visible' : 'hidden',
-                // display: quickMenuConfig.show_menu ? 'block' : 'none'
+                // visibility: quickMenuConfig.show_menu ? 'visible' : 'hidden',
+                display: quickMenuConfig.show_menu ? 'block' : 'none'
             }}
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="menu-button"
         >
-            <div class="py-1 select-none" role="none">
-                <For each={options_config.options}>{ (option) => <MenuTitle {...option} /> }</For>
+            <div class="py-1 h-auto select-none" role="none">
+                <For each={quickMenu_store[quickMenuConfig.active_menu].options}>{ (option) => <MenuTitle {...option} /> }</For>
             </div>
         </div>
     )
@@ -201,7 +214,8 @@ export function QuickMenuBtn(props: QuickMenuBtn_Params) {
             set_quickMenuConfig({ 
                 coords: { x: (rect.right - 224), y: (rect.top + selectButtonRef.offsetHeight) },
                 show_menu: true,
-                path: props.path
+                path: props.path,
+                data: props.data
             })
             switch (props.type) {
                 case "string": 
@@ -216,11 +230,11 @@ export function QuickMenuBtn(props: QuickMenuBtn_Params) {
                 case "object":
                     set_quickMenuConfig({ type: props.type, active_menu: 'object' })
                 break;
-                case "null":
-                    set_quickMenuConfig({ type: props.type, active_menu: 'Adder' })
-                break;
                 case "array":
                     set_quickMenuConfig({ type: props.type, active_menu: 'object' })
+                break;
+                case "null":
+                    set_quickMenuConfig({ type: props.type, active_menu: 'Adder' })
                 break;
             
                 default: (props.type) satisfies never;
