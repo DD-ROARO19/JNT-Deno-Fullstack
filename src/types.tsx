@@ -58,7 +58,7 @@ export type JSONArray = JSONValue[];
 
 export type typeOfInputs = 'string' | 'number' | 'boolean' | 'null' | 'array' | 'object';
 export type LineContent = { 
-    type: typeOfInputs;     key: string | number;
+    type: typeOfInputs;     key: keyType;
     value: JSONPrimitive | LineContent[];
 };
 
@@ -71,6 +71,7 @@ export interface noteFrame {
 }
 
 // >> #  Input render components props  #
+export type keyType = string | number
 export type path_list = (string | number)[];
 // export type path_list = ( "content" | number | ("value" | "key" | "type") )[];
 export type inputsProps = { path: path_list }

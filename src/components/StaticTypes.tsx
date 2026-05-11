@@ -8,8 +8,7 @@ import {
 
 import type { Accessor, Setter, JSXElement } from "solid-js";
 import type {
-    inputsProps, JSONPrimitive, LineContent, lineMenu,
-    lineMenuParams, listsProps, path_list, typeOfInputs
+    inputsProps, JSONPrimitive, LineContent, lineMenu, lineMenuParams, listsProps, typeOfInputs, keyType, path_list
 } from "../types.tsx";
 
 import { NewLine2 } from "./RowLines.tsx";
@@ -21,12 +20,13 @@ import { QuickMenuBtn } from "./QuickMenu.tsx";
 const search_term = "__SEARCH"
 
 
-type keyProps = inputsProps & { value: string; }
+type keyProps = inputsProps & { value: keyType; }
 
 function KeyComp(props: keyProps) {
     return (
         <>
             <input value={props.value} type="text" placeholder="Key name"
+                disabled={typeof props.value === 'number'}
                 onChange={e => updateStore(props.path, e.currentTarget.value)}
                 style="field-sizing: content"
                 class="KeyInput text-wrap max-w-64 focus:outline-none focus:bg-app-base 
@@ -36,7 +36,7 @@ function KeyComp(props: keyProps) {
     )
 }
 
-type basicProps = inputsProps & { key?: string }
+type basicProps = inputsProps & { key?: KeyType }
 
 type primitiveProps = basicProps
 
@@ -49,17 +49,16 @@ export function StringType(props: primitiveProps & { data: string }) {
 
     return (
         <span class="StringType group/s-line flex-1 flex relative hover:bg-app-active/5 min-w-3/4">
-            <KeyComp value={props.key.toString()} path={props.path.with(-1, 'key')} />
+            <KeyComp value={props.key} path={props.path.with(-1, 'key')} />
             <textarea placeholder="Bla Bla Bla..."
                 value={
                     (typeof props.data === 'object') ? // is an object?
                         // JSON.stringify(extractValue(props.data, 'object', props.path), undefined, 4) 
                         JSON.stringify(props.data, undefined, 4)
-                        :
-                        props.data
+                        : props.data
                 }
                 onChange={e => { updateStore(props.path, e.currentTarget.value); 
-                    if(props.key?.toString().toLocaleUpperCase() === search_term && props.data.toString().trim() !== "") {
+                    if(typeof props.key === 'string' && props.key?.toLocaleUpperCase() === search_term && props.data.toString().trim() !== "") {
                         prepareSearchPanel(e.currentTarget.value, props.path)
                     } 
                 }}
@@ -81,7 +80,7 @@ function NumberType(props: primitiveProps & { data: number }) {
 
     return (
         <span class="NumberType group/n-line flex-1 flex relative hover:bg-app-active/5">
-            <KeyComp value={props.key.toString()} path={props.path.with(-1, 'key')} />
+            <KeyComp value={props.key} path={props.path.with(-1, 'key')} />
             <input type="number" placeholder="0, 1 or more (or less)!"
                 value={(props.data || props.data === 0 || typeof props.data === 'boolean') ? Number(props.data) : ''}
                 onChange={e => updateStore(props.path, Number(e.currentTarget.value))}
@@ -145,11 +144,11 @@ function BooleanType(props: primitiveProps & { data: boolean }) {
 
     return (
         <span class="BooleanType group/b-line flex-1 flex relative hover:bg-app-active/5">
-            <KeyComp value={props.key.toString()} path={props.path.with(-1, 'key')} />
+            <KeyComp value={props.key} path={props.path.with(-1, 'key')} />
             <span class="flex gap-2 text-app-keyword items-center">
                 <Switch fallback={<BoolSwitch />}>
-                    <Match when={props.key.endsWith('check')}><BoolCheck /></Match>
-                    <Match when={props.key.endsWith('radio')}><BoolRadio /></Match>
+                    <Match when={typeof props.key === 'string' && props.key.endsWith('check')}><BoolCheck /></Match>
+                    <Match when={typeof props.key === 'string' && props.key.endsWith('radio')}><BoolRadio /></Match>
                 </Switch>
             </span>
             <LineSettingsBtn path={props.path} type="boolean" data={props.data} // config={[props.path, props.data, 'boolean']}
@@ -200,9 +199,9 @@ export function ArrayType(props: Omit<objectProps, 'no_config' | 'full_addButton
                 <div class="ArrayType w-full pl-8 border-l-1 border-app-muted my-1 
                 text-app-text focus-within:border-app-active-secondary/50">
                     <For each={props.data}>{(item, index) => {
-                        updateStore([...props.path, index(), 'key'], index().toString())
+                        updateStore([...props.path, index(), 'key'], index())
                         return <NewLine2 path={props.path} index={index()}
-                            type={item.type} data={item.value} key={index().toString()} />
+                            type={item.type} data={item.value} key={index()} />
                     }}</For>
                 </div>
 
@@ -242,7 +241,7 @@ export function ObjectType(props: objectProps) {
                 text-app-text focus-within:border-app-active-secondary/50">
                     <For each={props.data}>{(item, index) =>
                         <NewLine2 path={props.path} index={index()}
-                            type={item.type} data={item.value} key={item.key} />
+                            type={item.type} data={item.value} key={item.key?.toString() ?? ''} />
                     }</For>
 
                     <Show when={props.full_addButton}>
