@@ -8,7 +8,7 @@ import { useParams } from "@solidjs/router";
 import type { Note } from "../../types.ts";
 import type { fetchParams, otherFetchParams } from "../types.tsx";
 
-import { CardList } from "../components/Cards.tsx";
+import { CardList } from "../components/cards.tsx";
 import SearchBar from "../components/SearchBar.tsx";
 
 const fetchNotesByPath = async (query: fetchParams): Promise<Note[]> => {
@@ -25,6 +25,11 @@ const fetchNotesByPath = async (query: fetchParams): Promise<Note[]> => {
             "Content-Type": "application/json",
         }
     });
+
+    if (!res.ok) {
+        console.error(await res.json())
+        return [];
+    }
 
     const data = res.json();
     return data;
@@ -44,7 +49,7 @@ export default function CardMenu() {
             {/* {list.loading && <div>Loading...</div>} */}
             {list.error && <div>Error while loading notes.</div>}
 
-            <CardList list={list() || []} />
+            <CardList list={list() || []} param_setter={setSearchParams} />
         </div>
     );
 }

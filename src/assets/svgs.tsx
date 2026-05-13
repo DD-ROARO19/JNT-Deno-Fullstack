@@ -438,13 +438,13 @@ export const CopySVG = (props: { class?: string, option: 1 | 2 | 3 }) => {
 }
 
 export const SettingSVG = (props: { class?: string, option: 1 | 2 | 3 | 4 }) => {
-    const settings = {
-        1: (<svg class={twMerge('h-6 w-6 fill-white', props.class)} viewBox="0 0 16 16">
+    const settings = [
+        (<svg class={twMerge('h-6 w-6 fill-white', props.class)} viewBox="0 0 16 16">
             <path d="M8 12C9.10457 12 10 12.8954 10 14C10 15.1046 9.10457 16 8 16C6.89543 16 6 15.1046 6 14C6 12.8954 6.89543 12 8 12Z" />
             <path d="M8 6C9.10457 6 10 6.89543 10 8C10 9.10457 9.10457 10 8 10C6.89543 10 6 9.10457 6 8C6 6.89543 6.89543 6 8 6Z" />
             <path d="M10 2C10 0.89543 9.10457 -4.82823e-08 8 0C6.89543 4.82823e-08 6 0.895431 6 2C6 3.10457 6.89543 4 8 4C9.10457 4 10 3.10457 10 2Z" />
         </svg>),
-        2: (<svg class={twMerge('h-6 w-6 fill-white', props.class)} viewBox="0 0 22 22">
+        (<svg class={twMerge('h-6 w-6 fill-white', props.class)} viewBox="0 0 22 22">
             <g id="Page-1" stroke="none" fill-rule="evenodd">
                 <g id="Dribbble-Light-Preview" transform="translate(-99.000000, -755.000000)" >
                     <g id="icons" transform="translate(56.000000, 160.000000)">
@@ -459,7 +459,7 @@ export const SettingSVG = (props: { class?: string, option: 1 | 2 | 3 | 4 }) => 
                 </g>
             </g>
         </svg>),
-        3: (<svg class={twMerge('h-6 w-6 fill-white stroke-white', props.class)} viewBox="3 3 18 18" fill="none">
+        (<svg class={twMerge('h-6 w-6 fill-white stroke-white', props.class)} viewBox="3 3 18 18" fill="none">
             <path d="M10.5213 3.62368C11.3147 2.75255 12.6853 2.75255 13.4787 3.62368L14.2142 4.43128C14.6151 4.87154 15.1914 5.11025 15.7862 5.08245L16.8774 
             5.03146C18.0543 4.97645 19.0236 5.94568 18.9685 7.12264L18.9176 8.21377C18.8898 8.80859 19.1285 9.38487 19.5687 9.78582L20.3763 10.5213C21.2475 11.3147 
             21.2475 12.6853 20.3763 13.4787L19.5687 14.2142C19.1285 14.6151 18.8898 15.1914 18.9176 15.7862L18.9685 16.8774C19.0236 18.0543 18.0543 19.0236 16.8774 
@@ -470,7 +470,7 @@ export const SettingSVG = (props: { class?: string, option: 1 | 2 | 3 | 4 }) => 
                 stroke="none" />
             <circle cx="12" cy="12" r="1" stroke-width="2" />
         </svg>),
-        4: (<svg class={twMerge('h-6 w-6 fill-white', props.class)} viewBox="2 2 20 20" fill="none" >
+        (<svg class={twMerge('h-6 w-6 fill-white', props.class)} viewBox="2 2 20 20" fill="none" >
             <path fill-rule="evenodd" clip-rule="evenodd" d="M13.9794 2.97636C12.7523 2.27761 11.2477 2.27761 10.0207 2.97636L7.59467 4.35783L7.59463 
             4.35776L7.58436 4.36378L5.17499 5.77401C3.95632 6.48731 3.20403 7.79031 3.19563 9.20235L3.17903 11.994L3.17896 11.994L3.17903 12.0059L3.19563 
             14.7976C3.20403 16.2097 3.95632 17.5127 5.17499 18.226L7.58436 19.6362L7.58433 19.6363L7.59467 19.6422L10.0207 21.0236C11.2477 21.7224 12.7523 
@@ -483,9 +483,9 @@ export const SettingSVG = (props: { class?: string, option: 1 | 2 | 3 | 4 }) => 
             13C11.4477 13 11 12.5523 11 12ZM12 9C10.3432 9 9.00001 10.3431 9.00001 12C9.00001 13.6568 10.3432 15 12 15C13.6569 15 15 13.6568 15 12C15 10.3431 
             13.6569 9 12 9Z" stroke="none" />
         </svg>)
-    }
+    ]
 
-    return (<span class="SETTINGS_SVG pointer-events-none flex justify-center">{settings[props.option]}</span>)
+    return (<span class="SETTINGS_SVG pointer-events-none flex justify-center">{settings.at(props.option -1)}</span>)
 }
 
 export const Cancel = (props: { class?: string, option: 1 | 2 | 3 }) => {

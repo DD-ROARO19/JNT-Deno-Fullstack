@@ -17,18 +17,19 @@ import type { JSONPrimitive, LineContent, path_list, quickButtons, quickOptions,
 import { addInput, changeInput, eraseInput, copyToClipboard } from "../helpers.tsx";
 
 
-type qMenu_config = {
+interface qMenu_config {
     // path: (string | number)[];
     options: quickOptions[],
     // type: typeOfInputs
 }
-type quick_menu_options = {
+interface quick_menu_options {
     primitive:  qMenu_config,
     object:     qMenu_config, 
     Adder:      qMenu_config,
+    tags:       qMenu_config,
 }
 type menu_key_options = keyof quick_menu_options;
-type quick_menu_params = {
+interface quick_menu_params {
     coords: { x: number, y: number };   path: path_list;
     show_menu: boolean;                 active_menu: menu_key_options; 
     type: typeOfInputs;                 data: JSONPrimitive | LineContent[];
@@ -37,7 +38,8 @@ type quick_menu_params = {
 type qPrimitive_config =    quick_menu_params & { active_menu: 'primitive', type: Extract<typeOfInputs, 'string' | 'number' | 'boolean'> }
 type qObject_config =       quick_menu_params & { active_menu: 'object', type: Extract<typeOfInputs, 'object' | 'array'> }
 type qAdder_config =        quick_menu_params & { active_menu: 'Adder', type: Extract<typeOfInputs, 'null'> }
-type qMenu_params = qPrimitive_config | qObject_config | qAdder_config;
+type qTags_config =         quick_menu_params & { active_menu: 'tags', type: Extract<typeOfInputs, 'null'> }
+type qMenu_params = qPrimitive_config | qObject_config | qAdder_config | qTags_config;
 
 const [quickMenuConfig, set_quickMenuConfig] = createStore<qMenu_params>({
     path: [],
@@ -47,6 +49,7 @@ const [quickMenuConfig, set_quickMenuConfig] = createStore<qMenu_params>({
     type: 'null',
     data: null
 })
+export const [tagsStore, update_tagStore] = createStore<qMenu_config>({ options: [{ title: 'Tags', render: 'same_menu', buttons: [] }] });
 const [quickMenu_store] = createStore<quick_menu_options>({
     primitive: { options: [
         { title: '', render: 'same_menu', buttons: [
@@ -89,12 +92,13 @@ const [quickMenu_store] = createStore<quick_menu_options>({
             { text: 'Array',    action: () => addInput(quickMenuConfig.path, 'array') },
             { text: 'Object',   action: () => addInput(quickMenuConfig.path, 'object') }
         ], render: 'same_menu' 
-    }] }
+    }] },
+    tags: tagsStore
 });
 
-const [lastClicked, setLastClicked] = createSignal<HTMLButtonElement>()
+const [lastTouched, setLastTouched] = createSignal<HTMLElement>()
 
-type QuickMenuBtn_Params = {
+interface QuickMenuBtn_Params {
     class?: string;
     text?: string;
     icon?: (Parameters<typeof SettingSVG>)[0];
@@ -150,14 +154,14 @@ export function QuickMenu() {
         const isOpen = createMemo(() => openSubMenu() === opt.title);
 
         createEffect(() => {
-            const _lastestElement = lastClicked()
+            const _lastestElement = lastTouched()
             set_openSubMenu(undefined)
         })
 
         return <div class="h-auto">
             <span class="group/submenu flex hover:bg-app-active/20"
             classList={{ "bg-app-active/10": isOpen() }} 
-            onclick={() => set_openSubMenu(opt.title)}>
+            onclick={() => set_openSubMenu(isOpen() ? undefined : opt.title)}>
                 <option role="menuitem" class={`block pl-4 py-2 text-sm font-bold italic group-hover/submenu:text-app-text
                 ${isOpen() ? 'text-app-active/70' : 'text-app-text/70'}`}>
                     {opt.title}
@@ -203,7 +207,7 @@ export function QuickMenu() {
 
 
 export function QuickMenuBtn(props: QuickMenuBtn_Params) {
-    const isLastClicked = createSelector(lastClicked); // Should add some performace (?)
+    const isLastClicked = createSelector(lastTouched); // Should add some performace (?)
     let selectButtonRef: HTMLButtonElement | undefined;
 
     // const store = quickMenu_store[props.store]
@@ -251,7 +255,7 @@ export function QuickMenuBtn(props: QuickMenuBtn_Params) {
                 set_quickMenuConfig("show_menu", p => !p)
             } else { updateConfig() }
             // set_quickMenuConfig("active_menu", 'none'); // # TODO: Maybe another variable for submenu control?
-            setLastClicked(selectButtonRef)
+            setLastTouched(selectButtonRef)
         }
     }
 
@@ -266,6 +270,8 @@ export function QuickMenuBtn(props: QuickMenuBtn_Params) {
     )
 }
 
+
+
 export {
-    set_quickMenuConfig, setLastClicked
+    set_quickMenuConfig, setLastTouched as setLastClicked
 }

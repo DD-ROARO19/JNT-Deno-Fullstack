@@ -1,14 +1,15 @@
-import { For } from 'solid-js';
-import type { ParentProps } from 'solid-js';
+// @ts-types="solid-js"
+import { For, Show } from 'solid-js';
 import { useNavigate, useLocation } from '@solidjs/router';
 
 import { twMerge } from 'tailwind-merge';
 import { Edit, Erase } from '../assets/svgs.tsx';
 // import SearchBar from './SearchBar.tsx';
 
+import type { ParentProps, Setter } from 'solid-js';
 import type { cardNote } from "../../types.ts";
-// @ts-types="solid-js"
-import { Show } from "solid-js";
+import type { SetStoreFunction } from "solid-js/store";
+import type { otherFetchParams } from "../types.tsx";
 // const arr = [0, 0, 0, 0, 0]
 
 interface CardData {
@@ -19,38 +20,40 @@ interface CardData {
     onclick: (e: MouseEvent) => void 
 }
 
-function Card(props: ParentProps & CardData) {
-    console.log('card', props);
 
-    return (
-        <div onclick={e => props.onclick(e)} class={twMerge(`group/card cursor-pointer
-            h-59 rounded-2xl p-2 flex flex-col text-balance 
-            bg-app-surface hover:bg-app-element
-            select-none hover:outline-2 hover:outline-app-active outline-offset-4 
-            shadow-md text-app-text
-        `, props.class)} >
-            <h1 class='text-2xl font-semibold'>{props.title || 'Note Name...'}</h1>
-            <span class="flex gap-1 my-1">
-                <For each={props.tags}>{(tag, i) =>                                 // << Note tags
-                    <h2 class="bg-app-function hover:bg-app-active-secondary group-hover/card:text-app-element text-app-surface font-bold p-0.5 px-1.5 rounded-sm"
-                    classList={{
-                        "rounded-l-xl": i() == 0,
-                        "rounded-r-xl": i() == props.tags.length -1,
-                    }}
-                    >{tag}</h2>                                                     // Note tags >>
-                }</For>
-            </span> 
-            <Show when={props.snippet}> {/* Snippet shown when using the search bar. */}
-                <p innerHTML={props.snippet} />
-            </Show>
-            {props.children}
-        </div>
-    );
-}
-
-export function CardList(props: { list: cardNote[] }) {
+export function CardList(p: { list: cardNote[], param_setter: Setter<otherFetchParams> }) {
     const navigate = useNavigate();
     const location = useLocation();
+
+    function Card(props: ParentProps & CardData) {
+        // console.debug('card', props);
+    
+        return (
+            <div onclick={e => props.onclick(e)} class={twMerge(`group/card cursor-pointer
+                h-59 rounded-2xl p-2 flex flex-col text-balance 
+                bg-app-surface hover:bg-app-element
+                select-none hover:outline-2 hover:outline-app-active outline-offset-4 
+                shadow-md text-app-text
+            `, props.class)} >
+                <h1 class='text-2xl font-semibold'>{props.title || 'Note Name...'}</h1>
+                <span class="flex gap-1 my-1">
+                    <For each={props.tags}>{(tag, i) =>                                 // << Note tags
+                        <h2 class="bg-app-function hover:bg-app-active-secondary group-hover/card:text-app-element text-app-surface font-bold p-0.5 px-1.5 rounded-sm"
+                        onclick={e => { e.stopPropagation(); p.param_setter(pv => ({ ...pv, search: 'tags:'+tag }) ); }}
+                        classList={{
+                            "rounded-l-xl": i() == 0,
+                            "rounded-r-xl": i() == props.tags.length -1,
+                        }}
+                        >{tag}</h2>                                                     // Note tags >>
+                    }</For>
+                </span> 
+                <Show when={props.snippet}> {/* Snippet shown when using the search bar. */}
+                    <p innerHTML={props.snippet} />
+                </Show>
+                {props.children}
+            </div>
+        );
+    }
 
     function newNote(e: MouseEvent) {
         e.stopPropagation()
@@ -77,7 +80,7 @@ export function CardList(props: { list: cardNote[] }) {
         <>
             {/* <SearchBar /> */}
             <div class='max-h-dvh mt-4 grid gap-4.5 grid-cols-[repeat(auto-fit,minmax(20.75rem,1fr))]'>
-                <For each={props.list}>{(item, _i) =>
+                <For each={p.list}>{(item, _i) =>
                     <Card title={item.title} snippet={item.snippet} tags={JSON.parse(item.tags)} onclick={e => openNote(e, item.id)} 
                     class="[&>p]:text-app-string">
 

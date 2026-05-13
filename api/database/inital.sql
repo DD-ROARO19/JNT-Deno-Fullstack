@@ -37,6 +37,12 @@ CREATE TABLE IF NOT EXISTS patterns (
     last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS tags (
+    tag_id TEXT PRIMARY KEY,
+    display_tag TEXT,
+    count INTEGER DEFAULT 1
+);
+
 -- Virtual table for full-text search on notes.
 CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
     title,
@@ -44,8 +50,8 @@ CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
     content,
     content='notes',
     content_rowid='id',
-    prefix='2 3 4 5',
-    tokenize = 'unicode61'
+    prefix='2 3',
+    tokenize = 'unicode61 remove_diacritics 1'
 );
 
 -- Virtual table for full-text search on patterns.
@@ -54,8 +60,13 @@ CREATE VIRTUAL TABLE IF NOT EXISTS patterns_fts USING fts5(
     pattern,
     content='patterns',
     content_rowid='id',
-    prefix='2 3 4 5',
     tokenize = 'unicode61'
+);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS tags_fts USING fts5(
+    tag_id,
+    content='tags',
+    tokenize = 'trigram'
 );
 
 
@@ -110,7 +121,7 @@ SELECT * FROM all_paths;
 CREATE VIEW IF NOT EXISTS v_tags AS
 SELECT 
     UPPER(j.value) AS tag, 
-    COUNT(*)
+    COUNT(*) as count
 FROM notes AS n
 JOIN json_each(n.tags) AS j
 GROUP BY tag;
@@ -123,12 +134,24 @@ GROUP BY tag;
 CREATE TRIGGER IF NOT EXISTS notes_add AFTER INSERT ON notes BEGIN
     INSERT INTO notes_fts(rowid, title, tags, content) 
     VALUES (new.id, new.title, new.tags, new.content);
+
+    INSERT INTO tags (tag_id, display_tag)
+    SELECT LOWER(j.value), j.value FROM json_each(new.tags) AS j
+    WHERE true
+        ON CONFLICT(tag_id) DO UPDATE SET 
+            count = tags.count + 1,
+            display_tag = excluded.display_tag;
 END;
 
 -- Deletes the FTS entry after a notes is deleted.
 CREATE TRIGGER IF NOT EXISTS notes_del AFTER DELETE ON notes BEGIN
     INSERT INTO notes_fts(notes_fts, rowid, title, tags, content) 
     VALUES ('delete', old.id, old.title, old.tags, old.content);
+
+    UPDATE tags SET count = count - 1
+    WHERE tag_id IN ( SELECT LOWER(value) FROM json_each(old.tags) );
+
+    DELETE FROM tags WHERE count <= 0;
 END;
 
 -- Updates an FTS entry by deleting and re-inserting the new data.
@@ -138,6 +161,23 @@ CREATE TRIGGER IF NOT EXISTS notes_upd AFTER UPDATE ON notes BEGIN
 
     INSERT INTO notes_fts(rowid, title, tags, content) 
     VALUES (new.id, new.title, new.tags, new.content);
+END;
+
+CREATE TRIGGER IF NOT EXISTS sync_tags_notes AFTER UPDATE OF tags ON notes
+FOR EACH ROW
+WHEN old.tags IS NOT new.tags
+BEGIN
+    UPDATE tags SET count = count - 1
+    WHERE tag_id IN ( SELECT LOWER(value) FROM json_each(old.tags) );
+
+    DELETE FROM tags WHERE count <= 0;
+
+    INSERT INTO tags (tag_id, display_tag)
+    SELECT LOWER(j.value), j.value FROM json_each(new.tags) AS j
+    WHERE true
+        ON CONFLICT(tag_id) DO UPDATE SET 
+            count = tags.count + 1,
+            display_tag = excluded.display_tag;
 END;
 
 
@@ -160,6 +200,28 @@ CREATE TRIGGER IF NOT EXISTS patterns_upd AFTER UPDATE ON patterns BEGIN
 
     INSERT INTO patterns_fts(rowid, title, pattern) 
     VALUES (new.id, new.title, new.pattern);
+END;
+
+
+-- Craetes a new FTS entry for text search after a tag is inserted into 'tags'.
+CREATE TRIGGER IF NOT EXISTS tags_add AFTER INSERT ON tags BEGIN
+    INSERT INTO tags_fts(rowid, tag_id) 
+    VALUES (new.rowid, new.tag_id);
+END;
+
+-- Deletes the FTS entry after a tag is deleted.
+CREATE TRIGGER IF NOT EXISTS tags_del AFTER DELETE ON tags BEGIN
+    INSERT INTO tags_fts(tags_fts, rowid, tag_id) 
+    VALUES ('delete', old.rowid, old.tag_id);
+END;
+
+-- Updates an FTS entry by deleting and re-inserting the new data.
+CREATE TRIGGER IF NOT EXISTS tags_upd AFTER UPDATE ON tags BEGIN
+    INSERT INTO tags_fts(tags_fts, rowid, tag_id) 
+    VALUES ('delete', old.rowid, old.tag_id);
+
+    INSERT INTO tags_fts(rowid, tag_id) 
+    VALUES (new.rowid, new.tag_id);
 END;
 
 

@@ -2,29 +2,36 @@
 import { 
     createSignal, 
     onMount,
-    onCleanup
-} from "solid-js";
-
-import type { SetStoreFunction } from "solid-js/store";
-import type { noteFrame } from "../types.tsx";
+    onCleanup,
+    For,
+    Show,
+    createSelector, 
+createResource } from "solid-js";
 
 import { CopySVG, Edit, Erase, SettingSVG } from "../assets/svgs.tsx";
 import { toggleLateralCard } from "../Search.tsx";
-// import { copyToClipboard, SaveNote } from "../helpers.tsx";
+import { setLastClicked, set_quickMenuConfig, update_tagStore, tagsStore } from "./QuickMenu.tsx";
+import { copyToClipboard, SaveNote } from "../helpers.tsx";
+
+import { unwrap, type SetStoreFunction } from "solid-js/store";
+import type { noteFrame, quickOptions, quickButtons } from "../types.tsx";
+
 
 interface titleParams {
     onSave: () => void,
     onCopy: () => void,
     onErase: () => void,
-    value: noteFrame["metadata"],
-    titleSetter: SetStoreFunction<noteFrame>,
-    fixed_title?: true,
+    metadata: noteFrame["metadata"],
+    storeSetter: SetStoreFunction<noteFrame>,
+    fixed_title?: boolean,
 }
 
 export default function Title(props: titleParams) {
     const [isFixed, setIsFixed] = createSignal(false);
     const [barHeight, setBarHeight] = createSignal(100);
     let titleBarRef: HTMLDivElement | undefined;
+
+    const [advSettings, activate_advSettings] = createSignal(true);
 
     onMount(() => {
         // console.log('Offset',searchBarRef?.offsetHeight);
@@ -45,22 +52,24 @@ export default function Title(props: titleParams) {
         onCleanup(() => scrollingContainer.removeEventListener("scroll", handleScroll))
     })
 
-    const btnColors = "bg-app-active/50 hover:bg-app-active active:bg-app-active/10";
+    const Class = "p-2 rounded-md cursor-pointer place-items-center bg-app-surface-secondary";
 
     return (
         <>
-            <div ref={titleBarRef} id="title" class={`NoteTitle p-2.5 rounded-4xl flex justify-between 
+            <div ref={titleBarRef} id="title" class={`NoteTitle p-1 pb-2.5 
             transition-discrete duration-150 ease-in-out
-                ${isFixed() ? 'bg-app-element fixed top-2 self-center-safe z-50 shadow-lg w-1/2 justify-evenly' 
-                    : 'relative'}
-                `}
+            ${isFixed() ? 'bg-app-element fixed top-2 self-center-safe z-50 shadow-lg w-1/2 pt-2.5' : 'relative'} 
+            ${advSettings() ? 'rounded-2xl px-2.5' : 'rounded-4xl'}
+            `} 
+            classList={{ "px-4": isFixed() && !advSettings() }} 
             >
-                <div class="relative w-8/10 p-0.5 text-lg bg-app-surface-secondary rounded-lg ps-3 
+            <span class="w-full flex justify-evenly gap-2">
+                <div class="relative flex-1 p-0.5 text-lg bg-app-surface-secondary rounded-lg ps-3 
                 placeholder-app-muted/70 outline-0 focus:border-2 border-app-borders font-semibold">
                     <input type="text" id="floating_outlined" class="block px-1.5 pb-1 pt-1.5 w-full text-md 
                     bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
                     text-app-function" autocomplete="off"
-                        placeholder="" value={props.value.title} onChange={e => props.titleSetter('metadata', 'title', e.currentTarget.value)} disabled={props.fixed_title} />
+                        placeholder="" value={props.metadata.title} onChange={e => props.storeSetter('metadata', 'title', e.currentTarget.value)} disabled={props.fixed_title} />
                     <label for="floating_outlined" class="absolute text-md text-body duration-300 transform 
                     -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2 peer-focus:px-2 
                     peer-focus:text-fg-brand peer-placeholder-shown:scale-130 peer-placeholder-shown:-translate-y-1/2 
@@ -71,38 +80,43 @@ export default function Title(props: titleParams) {
                 {/* {props.children} */}
 
                 {/* Save Note */}
-
-                <button type="button" class={'group/save p-1.5 rounded cursor-pointer place-items-center '+btnColors}
+                <button type="button" class={'group/save '+Class}
                     title="Save Note"
                     onClick={props.onSave} >
-                    <Edit option={2} class={`fill-app-surface-secondary group-active/save:fill-app-surface-secondary/70`} />
+                    <Edit option={2} class={`fill-app-text/70 group-hover/save:fill-app-text group-active/save:fill-app-active-secondary/70`} />
                 </button>
-                {/* Copy Content */}
 
-                {/* <button type="button" class={'group p-1.5 rounded cursor-pointer place-items-center '+btnColors}
+                {/* Copy Content */}
+                {/* <button type="button" class={'group '+Class}
                     title="Copy Note"
                     onClick={props.onCopy} >
                     <CopySVG class={`stroke-app-surface-secondary group-active:stroke-app-surface-secondary/70`} option={3} />
                 </button> */}
 
-
                 {/* Erase Note */}
-
-                <button type="button" class={'group/erase p-1.5 rounded cursor-pointer place-items-center '+btnColors}
+                <button type="button" class={'group/erase '+Class}
                     title="Erase Note"
                     onclick={props.onErase} >
-                    <Erase class={`fill-app-surface-secondary group-active/erase:fill-app-surface-secondary/70`} />
+                    <Erase class={`fill-app-text/70 group-hover/erase:fill-app-text group-active/erase:fill-app-active-secondary/70`} />
                 </button>
-
 
                 {/* Expand Header */}
-
-                <button type="button" class={'group p-1.5 rounded cursor-pointer place-items-center '+btnColors}
+                <button type="button" class={'group/adv '+Class}
                     title="Copy Note"
-                    onClick={props.onCopy} >
+                    onClick={() => activate_advSettings(p => !p)} >
                     {/* <SettingSVG class={`stroke-app-surface-secondary group-active:stroke-app-surface-secondary/70`} option={3} /> */}
-                    <SettingSVG class="fill-app-surface-secondary group-active:fill-app-surface-secondary/70 stroke-app-active" option={4} />
+                    <SettingSVG class="fill-app-text/70 group-hover/adv:fill-app-text group-active/adv:fill-app-active-secondary/70 stroke-app-surface-secondary" option={2} />
                 </button>
+            </span>
+            <div class="grid transition-[grid-template-rows] delay-75 duration-150 ease-in-out grid-rows-[0fr]"
+            classList={{ "grid-rows-[1fr]": advSettings() }}>
+                <div class="mt-1 overflow-hidden">
+                <span class="flex place-items-baseline">
+                    <h2 class="text-app-property font-black me-2">Tags:</h2>
+                    <TagsComponent tags_val={props.metadata.tags} store_setter={props.storeSetter} />
+                </span>
+                </div>
+            </div>
             </div>
 
             <div
@@ -113,5 +127,131 @@ export default function Title(props: titleParams) {
                 }}
             />
         </>
+    )
+}
+
+type tagJSON = { tag: string, count: number }
+async function searchTags(val: string): Promise<tagJSON[]> {
+    const res = await fetch('/api/tags/'+val, {
+        method: 'GET',
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+
+    if (!res.ok) {
+        console.error(`queryTags: ${res.status} - ${res.statusText}`, 'error => ', await res.json());
+        return [];
+    }
+
+    // const data = await res.json() as tagJSON[]
+    // return data;
+    return await res.json();
+}
+async function queryTags() {
+    const res = await fetch('/api/tags/', {
+        method: 'GET',
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+
+    if (!res.ok) {
+        console.error(`queryTags: ${res.status} - ${res.statusText}`, 'error => ', await res.json());
+        return;
+    }
+
+    const tags_list = await res.json() as tagJSON[]
+    // console.group('queryTags')
+    // console.log('tags_list => ', tags_list);
+    
+    const btns = tags_list.map((v) => { return { text: v.tag, action: ()=>{} } }) satisfies quickButtons[];
+    // console.log('tags btns => ', btns);
+    // console.groupEnd()
+    
+    update_tagStore('options', 0, 'buttons', _ => btns )
+    // return await res.json() as tagJSON[];
+}
+
+interface TagsParams {
+    tags_val: noteFrame["metadata"]["tags"],
+    store_setter?: SetStoreFunction<noteFrame>
+};
+function TagsComponent(p: TagsParams) {
+    const Class = `bg-app-function hover:bg-app-active-secondary group-hover/card:text-app-element text-app-surface font-bold px-1.5 rounded-sm `;
+
+    if (p.store_setter) {
+        onMount(() => queryTags())
+        // console.log('tagsStore => ', unwrap(tagsStore));
+    }
+
+    return (
+        <div class="TagsComponent flex gap-1 my-1">
+            <For each={p.tags_val}>{(tag, i) =>  // << Note tags
+                <Show when={p.store_setter} fallback={
+                    <h2 class={Class}
+                    classList={{
+                        "rounded-l-xl": i() == 0,
+                        "rounded-r-xl": i() == p.tags_val.length -1,
+                    }}
+                    >{tag}</h2>
+                }>
+                {(setter) => 
+                    <TagInput class={Class} index={i()} setter={setter()} tag={tag} />
+                }</Show>
+            }</For>
+            <Show when={p.store_setter}>{(setter) => {
+                return <button type="button" class={Class+" rounded-r-xl"} 
+                classList={{ "rounded-l-xl": p.tags_val.length == 0 }}
+                onClick={() => setter()('metadata','tags', tags => [...tags, ''])}
+                ><p class="-mt-1 -ms-0.5">+</p></button>
+            }}</Show>
+        </div> 
+    )
+}
+interface singleTag {
+    tag: string,
+    index: number,
+    setter: SetStoreFunction<noteFrame>,
+    class: string
+}
+function TagInput(p: singleTag) {
+    const isLastTouched = createSelector(setLastClicked);
+    let inputRef: HTMLInputElement | undefined ;
+
+    async function updateConfig(val: string) {
+        if (inputRef) {
+            const rect = inputRef.getBoundingClientRect();
+            const mapped_tags = (await searchTags(val)).map(v => {
+                return { text: v.tag, action: () => p.setter('metadata', 'tags', p.index, v.tag) }
+            }) satisfies quickButtons[];
+            update_tagStore('options', 0, 'buttons', _ => mapped_tags)
+
+            set_quickMenuConfig({ 
+                coords: { x: (rect.right - 224), y: (rect.top + inputRef.offsetHeight) },
+                show_menu: mapped_tags.length === 0 ? false : true,
+                path: [],
+                data: '',
+                type: 'null', active_menu: 'tags'
+            })
+        }
+    }
+
+    function changeTag(val: string, index: number, setter: SetStoreFunction<noteFrame>) {
+        if(val.trim() === "") return setter('metadata', 'tags', tags => [...tags.slice(0, index), ...tags.slice(index +1)])
+        setter('metadata', 'tags', index, val)
+    };
+    
+    return (
+        <input type="text" value={p.tag} class={"TagInput "+p.class+" field-sizing-content"} 
+        ref={inputRef}
+        // onClick={updateConfig}
+        onInput={e => updateConfig(e.currentTarget.value)} 
+        onchange={e => changeTag(e.currentTarget.value, p.index, p.setter)} 
+        classList={{
+            "rounded-l-xl": p.index == 0,
+            // "rounded-r-xl": i() == p.tags_val.length -1,
+        }}
+        placeholder="tag..." />
     )
 }

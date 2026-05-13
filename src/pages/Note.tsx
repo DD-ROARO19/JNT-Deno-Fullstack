@@ -83,7 +83,7 @@ export default function Note() {
                     <div class="m-4 bg-app-element rounded-2xl p-2 flex flex-col 
                     flex-3 shrink-0 h-max" >
                         {/* Title */}
-                        <Header titleSetter={setNote} value={note.metadata}
+                        <Header storeSetter={setNote} metadata={note.metadata}
                         onSave={() => UpdateNote(note)}
                         onCopy={() => copyToClipboard(note.content, 'object', [])}
                         // onErase={() => DeleteNote(note.metadata.id)}

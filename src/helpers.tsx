@@ -338,6 +338,8 @@ export async function SaveNote(note: noteFrame) {
 }
 export async function UpdateNote(note: noteFrame) {
     try {
+        if (note.metadata.tags.includes('')) throw new NoteValError('Please fill any empty tag!');
+    
         const value = extractNote(note);
 
         const res = await fetch('/api/notes/', {
