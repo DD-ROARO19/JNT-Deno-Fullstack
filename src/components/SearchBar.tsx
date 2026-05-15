@@ -9,7 +9,7 @@ import { SearchSVG } from "../assets/svgs.tsx";
 interface barProps {
     class?: string, placeholder?: string,
     setter: Setter<otherFetchParams>,
-    // value: Accessor<otherFetchParams>
+    value?: string
 }
 
 function SearchBar(props: barProps & ParentProps) {
@@ -53,7 +53,8 @@ function SearchBar(props: barProps & ParentProps) {
                 text-app-text bg-app-surface-secondary 
                 placeholder-app-string outline-0 focus:outline-3
                 outline-app-active`}
-                    onInput={(e) => props.setter(prev => ({ ...prev, search: e.currentTarget.value ? e.currentTarget.value + '*' : '' }))} />
+                        value={props.value ?? ''}
+                    onInput={(e) => props.setter(prev => ({ ...prev, search: e.currentTarget.value }))} />
                 {props.children}
             </div>
 

@@ -45,7 +45,7 @@ export default function CardMenu() {
 
     return (
         <div class="w-3/4 place-self-center">
-            <SearchBar setter={setSearchParams} />
+            <SearchBar setter={setSearchParams} value={searchParams()?.search} />
             {/* {list.loading && <div>Loading...</div>} */}
             {list.error && <div>Error while loading notes.</div>}
 

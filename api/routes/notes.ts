@@ -77,8 +77,9 @@ notes.get('/query', (c) => {
             }
         }
     
-        if (q.search) {
-            binds.search = q.search;
+        if (q.search && !q.search.endsWith(':')) {
+            binds.search = q.search + '*';
+            // binds.search = q.search.endsWith(':') ? q.search.slice(0, -1) : q.search + '*';
             
             stmt = stmt.replace('--%%', ", snippet(notes_fts, -1, '<b>', '</b>', '...', 15) AS snippet ");
             stmt = stmt.replace('--@@',' JOIN notes_fts($search) AS s ON s.rowid = n.id ');

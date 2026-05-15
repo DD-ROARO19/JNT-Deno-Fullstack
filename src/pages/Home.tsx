@@ -41,7 +41,7 @@ export default function StartPage() {
 
     return (
         <div class="w-3/4 place-self-center">
-            <SearchBar setter={setSearchParams} />
+            <SearchBar setter={setSearchParams} value={searchParams()?.search} />
             <CardList list={list() || []} param_setter={setSearchParams} />
         </div>
     );

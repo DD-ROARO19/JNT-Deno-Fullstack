@@ -202,9 +202,9 @@ function TagsComponent(p: TagsParams) {
             }</For>
             <Show when={p.store_setter}>{(setter) => {
                 return <button type="button" class={Class+" rounded-r-xl"} 
-                classList={{ "rounded-l-xl": p.tags_val.length == 0 }}
+                classList={{ "rounded-l-xl": p.tags_val.length === 0 }}
                 onClick={() => setter()('metadata','tags', tags => [...tags, ''])}
-                ><p class="-mt-1 -ms-0.5">+</p></button>
+                ><p class="-mt-1" classList={{ "-ms-0.5": p.tags_val.length !== 0 }} >+</p></button>
             }}</Show>
         </div> 
     )
