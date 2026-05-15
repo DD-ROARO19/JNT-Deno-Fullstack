@@ -1,8 +1,10 @@
 import { Dynamic } from "solid-js/web"
-import type { ParentProps } from 'solid-js';
-import type { lineProps, JSONPrimitive, LineContent, typeOfInputs } from "../types.tsx";
+
 import { inputs } from "./InputTypes.tsx";
 import { statics } from "./StaticTypes.tsx";
+
+import type { ParentProps , ValidComponent } from 'solid-js';
+import type { lineProps, JSONPrimitive, LineContent, typeOfInputs } from "../types.tsx";
 
 // function Listin(props: { number: number }) {
 //     return (
@@ -30,7 +32,7 @@ export function NewLine(props: ParentProps & lineProps) {
 export function NewLine2(props: ParentProps & lineProps) {
     return (
         <>
-            <Dynamic component={statics[props.type || 'null']}
+            <Dynamic component={statics[props.type || 'null'] as ValidComponent}
                 data={props.data}
                 index={props.index}
                 path={[...props.path, props.index, 'value']}

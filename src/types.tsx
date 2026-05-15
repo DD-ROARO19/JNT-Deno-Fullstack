@@ -17,6 +17,7 @@ export type lineMenu = {
     extra_options?: menuButtons[]
 }
 
+// # DEPRICATED
 export type lineMenuParams = [path: (string | number)[], data: JSONPrimitive | LineContent[], type: typeOfInputs]
 export type menuConfig = (...args: lineMenuParams) => lineMenu;
 

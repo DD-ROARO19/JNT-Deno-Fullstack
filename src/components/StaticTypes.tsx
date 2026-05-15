@@ -3,7 +3,9 @@ import {
     Show,
     For,
     Switch,
-    Match
+    Match,
+    createComputed,
+    createEffect
 } from "solid-js";
 
 import type { Accessor, Setter, JSXElement } from "solid-js";
@@ -16,6 +18,8 @@ import { updateStore } from "../helpers.tsx";
 import { prepareSearchPanel } from "../Search.tsx";
 import { LineSettingsBtn, Toggle } from "./Toggle.tsx";
 import { QuickMenuBtn } from "./QuickMenu.tsx";
+import { objectsClosed } from "../signals.tsx";
+
 
 const search_term = "__SEARCH"
 
@@ -175,23 +179,37 @@ function AddItemBtn(props: { path: path_list, type: 'object' | 'array', isFullWi
 }
 
 /** Component for rendering an list of values. */
-export function ArrayType(props: Omit<objectProps, 'no_config' | 'full_addButton'>) {
-    const [showList, setList] = createSignal(true);
+export function ArrayType(props: objectProps) {
+    const [showList, setList] = createSignal(false);
+    const isRoot = props.no_config && props.full_addButton;
+
+    createComputed(() => {
+        const globalOpen = objectsClosed()
+        setList(isRoot ? true 
+            : props.data.length === 0 ? false 
+            : globalOpen
+        )
+    })
+
+    createEffect(() => {
+        if (props.data.length !== 0) setList(true);
+    })
 
     if (props.key === undefined) {
         return <span>No metadata for key</span>
     }
 
+
     return (
         <>
             <Show when={showList()}
-                fallback={<Toggle text={`[${props.data?.length}]`} isOpen={showList} setOpen={setList}
+                fallback={<Toggle text={`[${props.data?.length}]`} signal={[showList, setList]}
                     path={props.path} type="array" data={props.data} show
                     class="text-app-keyword" key={
                         <KeyComp value={props.key!} path={props.path.with(-1, 'key')} />}
                 />}
             >
-                <Toggle text="[" isOpen={showList} setOpen={setList} class="text-app-keyword"
+                <Toggle text="[" signal={[showList, setList]} class="text-app-keyword"
                     path={props.path} type="array" data={props.data} show
                     key={<KeyComp value={props.key!} path={props.path.with(-1, 'key')} />} />
                 <div class="Brake w-full" />
@@ -205,7 +223,7 @@ export function ArrayType(props: Omit<objectProps, 'no_config' | 'full_addButton
                     }}</For>
                 </div>
 
-                <Toggle text="]" isOpen={showList} setOpen={setList} class="text-app-keyword"
+                <Toggle text="]" signal={[showList, setList]} class="text-app-keyword"
                     path={props.path} type="array" data={props.data} show end />
             </Show>
         </>
@@ -215,22 +233,36 @@ export function ArrayType(props: Omit<objectProps, 'no_config' | 'full_addButton
 /** Component to render groups of `key` - `value` pairs. */
 export function ObjectType(props: objectProps) {
     const [isShowing, setShow] = createSignal(true);
+    const isRoot = props.no_config && props.full_addButton;
+
+    createComputed(() => {
+        const globalOpen = objectsClosed()
+        setShow(isRoot ? true 
+            : props.data.length === 0 ? false 
+            : globalOpen
+        )
+    })
+
+    createEffect(() => {
+        if (props.data.length !== 0) setShow(true);
+    })
 
     if (props.key === undefined && props.no_config != true) {
         return <span>No metadata for key</span>
     }
 
+
     return (
         <>
             <Show when={isShowing()} fallback={
-                <Toggle text={`{${props.data?.length}}`} isOpen={isShowing} setOpen={setShow}
+                <Toggle text={`{${props.data?.length}}`} signal={[isShowing, setShow]}
                     path={props.path} type="object" data={props.data} show={!props.no_config}
                     class="text-app-function"
                     key={<Show when={!(props.no_config)}>
                         <KeyComp value={props.key!} path={props.path.with(-1, 'key')} />
                     </Show>} />
             }>
-                <Toggle text="{" isOpen={isShowing} setOpen={setShow} class="text-app-function"
+                <Toggle text="{" signal={[isShowing, setShow]} class="text-app-function"
                     path={props.path} type="object" data={props.data} show={!props.no_config}
                     key={<Show when={!(props.no_config)}>
                         <KeyComp value={props.key!} path={props.path.with(-1, 'key')} />
@@ -251,7 +283,7 @@ export function ObjectType(props: objectProps) {
                     </Show>
                 </div>
 
-                <Toggle text="}" isOpen={isShowing} setOpen={setShow} class="text-app-function"
+                <Toggle text="}" signal={[isShowing, setShow]} class="text-app-function"
                     path={props.path} type="object" data={props.data} show={!props.no_config} end />
             </Show>
         </>

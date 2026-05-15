@@ -1,7 +1,9 @@
 // @ts-types="solid-js"
 import {
     For, Show, createSignal,
-    Switch, Match
+    Switch, Match, 
+    createComputed, 
+    createEffect 
 } from "solid-js"
 import type { inputsProps, JSONPrimitive, LineContent, lineMenu, typeOfInputs, listsProps, quickOptions, path_list } from "../types.tsx";
 import type { Accessor, Setter } from "solid-js";
@@ -13,6 +15,7 @@ import { NewLine } from './RowLines.tsx'
 // import { LineSettingsBtn } from "./Toggle.tsx"; 
 import { Toggle, LineSettingsBtn } from "./Toggle.tsx";
 import { QuickMenuBtn } from "./QuickMenu.tsx";
+import { objectsClosed } from "../signals.tsx";
 
 
 // ##  PRIMITIVE VALUE COMPONENTS  ##
@@ -172,7 +175,21 @@ function AddItemBtn(props: { path: path_list, type: 'object' | 'array', isFullWi
 /** Component for rendering an list of values. */
 export function ArrayType(props: inputsProps & listsProps) {
     // console.log('Array props: ', props);
-    const [showList, setList] = createSignal(true);
+    const [showList, setList] = createSignal(false);
+
+    const isRoot = props.no_config && props.full_addButton;
+
+    createComputed(() => {
+        const globalOpen = objectsClosed()
+        setList(isRoot ? true 
+            : props.data.length === 0 ? false 
+            : globalOpen
+        )
+    })
+
+    createEffect(() => {
+        if (props.data.length !== 0) setList(true);
+    })
 
 
     return (
@@ -182,12 +199,12 @@ export function ArrayType(props: inputsProps & listsProps) {
                     invisible group-hover/line:visible hover:border-slate-600 
                     active:border-slate-600/80 absolute"/> */}
             <Show when={showList()}
-                fallback={<Toggle text={`[${props.data?.length}]`} isOpen={showList} setOpen={setList}
+                fallback={<Toggle text={`[${props.data?.length}]`} signal={[showList, setList]}
                 // config={lineConfig(props.path, props.data, 'array')} 
                 path={props.path} type="array" data={props.data}
                 show={!props.no_config} />}
             >
-                <Toggle text="[" isOpen={showList} setOpen={setList} 
+                <Toggle text="[" signal={[showList, setList]} 
                 // config={lineConfig(props.path, props.data, 'array')} 
                 path={props.path} type="array" data={props.data}
                 show={!props.no_config} />
@@ -211,7 +228,7 @@ export function ArrayType(props: inputsProps & listsProps) {
                     <AddItemBtn path={props.path} type="array" isFullWidth={props.full_addButton}/>
                 </div>
 
-                <Toggle text="]" isOpen={showList} setOpen={setList} 
+                <Toggle text="]" signal={[showList, setList]} 
                 // config={lineConfig(props.path, props.data, 'array')} 
                 path={props.path} type="array" data={props.data}
                 show={!props.no_config} end />
@@ -223,18 +240,32 @@ export function ArrayType(props: inputsProps & listsProps) {
 /** Component to render groups of `key` - `value` pairs. */
 export function ObjectType(props: inputsProps & listsProps) {
     // console.log('Object Props: ', props);
-    const [isShowing, setShow] = createSignal(true);
+    const [isShowing, setShow] = createSignal(false);
+
+    const isRoot = props.no_config && props.full_addButton;
+
+    createComputed(() => {
+        const globalOpen = objectsClosed()
+        setShow(isRoot ? true 
+            : props.data.length === 0 ? false 
+            : globalOpen
+        )
+    })
+
+    createEffect(() => {
+        if (props.data.length !== 0) setShow(true);
+    })
 
 
     return (
         <>
             <Show when={isShowing()} fallback={
-                <Toggle text={`{${props.data?.length}}`} isOpen={isShowing} setOpen={setShow}
+                <Toggle text={`{${props.data?.length}}`} signal={[isShowing, setShow]}
                 // config={lineConfig(props.path, props.data, 'object')} 
                 path={props.path} type="object" data={props.data}
                 show={!props.no_config} />
             }>
-                <Toggle text="{" isOpen={isShowing} setOpen={setShow} 
+                <Toggle text="{" signal={[isShowing, setShow]} 
                 // config={lineConfig(props.path, props.data, 'object')} 
                 path={props.path} type="object" data={props.data}
                 show={!props.no_config} />
@@ -263,7 +294,7 @@ export function ObjectType(props: inputsProps & listsProps) {
                     <AddItemBtn path={props.path} type="object" isFullWidth={props.full_addButton}/>
                 </div>
 
-                <Toggle text="}" isOpen={isShowing} setOpen={setShow} 
+                <Toggle text="}" signal={[isShowing, setShow]} 
                 // config={lineConfig(props.path, props.data, 'object')} 
                 path={props.path} type="object" data={props.data}
                 show={!props.no_config} end />

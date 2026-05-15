@@ -15,13 +15,14 @@ import { copyToClipboard, SaveNote } from "../helpers.tsx";
 
 import { unwrap, type SetStoreFunction } from "solid-js/store";
 import type { noteFrame, quickOptions, quickButtons } from "../types.tsx";
+import { objectsClosed, setObjectsClosed } from "../signals.tsx";
 
 
 interface titleParams {
     onSave: () => void,
     onCopy: () => void,
     onErase: () => void,
-    metadata: noteFrame["metadata"],
+    store_data: noteFrame,
     storeSetter: SetStoreFunction<noteFrame>,
     fixed_title?: boolean,
 }
@@ -30,6 +31,7 @@ export default function Title(props: titleParams) {
     const [isFixed, setIsFixed] = createSignal(false);
     const [barHeight, setBarHeight] = createSignal(100);
     let titleBarRef: HTMLDivElement | undefined;
+    const metadata = props.store_data.metadata;
 
     const [advSettings, activate_advSettings] = createSignal(true);
 
@@ -69,7 +71,7 @@ export default function Title(props: titleParams) {
                     <input type="text" id="floating_outlined" class="block px-1.5 pb-1 pt-1.5 w-full text-md 
                     bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
                     text-app-function" autocomplete="off"
-                        placeholder="" value={props.metadata.title} onChange={e => props.storeSetter('metadata', 'title', e.currentTarget.value)} disabled={props.fixed_title} />
+                        placeholder="" value={metadata.title} onChange={e => props.storeSetter('metadata', 'title', e.currentTarget.value)} disabled={props.fixed_title} />
                     <label for="floating_outlined" class="absolute text-md text-body duration-300 transform 
                     -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2 peer-focus:px-2 
                     peer-focus:text-fg-brand peer-placeholder-shown:scale-130 peer-placeholder-shown:-translate-y-1/2 
@@ -111,9 +113,23 @@ export default function Title(props: titleParams) {
             <div class="grid transition-[grid-template-rows] delay-75 duration-150 ease-in-out grid-rows-[0fr]"
             classList={{ "grid-rows-[1fr]": advSettings() }}>
                 <div class="mt-1 overflow-hidden">
-                <span class="flex place-items-baseline">
+                <span is="additional" class="grid grid-cols-2">
+                    <div id="info" class="text-app-text">
+                        {/* <span class="flex">
+                            <label for="content_length" class="">length:</label>
+                        </span> */}
+                        <h2 id="content_length" class="font-semibold">length: {props.store_data.content.length}</h2>
+                    </div>
+                    <div id="buttons">
+                        <button type="button" class="bg-app-surface-secondary text-app-function p-1.5 rounded-2xl cursor-pointer" 
+                        onclick={() => setObjectsClosed(p => !p)}>
+                            { objectsClosed() ? 'Close all objects' : 'Open all objects' }
+                        </button>
+                    </div>
+                </span>
+                <span id="note_tags" class="TagsComponent flex gap-1 my-1 flex-wrap">
                     <h2 class="text-app-property font-black me-2">Tags:</h2>
-                    <TagsComponent tags_val={props.metadata.tags} store_setter={props.storeSetter} />
+                    <TagsComponent tags_val={metadata.tags} store_setter={props.storeSetter} />
                 </span>
                 </div>
             </div>
@@ -186,27 +202,29 @@ function TagsComponent(p: TagsParams) {
     }
 
     return (
-        <div class="TagsComponent flex gap-1 my-1">
-            <For each={p.tags_val}>{(tag, i) =>  // << Note tags
-                <Show when={p.store_setter} fallback={
+        <>
+            <Show when={p.store_setter} fallback={
+                <For each={p.tags_val}>{(tag, i) =>
                     <h2 class={Class}
                     classList={{
                         "rounded-l-xl": i() == 0,
                         "rounded-r-xl": i() == p.tags_val.length -1,
                     }}
                     >{tag}</h2>
-                }>
-                {(setter) => 
-                    <TagInput class={Class} index={i()} setter={setter()} tag={tag} />
-                }</Show>
-            }</For>
-            <Show when={p.store_setter}>{(setter) => {
-                return <button type="button" class={Class+" rounded-r-xl"} 
-                classList={{ "rounded-l-xl": p.tags_val.length === 0 }}
-                onClick={() => setter()('metadata','tags', tags => [...tags, ''])}
-                ><p class="-mt-1" classList={{ "-ms-0.5": p.tags_val.length !== 0 }} >+</p></button>
-            }}</Show>
-        </div> 
+                }</For>
+            }>{
+                (setter) => <>
+                    <For each={p.tags_val}>{(tag, i) =>
+                        <TagInput class={Class} index={i()} setter={setter()} tag={tag} />
+                    }</For>
+                    <button type="button" class={Class+" rounded-r-xl"} 
+                    classList={{ "rounded-l-xl": p.tags_val.length === 0 }}
+                    onClick={() => setter()('metadata','tags', tags => [...tags, ''])}
+                    ><p class="-mt-1" classList={{ "-ms-0.5": p.tags_val.length !== 0 }} >+</p>
+                    </button>
+                </>
+            }</Show>
+        </> 
     )
 }
 interface singleTag {

@@ -41,7 +41,7 @@ export default function NewNote() {
                 <div class="m-4 bg-app-element rounded-2xl p-2 flex flex-col 
                 flex-3 shrink-0 h-max" >
                     {/* Title */}
-                    <Header storeSetter={setNewNote} metadata={newNote.metadata}
+                    <Header storeSetter={setNewNote} store_data={newNote}
                     onSave={() => SaveNote(newNote)}
                     onCopy={() => copyToClipboard(newNote.content, 'object', [])}
                     onErase={() => {setNewNote("metadata", "title", ""); setNewNote("content", [])}} 

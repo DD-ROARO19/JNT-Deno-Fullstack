@@ -2,7 +2,7 @@ import {
     Show
 } from "solid-js";
 
-import type { Accessor, JSXElement, Setter } from "solid-js";
+import type { Accessor, JSXElement, Setter, Signal } from "solid-js";
 import type { JSONPrimitive, LineContent, lineMenu, path_list, typeOfInputs } from "../types.tsx";
 
 import { DownArrow } from "../assets/svgs.tsx";
@@ -27,11 +27,13 @@ export function Toggle(props: {
     // config: lineMenu; 
     text: string; class?: string;
     end?: boolean, show: boolean;
-    isOpen: Accessor<boolean>, setOpen: Setter<boolean>,
+    // isOpen: Accessor<boolean>, setOpen: Setter<boolean>,
+    signal: Signal<boolean>,
     path: path_list, type: 'object' | 'array', data: LineContent[]
     key?: JSXElement;
 }) {
     // console.log('toggle props: ', props);
+    const [isOpen, setOpen] = props.signal;
 
     return (
         <>
@@ -42,7 +44,7 @@ export function Toggle(props: {
 
                 <h2 class={props.class}>{props.text}</h2>
                 <Show when={props.show}>
-                    <DownArrow isDown={props.isOpen} setArrow={props.setOpen} class={`w-3.5 h-3.5 
+                    <DownArrow isDown={isOpen} setArrow={setOpen} class={`w-3.5 h-3.5 
                     ${(props.end) ? 'invisible group-hover:visible' : ''} `}
                         svg_class="fill-app-text/80 hover:fill-app-text active:fill-app-text/50 w-4 h-4"
                     />
