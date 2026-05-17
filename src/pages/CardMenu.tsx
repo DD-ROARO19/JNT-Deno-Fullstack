@@ -26,6 +26,11 @@ const fetchNotesByPath = async (query: fetchParams): Promise<Note[]> => {
         }
     });
 
+    if (!res.ok) {
+        console.error(await res.json())
+        return [];
+    }
+
     const data = res.json();
     return data;
 };
@@ -40,11 +45,11 @@ export default function CardMenu() {
 
     return (
         <div class="w-3/4 place-self-center">
-            <SearchBar setter={setSearchParams} />
+            <SearchBar setter={setSearchParams} value={searchParams()?.search} />
             {/* {list.loading && <div>Loading...</div>} */}
             {list.error && <div>Error while loading notes.</div>}
 
-            <CardList list={list() || []} />
+            <CardList list={list() || []} param_setter={setSearchParams} />
         </div>
     );
 }

@@ -4,7 +4,7 @@ import {
     onMount,
     onCleanup
 } from 'solid-js'
-import { Edit2, Erase } from '../assets/svgs.tsx'
+import { Edit, Erase } from '../assets/svgs.tsx'
 
 
 function Title() {
@@ -46,7 +46,7 @@ function Title() {
                 {/* {props.children} */}
                 <button type="button" class='group/save bg-cyan-700/70 hover:bg-cyan-700 
                 active:bg-cyan-900 p-1.5 rounded cursor-pointer place-items-center'>
-                    <Edit2 class="dark:cyan-500 dark:group-active/save:fill-white/70" />
+                    <Edit option={2} class="dark:cyan-500 dark:group-active/save:fill-white/70" />
                 </button>
                 <button type="button" class='group/erase bg-cyan-700/70 hover:bg-cyan-700 
                 active:bg-cyan-900 p-1.5 rounded cursor-poin|ter place-items-center'>

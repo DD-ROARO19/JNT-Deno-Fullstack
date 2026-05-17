@@ -1,8 +1,10 @@
 // @ts-types="solid-js"
 import {
+    createSignal,
     createResource,
     Switch,
-    Match
+    Match,
+    Show,
 } from "solid-js";
 import { useParams } from "@solidjs/router";
 import { createStore } from "solid-js/store";
@@ -10,12 +12,17 @@ import { createStore } from "solid-js/store";
 import type { Note } from "../../types.ts";
 import type { noteFrame } from "../types.tsx";
 
-import { setSetter } from "../stores.tsx";
-import { copyToClipboard, DeleteNote, json2Note, SaveNote, UpdateNote } from "../helpers.tsx";
-import { ObjectType } from "../components/InputTypes.tsx";
-import Title from "../components/Title.tsx";
+import { reset_searchParams, setSetter } from "../stores.tsx";
+import { copyToClipboard, DeleteNote, extractValue, json2Note, UpdateNote } from "../helpers.tsx";
+import { ObjectType } from "../components/StaticTypes.tsx";
+import Header from "../components/Header.tsx";
 import { OptionsMenu } from "../components/Select.tsx";
 import { toast } from "../components/notifications.tsx";
+// import { MenuPopovers } from "../components/LineSettingsBtn.tsx";
+import { SearchPanel } from "../components/LateralPanels.tsx";
+import { lateralSetter, setObjectsClosed } from "../signals.tsx";
+// import { NewLine2 } from "../components/RowLines.tsx";
+import { QuickMenu } from "../components/QuickMenu.tsx";
 
 async function getNote(id: string): Promise<true> {
     console.log('ID: ', id);
@@ -54,8 +61,14 @@ export default function Note() {
         metadata: { author: '', path: '', tags: [], title: '' }
     })
     setSetter(_ => setNote)
+    reset_searchParams();
 
     const [res, { refetch }] = createResource(() => param.id, getNote)
+
+    const [advCard, advCardSet] = createSignal(false)
+    lateralSetter(_ => advCardSet);
+
+    setObjectsClosed(true);
 
     return (
         <Switch>
@@ -63,22 +76,34 @@ export default function Note() {
                 <></>
             </Match>
             <Match when={res()}>
-                <OptionsMenu />
+                <QuickMenu />
                 <Toast />
-                <div class="m-4 dark:bg-cyan-800 w-3/4 max-w-215 rounded-2xl p-2 flex flex-col 
-                                hover:text-white place-self-center">
-                    {/* Title */}
-                    <Title titleSetter={setNote}
+                <div class="flex h-max">
+                    <aside class="w-1/20 flex-none" />
+                    <span class="flex-1 shrink-10 transition-discrete delay-75 duration-100 ease-in"
+                        classList={{ "grow-0": advCard() }} />
+                    <div class="m-4 bg-app-element rounded-2xl p-2 flex flex-col 
+                    flex-3 shrink-0 h-max" >
+                        {/* Title */}
+                        <Header storeSetter={setNote} store_data={note}
                         onSave={() => UpdateNote(note)}
                         onCopy={() => copyToClipboard(note.content, 'object', [])}
-                        onErase={() => DeleteNote(note.metadata.id)}
-                    />
+                        // onErase={() => DeleteNote(note.metadata.id)}
+                        onErase={() => console.log(extractValue(note.content, 'object', ['content']))}
+                        fixed_title
+                        />
 
-                    {/* Content */}
-                    <div class="NoteContent bg-stone-800/75 rounded-lg py-3 text-stone-300 pl-8">
-                        <ObjectType data={note.content} path={["content"]} no_config full_addButton />
+                        {/* Content */}
+                        <div class="NoteContent bg-app-surface-secondary rounded-lg py-3 pl-8">
+                            <ObjectType data={note.content} path={["content"]} no_config full_addButton />
+                        </div>
+
                     </div>
-
+                    <div class="flex-1 transition-discrete delay-75 duration-100 ease-in
+                    sticky top-0 h-fit max-h-[calc(100vh)] overflow-y-auto scrollbar-thin pb-4"
+                    classList={{ "grow-2": advCard() }}
+                    ><Show when={advCard()}> <SearchPanel /> </Show></div>
+                    <aside class="w-1/20 flex-none" />
                 </div>
             </Match>
         </Switch>

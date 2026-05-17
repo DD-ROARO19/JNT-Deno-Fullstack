@@ -9,7 +9,7 @@ import { SearchSVG } from "../assets/svgs.tsx";
 interface barProps {
     class?: string, placeholder?: string,
     setter: Setter<otherFetchParams>,
-    // value: Accessor<otherFetchParams>
+    value?: string
 }
 
 function SearchBar(props: barProps & ParentProps) {
@@ -38,15 +38,23 @@ function SearchBar(props: barProps & ParentProps) {
 
     return (
         <>
-            <div ref={searchBarRef} id="SearchBar" class={twMerge(`p-2 my-3 bg-cyan-800 rounded-4xl flex justify-evenly place-items-center 
+            <div ref={searchBarRef} id="SearchBar" class={twMerge(`p-2 my-3 bg-app-surface rounded-4xl flex justify-evenly place-items-center 
             transition-discrete duration-150 ease-in-out
             ${isFixed() ? 'fixed top-0 right-1/10 z-50 shadow-lg w-1/2 place-self-end' : 'relative'}
             `, props.class)}
             >
-                <button type="button" class='group/search hover:bg-cyan-700 active:bg-cyan-900 w-15 rounded-xl cursor-pointer place-items-center' ><SearchSVG class='dark:group-active/search:stroke-cyan-600' /></button>
-                <input type="text" placeholder={props.placeholder || 'Search bar'} class={`w-8/10 text-lg text-slate-200 bg-cyan-900 rounded-2xl ps-2.5 placeholder-slate-500/70 outline-0 focus:border-2 
-                border-slate-500 `} 
-                onInput={(e) => props.setter( prev => ({...prev, search: e.currentTarget.value ? e.currentTarget.value+'*' : ''}) )}/>
+                <button type="button" class='group/search w-15 rounded-xl cursor-pointer 
+                place-items-center hover:bg-app-element/50 active:bg-app-element 
+                ' >
+                    <SearchSVG class='stroke-app-muted group-active/search:stroke-app-active' />
+                </button>
+                <input type="text" placeholder={props.placeholder || 'Search bar'}
+                    class={`w-8/10 text-lg rounded-2xl ps-2.5 
+                text-app-text bg-app-surface-secondary 
+                placeholder-app-string outline-0 focus:outline-3
+                outline-app-active`}
+                        value={props.value ?? ''}
+                    onInput={(e) => props.setter(prev => ({ ...prev, search: e.currentTarget.value }))} />
                 {props.children}
             </div>
 

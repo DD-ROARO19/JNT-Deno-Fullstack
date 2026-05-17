@@ -24,9 +24,13 @@ const fetchAllNotes = async (query: otherFetchParams): Promise<Note[]> => {
         }
     });
 
+    if (!res.ok) {
+        console.error(await res.json())
+        return [];
+    }
+
     const data = res.json();
     // console.log('data: ', data);
-
     return data;
 }
 
@@ -37,8 +41,8 @@ export default function StartPage() {
 
     return (
         <div class="w-3/4 place-self-center">
-            <SearchBar setter={setSearchParams} />
-            <CardList list={list() || []} />
+            <SearchBar setter={setSearchParams} value={searchParams()?.search} />
+            <CardList list={list() || []} param_setter={setSearchParams} />
         </div>
     );
 }

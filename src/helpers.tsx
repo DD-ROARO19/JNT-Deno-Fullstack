@@ -5,7 +5,8 @@ import type {
     JSONValue, typeOfInputs, LineContent, JSONPrimitive,
     JSONArray,
     JSONObject,
-    noteFrame
+    noteFrame,
+    path_list
 } from "./types.tsx";
 import { toast } from "./components/notifications.tsx";
 import type { Note } from "../types.ts"
@@ -13,7 +14,7 @@ import type { Note } from "../types.ts"
 
 // # Update store values # //
 //
-export function updateStore(path: (string | number)[], change: JSONPrimitive) {
+export function updateStore(path: (string | number)[], change: JSONPrimitive | LineContent) {
     const setter = currentSetter()
 
     console.group('updateStore')
@@ -32,13 +33,18 @@ export function addInput(path: (string | number)[], input_type: typeOfInputs) {
     console.debug('type: ', input_type);
     console.groupEnd()
 
+    const process = { index: -1 };
     // @ts-ignore: May I get some path, pls?
-    setter(...path, list => [...list, {
-        type: input_type, key: '',
-        value: (input_type == 'array' || input_type === 'object') ? [] : ''
-    }])
+    setter(...path, list => { 
+        process.index = (list as LineContent[]).length;
+        return [...list, {
+            type: input_type, key: '',
+            value: (input_type === 'array' || input_type === 'object') ? [] : ''
+        }] 
+    })
+    return process.index !== -1 ? process.index : undefined
 }
-export function eraseInput(path: (string | number)[]) {
+export function eraseInput(path: path_list) {
     const setter = currentSetter()
 
     console.debug('erase in path', path);
@@ -79,7 +85,7 @@ export class ObjectCheckError extends Error {
  * @param type Specify type of the value.
  * @param path Path taken to get to the value.
 */
-export function extractValue(data: JSONPrimitive | LineContent[], type: typeOfInputs, path: (string | number)[]): JSONValue {
+export function extractValue(data: JSONPrimitive | LineContent[], type: typeOfInputs, path: path_list): JSONValue {
     switch (type) {
         case 'array':
             return (data as LineContent[]).map((item, index) => extractValue(item.value, item.type, [...path, index]))
@@ -134,7 +140,8 @@ export function extractNote(note: noteFrame) {
  * @param type Specify type of the value.
  * @param path Path taken to get to the value.
  */
-export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeOfInputs, path: (string | number)[]) {
+export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeOfInputs, path: path_list) {
+    console.debug('- Copy: ',{type, path, data})
     try {
         const dataValue = extractValue(data, type, path);
         switch (type) {
@@ -169,7 +176,8 @@ export function copyToClipboard(data: JSONPrimitive | LineContent[], type: typeO
 /** Get the approximate `typeOfInputs` type of a value. 
  * @param v Value to compare type.
 */
-function askMyType(v: unknown): typeOfInputs {
+export function askMyType(v: unknown): typeOfInputs {
+    if(v === null) return 'null';
     const myType = typeof v;
 
     console.groupCollapsed('askMyType')
@@ -191,10 +199,12 @@ function askMyType(v: unknown): typeOfInputs {
 }
 
 
-function formatValue(
+export function formatValue(
     val: JSONValue,
     key?: string | number
 ): LineContent {
+    const type = askMyType(val)
+    
     //  ## When is Array
     if (Array.isArray(val)) {
         if (val.length < 1) {
@@ -216,6 +226,9 @@ function formatValue(
         // if (!key) {
         //     return Object.entries(val).map(([k, v]) => formatValue(v, k))
         // }
+        if (val === null) {
+            return { type: 'null', key: key!, value: val }
+        }
 
         if (val == null) {
             return {
@@ -330,6 +343,8 @@ export async function SaveNote(note: noteFrame) {
 }
 export async function UpdateNote(note: noteFrame) {
     try {
+        if (note.metadata.tags.includes('')) throw new NoteValError('Please fill any empty tag!');
+    
         const value = extractNote(note);
 
         const res = await fetch('/api/notes/', {

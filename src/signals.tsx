@@ -1,12 +1,9 @@
 import { createSignal } from "solid-js";
 
-// State of the lateral NavBar
-export const [isBarOpen, setBarOpen] = createSignal(true)
-
 // Style Theme
 export const [light, setLight] = createSignal(false)
 
-// InputType Menu Signals (for note edits)
+// InputType Menu Signals (for note edits) - # DEPRICATED
 export const [menuCoords, setMenuCoords] = createSignal({ x: 0, y: 0 })
 export const [showInputMenu, openInputMenu] = createSignal(false)
 export const [lastClicked, setLastClicked] = createSignal<HTMLButtonElement | undefined>();
@@ -15,3 +12,11 @@ export const [menuOpen, setMenuOpen] = createSignal('none');
 export const [lineMenuConfig, setLineMenuConfig] = createSignal<lineMenu>({
     primary_inputs: { title: 'Inputs', buttons: [] }
 });
+
+// Lateral Search Panel
+import type { Setter } from "solid-js";
+export const [latCardSet, lateralSetter] = createSignal<Setter<boolean>>()
+
+// Global App State
+export const [isLoading, setLoadingState] = createSignal<'nope' | 'indeed' | 'finished'>("nope")
+export const [objectsClosed, setObjectsClosed] = createSignal(true)
