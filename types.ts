@@ -31,5 +31,5 @@ export interface Category {
 
 export type CategoryNode = Category & { childs: CategoryNode[]; }
 
-export type pattern = { title: string, keys: { key: string | number, val: string, type: 'unwrap' | 'alter' }[] }
+export type pattern = { title: string, keys: { key: string | number, val: string, type: 'unwrap' | 'alter' | 'attach' }[] }
 export type bindObject = Record<string, string | number | undefined>

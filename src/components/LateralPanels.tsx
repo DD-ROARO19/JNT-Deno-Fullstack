@@ -15,7 +15,7 @@ import { reset_searchParams, searchParams, upd_searchParams } from "../stores.ts
 import { Arrow, Loading, Erase, ReloadArrow, Edit, Shuffle, Cancel } from "../assets/svgs.tsx";
 import { ObjectType } from "./StaticTypes.tsx";
 import { StringType } from "./InputTypes.tsx"
-import { deletePattern, query_patterns, SearchError, searchLink, toggleLateralCard, uploadPattern } from "../Search.tsx";
+import { deletePattern, query_patterns, SearchError, searchLink, toggleLateralCard, uploadPattern } from "../Search.ts";
 import { addInput, askMyType, formatValue, updateStore } from "../helpers.tsx";
 import type { typeOfInputs, JSONValue, JSONObject, patternQuery } from "../types.tsx";
 import type { pattern } from "../../types.ts";
@@ -159,7 +159,10 @@ export function SearchPanel() {
                         <div class="h-auto w-auto mt-2 grid transition-[grid-template-columns] duration-250 ease-in-out grid-cols-[0fr]
                         group-hover:grid-cols-[1fr]">
                             <button type="button" class="overflow-hidden cursor-pointer ps-1" onClick={() => updateNewPattern('keys', index(), 'type', 
-                                type => type === 'alter' ? 'unwrap' : 'alter')}> 
+                                type => type === 'alter' ? 'unwrap' 
+                                : type === 'unwrap' ? 'attach' 
+                                : 'alter'
+                            )}> 
                                 {/* <p class="text-app-text text-center text-xl font-bold">~</p>  */}
                                 <Shuffle class="fill-app-text -rotate-90 h-6 w-6" option={1} />
                             </button>
@@ -259,7 +262,10 @@ export function SearchPanel() {
                                     <div class="h-auto w-auto mt-2 grid transition-[grid-template-columns] duration-250 ease-in-out grid-cols-[0fr]
                                     group-hover:grid-cols-[1fr]">
                                         <button type="button" class="overflow-hidden cursor-pointer ps-1" onClick={() => set_edit_store('keys', index(), 'type', 
-                                            type => type === 'alter' ? 'unwrap' : 'alter')}> 
+                                            type => type === 'alter' ? 'unwrap' 
+                                            : type === 'unwrap' ? 'attach' 
+                                            : 'alter'
+                                        )}> 
                                             {/* <p class="text-app-text text-center text-xl font-bold">~</p>  */}
                                             <Shuffle class="fill-app-text -rotate-90 h-6 w-6" option={1} />
                                         </button>
@@ -418,7 +424,7 @@ export function SearchPanel() {
         if(!searchParams.path) throw new SearchError("UNDEFINED_SEARCH_PARAMS", 'Path missing');
 
         const path = (where === 'on_root') ? ["content"] : searchParams.path.slice(0, -2);
-        console.log('NewLine path => ', path);
+        console.log('NewLine path => ', {path, where, value});
 
         try {
             const index = addInput(path, askMyType(value)); console.log('index? => ', index);
@@ -426,6 +432,11 @@ export function SearchPanel() {
 
             updateStore([...path, index], formatValue(value));
             updateStore([...path, index, 'key'], searchParams.resultName || currentStore()?.title || '')
+            
+            const ind = addInput(path, askMyType(null));
+            if(!ind) throw new SearchError("APPLY_ERROR", 'Could get new item index!');
+            updateStore([...path, ind], formatValue(null));
+            updateStore([...path, ind, 'key'], 'null_test')
 
             // for(const [k, v] of Object.entries(value)) {
             //     console.log('add_nl {} =>', [k, v]);
@@ -656,9 +667,65 @@ function Key_Renaming(p: keyElementParams) {
         </div>
     )
 }
+function Key_Attach(p: keyElementParams) {
+    return (
+        <div class="flex mt-2 w-full gap-2 cursor-cell">
+
+            <div class="relative p-0.5 bg-app-surface border-app-element border-2 rounded-lg ps-3 text-md
+            outline-0 flex-2">
+                <input id="additional_key"
+                    type="text" class="block px-1.5 pb-1 pt-1.5 w-full font-semibold 
+                bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
+                text-app-text not-focus:placeholder-transparent placeholder-app-text/80"
+                    placeholder="New key"
+                    autocomplete="off"
+                    value={p.store_value.key || ''} onChange={e => p.store_setter('keys', p.index, 'key', e.currentTarget.value)}
+                />
+                <label for="additional_key"
+                    class="absolute font-bold duration-300 transform -translate-y-4 scale-75 top-3 z-10 origin-[0] 
+                px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-120 
+                peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 
+                peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto 
+                start-1 pointer-events-none text-app-property">Additional Key</label>
+                <button type="button" class="absolute right-1.5 top-2 cursor-pointer" 
+                onclick={() => p.store_setter('keys', p.index, 'key', "") }>
+                    <Erase class="fill-app-text/30" />
+                </button>
+            </div>
+
+            <span >
+                {/* 2nd Space */} <p class="text-2xl font-bold text-center text-app-string select-none">{'<-'}</p>
+            </span>
+
+            <div class="relative p-0.5 bg-app-surface border-app-element border-2 rounded-lg ps-3 text-md
+            outline-0 flex-2">
+                <input id="key_value"
+                    type="text" class="block px-1.5 pb-1 pt-1.5 w-full font-semibold 
+                bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
+                text-app-text not-focus:placeholder-transparent placeholder-app-text/80"
+                    placeholder="Value to attach"
+                    autocomplete="off"
+                    value={p.store_value.val || ''} onChange={e => p.store_setter('keys', p.index, 'val', e.currentTarget.value)}
+                />
+                <label for="key_value"
+                    class="absolute font-bold duration-300 transform -translate-y-4 scale-75 top-3 z-10 origin-[0] 
+                px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-120 
+                peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 
+                peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto 
+                start-1 pointer-events-none text-app-string">Value</label>
+
+                <button type="button" class="absolute right-1.5 top-2 cursor-pointer" 
+                onclick={() => { p.store_setter('keys', p.index, 'val', "") }}>
+                    <Erase class="fill-app-text/30" />
+                </button>
+            </div>
+        </div>
+    )
+}
 const key_elements: Record<keyUnit['type'], (p: keyElementParams) => JSXElement> = {
     unwrap: Key_Extract, 
-    alter: Key_Renaming
+    alter: Key_Renaming,
+    attach: Key_Attach
 }
 
 // type static_KeyUnit = Omit<keyUnit, 'type'> ;
@@ -718,9 +785,49 @@ function Static_Renaming(p: keyUnit) {
         </span>
     )
 }
+function Static_Attach(p: keyUnit) {
+    return (
+        <span class="flex px-2 mt-1">
+            {/* <p class="flex-2 text-app-property">{property.key}</p> */}
+            <div class="relative bg-app-surface-secondary border-app-element border-2 rounded-lg ps-3 text-md outline-0 flex-2">
+                <input id="additional_key" type="text" class="block px-1.5 pb-1 pt-1.5 w-full font-semibold 
+                bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
+                text-app-property not-focus:placeholder-transparent placeholder-app-text/80"
+                placeholder="Name for value" disabled value={p.key} />
+                {/* <label for="additional_key" class="absolute font-bold duration-300 transform -translate-y-4 scale-75 
+                top-3 z-10 origin-[0] px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-120 
+                peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 
+                peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto 
+                start-1 pointer-events-none text-app-property/70">
+                    Get_From
+                </label> */}
+            </div>
+
+            <span >
+                {/* 2nd Space */} <p class="text-2xl font-bold text-center text-app-string select-none">{'<-'}</p>
+            </span>
+
+            {/* <p class="flex-2 text-app-string">{property.val}</p> */}
+            <div class="relative bg-app-surface-secondary border-app-element border-2 rounded-lg ps-3 text-md outline-0 flex-2">
+                <input id="key_value" type="text" class="block px-1.5 pb-1 pt-1.5 w-full font-semibold 
+                bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
+                text-app-string not-focus:placeholder-transparent placeholder-app-text/80"
+                placeholder="Name for value" disabled value={p.val} />
+                {/* <label for="key_value" class="absolute font-bold duration-300 transform -translate-y-4 scale-75 
+                top-3 z-10 origin-[0] px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-120 
+                peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 
+                peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto 
+                start-1 pointer-events-none text-app-string/70">
+                    New Key_Name
+                </label> */}
+            </div>
+        </span>
+    )
+}
 const static_key_elements: Record<keyUnit['type'], (p: keyUnit) => JSXElement> = {
     unwrap: Static_Extract, 
-    alter: Static_Renaming
+    alter: Static_Renaming,
+    attach: Static_Attach
 }
 
 function Edit_Extract(p: keyElementParams) {
@@ -785,7 +892,51 @@ function Edit_Renaming(p: keyElementParams) {
         </span>
     )
 }
+function Edit_Attach(p: keyElementParams) {
+    return (
+        <span class="flex-1 flex">
+            {/* <p class="flex-2 text-app-property">{property.key}</p> */}
+            <div class="relative bg-app-surface-secondary border-app-element border-2 rounded-lg ps-3 text-md outline-0 flex-2">
+                <input id="additional_key" type="text" class="block px-1.5 pb-1 pt-1.5 w-full font-semibold 
+                bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
+                text-app-property not-focus:placeholder-transparent placeholder-app-text/80"
+                placeholder="Key to look in" 
+                value={p.store_value.key} onChange={e => p.store_setter('keys', p.index, 'key', e.currentTarget.value)} 
+                />
+                <label for="additional_key" class="absolute font-bold duration-300 transform -translate-y-4 scale-75 
+                top-3 z-10 origin-[0] px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-120 
+                peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 
+                peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto 
+                start-1 pointer-events-none text-app-property/70">
+                    Unwrap Key
+                </label>
+            </div>
+
+            <span >
+                {/* 2nd Space */} <p class="text-2xl font-bold text-center text-app-string select-none">{'<-'}</p>
+            </span>
+
+            {/* <p class="flex-2 text-app-string">{property.val}</p> */}
+            <div class="relative bg-app-surface-secondary border-app-element border-2 rounded-lg ps-3 text-md outline-0 flex-2">
+                <input id="key_value" type="text" class="block px-1.5 pb-1 pt-1.5 w-full font-semibold 
+                bg-transparent appearance-none focus:outline-none focus:ring-0 focus:border-brand peer
+                text-app-string not-focus:placeholder-transparent placeholder-app-text/80"
+                placeholder="Name for value" 
+                value={p.store_value.val} onChange={e => p.store_setter('keys', p.index, 'val', e.currentTarget.value)} 
+                />
+                <label for="key_value" class="absolute font-bold duration-300 transform -translate-y-4 scale-75 
+                top-3 z-10 origin-[0] px-2 peer-focus:px-2 peer-focus:text-fg-brand peer-placeholder-shown:scale-120 
+                peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 
+                peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto 
+                start-1 pointer-events-none text-app-string/70">
+                    New Name
+                </label>
+            </div>
+        </span>
+    )
+}
 const edit_key_elements: Record<keyUnit['type'], (p: keyElementParams) => JSXElement> = {
     unwrap: Edit_Extract, 
-    alter: Edit_Renaming
+    alter: Edit_Renaming,
+    attach: Edit_Attach
 }

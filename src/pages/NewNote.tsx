@@ -8,7 +8,7 @@ import { newNote, setNewNote, setSetter } from "../stores.tsx";
 import { useParams } from "@solidjs/router";
 
 import { addInput, copyToClipboard, SaveNote } from "../helpers.tsx";
-import { lateralSetter } from "../signals.tsx";
+import { lateralSetter, setObjectsClosed } from "../signals.tsx";
 
 import Header from "../components/Header.tsx";
 import { ObjectType as SecondObj } from "../components/StaticTypes.tsx";
@@ -29,6 +29,8 @@ export default function NewNote() {
 
     const [advCard, advCardSet] = createSignal(false)
     lateralSetter(_ => advCardSet);
+
+    setObjectsClosed(true);
 
     return (
         <>

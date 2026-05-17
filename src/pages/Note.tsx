@@ -20,7 +20,7 @@ import { OptionsMenu } from "../components/Select.tsx";
 import { toast } from "../components/notifications.tsx";
 // import { MenuPopovers } from "../components/LineSettingsBtn.tsx";
 import { SearchPanel } from "../components/LateralPanels.tsx";
-import { lateralSetter } from "../signals.tsx";
+import { lateralSetter, setObjectsClosed } from "../signals.tsx";
 // import { NewLine2 } from "../components/RowLines.tsx";
 import { QuickMenu } from "../components/QuickMenu.tsx";
 
@@ -67,6 +67,8 @@ export default function Note() {
 
     const [advCard, advCardSet] = createSignal(false)
     lateralSetter(_ => advCardSet);
+
+    setObjectsClosed(true);
 
     return (
         <Switch>

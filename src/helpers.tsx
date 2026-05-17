@@ -203,6 +203,8 @@ export function formatValue(
     val: JSONValue,
     key?: string | number
 ): LineContent {
+    const type = askMyType(val)
+    
     //  ## When is Array
     if (Array.isArray(val)) {
         if (val.length < 1) {
@@ -224,6 +226,9 @@ export function formatValue(
         // if (!key) {
         //     return Object.entries(val).map(([k, v]) => formatValue(v, k))
         // }
+        if (val === null) {
+            return { type: 'null', key: key!, value: val }
+        }
 
         if (val == null) {
             return {

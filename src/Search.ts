@@ -1,6 +1,8 @@
 import { toast } from "./components/notifications.tsx";
 import { latCardSet } from "./signals.tsx";
 import { searchParams, upd_searchParams } from "./stores.tsx";
+import regexs from "./regexs.ts"
+
 import type { JSONObject, patternQuery } from "./types.tsx";
 import type { pattern } from "../types.ts";
 
@@ -109,12 +111,13 @@ export function prepareSearchPanel(new_url:string, path: (string | number)[]) {
     toggleLateralCard(true);
 }
 
+
 const terms = {
-    keys: {
-        current_url: "__URL",
-        current_title: "__TITLE",
+    current: {
+        url: "__URL",
+        title: "__TITLE",
     },
-    vals: {
+    append: {
         pattern_title: "+TITLE",
         newline_value: "ADD__",
     }
@@ -137,6 +140,7 @@ export async function searchLink(patter: pattern) {
         console.log('searchLink pattern', patter);
 
         const result: JSONObject = {};
+        const additions: JSONObject = {};
         // return patter.keys.reduce((acc, {key, val}) => {
         //     acc[val] = response[key]; return acc;
         // }, {} as JSONObject);
@@ -144,23 +148,65 @@ export async function searchLink(patter: pattern) {
         if (patter.keys.length >= 1) { // ## We need to make shure there is keys to filter the response.
             for (let i = 0; i < patter.keys.length; i++) {
                 const { key, val, type } = patter.keys[i];
-                if(terms.vals.pattern_title === val.toLocaleUpperCase()) { // ## USE this value for the key of property. 
-                    upd_searchParams("resultName", pv => !pv ? pv = (response[key] || undefined) 
-                    : pv += '_' + (response[key] || '')); 
-                    continue; 
-                }
-                
-                // ## ADDs the current url used for the query search to the result object.
-                if(terms.keys.current_url === key.toString().toLocaleUpperCase()) { 
-                    result[val] = searchParams.url!;
+
+                if (type == 'attach') {
+                    // ## ADDs the current url used for the query search to the result object.
+                    if(terms.current.url === val.toLocaleUpperCase() && searchParams.url) { 
+                        additions[key] = searchParams.url;
+                        continue;
+                    }
+                    
+                    // ## ADDs the structured title for the result object.
+                    if(terms.current.title === val.toLocaleUpperCase()) { 
+                        additions[key] = searchParams.resultName ?? 'undefined';
+                        continue;
+                    }
+                    
+                    // ## Extracts the value from a referenced key, hopefully existing, in the responce.
+                    if (regexs.reference_regexp.valid.test(val)) { // Example: title__@{another_key}
+                        const reference = regexs.reference_regexp.search.exec(val);
+                        if (!reference) continue;
+                        
+                        const pre_value = response[reference[1]];
+                        const value = ((typeof pre_value !== 'object') ? pre_value?.toString() : undefined) ?? 'undefined';
+                        additions[key] = val.replace(regexs.reference_regexp.valid, value as string)
+                        
+                        if(typeof key === 'string' && terms.append.pattern_title === key.toLocaleUpperCase()) { 
+                            upd_searchParams("resultName", title => 
+                                !title ? title = (additions[key]?.toString() ?? undefined) 
+                                : title += '_' + (additions[key]?.toString() ?? '')
+                            ); 
+                            delete additions[key];
+                        }
+                        
+                        continue;
+                    }
+
+                    if (regexs.isJSON.test(val)) {
+                        try {
+                            additions[key] = JSON.parse(val)
+                        } catch (_) { /**/ }
+                        continue;
+                    }
+                    
+                    additions[key] = val
                     continue;
                 }
 
+                // ## USE this value for the key of property. 
+                if(terms.append.pattern_title === val.toLocaleUpperCase()) { 
+                    upd_searchParams("resultName", title => 
+                        !title ? title = (response[key] ?? undefined) 
+                        : title += '_' + (response[key] ?? '')
+                    ); 
+                    continue; 
+                }
+
                 // # IN PROGRESS: Desire to add a NewLine with this value to the note
-                if (val.toLocaleUpperCase().startsWith(terms.vals.newline_value)) {
-                    if (val.toLocaleUpperCase().startsWith(terms.vals.newline_value + '{')
+                if (val.toLocaleUpperCase().startsWith(terms.append.newline_value)) {
+                    if (val.toLocaleUpperCase().startsWith(terms.append.newline_value + '{')
                     && val.toLocaleUpperCase().endsWith('}')) {
-                        const name = val.slice(terms.vals.newline_value.length +1, -1)
+                        const name = val.slice(terms.append.newline_value.length +1, -1)
                         upd_searchParams("extra_results", pv => (!pv)
                             ? Object.fromEntries([ [name, response[key]] ]) // if the object doesn't exist: create it with this! 
                             : ( pv[name] && Array.isArray(pv[name]) )       // vv -- for this -- vv
@@ -191,6 +237,7 @@ export async function searchLink(patter: pattern) {
         }
         // ## Yeah for if you need the URL as a property you get everything else, or, assigning the `response` to the `result` when you've only been unwrapping.
         if(Object.keys(result).length === 0 || Object.values(result).includes(searchParams.url!)) Object.assign(result, response);
+        if(Object.keys(additions).length !== 0) Object.assign(result, additions);
 
         // console.log('search: ', result);
         return result;

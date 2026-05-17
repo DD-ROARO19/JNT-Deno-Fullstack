@@ -15,7 +15,7 @@ import type {
 
 import { NewLine2 } from "./RowLines.tsx";
 import { updateStore } from "../helpers.tsx";
-import { prepareSearchPanel } from "../Search.tsx";
+import { prepareSearchPanel } from "../Search.ts";
 import { LineSettingsBtn, Toggle } from "./Toggle.tsx";
 import { QuickMenuBtn } from "./QuickMenu.tsx";
 import { objectsClosed } from "../signals.tsx";
@@ -67,7 +67,7 @@ export function StringType(props: primitiveProps & { data: string }) {
                     } 
                 }}
                 class="StringType flex-1 outline-none focus:bg-app-base rounded-md mr-8
-                    min-h-6 field-sizing-content text-app-string"
+                    min-h-6 field-sizing-content text-app-string wrap-anywhere"
             ></textarea>
             <LineSettingsBtn path={props.path} type="string" data={props.data} // config={[props.path, props.data, 'string']}
                 hover_class="group-hover/s-line:visible" />
@@ -315,5 +315,5 @@ export const statics = {
     array: ArrayType,
     object: ObjectType,
     boolean: BooleanType,
-    null: () => <span>null</span>,
+    null: NullType,
 };

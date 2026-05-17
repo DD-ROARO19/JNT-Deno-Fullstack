@@ -173,7 +173,7 @@ export const DownArrow = (props: { svg_class?: string, class?: string, isDown: A
     function toggle(e: MouseEvent) {
         e.stopPropagation();
         e.preventDefault();
-        props.setArrow(p => { console.log(p); return !p });
+        props.setArrow(p => !p);
     }
 
     return (

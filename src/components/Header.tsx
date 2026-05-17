@@ -9,7 +9,7 @@ import {
 createResource } from "solid-js";
 
 import { CopySVG, Edit, Erase, SettingSVG } from "../assets/svgs.tsx";
-import { toggleLateralCard } from "../Search.tsx";
+import { toggleLateralCard } from "../Search.ts";
 import { setLastClicked, set_quickMenuConfig, update_tagStore, tagsStore } from "./QuickMenu.tsx";
 import { copyToClipboard, SaveNote } from "../helpers.tsx";
 
@@ -17,6 +17,10 @@ import { unwrap, type SetStoreFunction } from "solid-js/store";
 import type { noteFrame, quickOptions, quickButtons } from "../types.tsx";
 import { objectsClosed, setObjectsClosed } from "../signals.tsx";
 
+// ## CHANGE PLACE: vv THIS vv
+// # DEV: definition of dev state (maybe change to a togglable option?)
+const dev = false;
+const show_lastUpdate = true;
 
 interface titleParams {
     onSave: () => void,
@@ -54,18 +58,18 @@ export default function Title(props: titleParams) {
         onCleanup(() => scrollingContainer.removeEventListener("scroll", handleScroll))
     })
 
-    const Class = "p-2 rounded-md cursor-pointer place-items-center bg-app-surface-secondary";
+    const Class = "p-2 max-h-fit rounded-md cursor-pointer place-items-center bg-app-surface-secondary";
 
     return (
         <>
             <div ref={titleBarRef} id="title" class={`NoteTitle p-1 pb-2.5 
             transition-discrete duration-150 ease-in-out
-            ${isFixed() ? 'bg-app-element fixed top-2 self-center-safe z-50 shadow-lg w-1/2 pt-2.5' : 'relative'} 
+            ${isFixed() ? 'bg-app-element fixed top-2 self-center-safe z-50 shadow-lg md:w-3/4 lg:w-1/2 pt-2.5' : 'relative'} 
             ${advSettings() ? 'rounded-2xl px-2.5' : 'rounded-4xl'}
             `} 
             classList={{ "px-4": isFixed() && !advSettings() }} 
             >
-            <span class="w-full flex justify-evenly gap-2">
+            <span class="w-full flex justify-evenly gap-1">
                 <div class="relative flex-1 p-0.5 text-lg bg-app-surface-secondary rounded-lg ps-3 
                 placeholder-app-muted/70 outline-0 focus:border-2 border-app-borders font-semibold">
                     <input type="text" id="floating_outlined" class="block px-1.5 pb-1 pt-1.5 w-full text-md 
@@ -112,26 +116,60 @@ export default function Title(props: titleParams) {
             </span>
             <div class="grid transition-[grid-template-rows] delay-75 duration-150 ease-in-out grid-rows-[0fr]"
             classList={{ "grid-rows-[1fr]": advSettings() }}>
+
                 <div class="mt-1 overflow-hidden">
-                <span is="additional" class="grid grid-cols-2">
-                    <div id="info" class="text-app-text">
-                        {/* <span class="flex">
-                            <label for="content_length" class="">length:</label>
-                        </span> */}
-                        <h2 id="content_length" class="font-semibold">length: {props.store_data.content.length}</h2>
-                    </div>
-                    <div id="buttons">
-                        <button type="button" class="bg-app-surface-secondary text-app-function p-1.5 rounded-2xl cursor-pointer" 
-                        onclick={() => setObjectsClosed(p => !p)}>
-                            { objectsClosed() ? 'Close all objects' : 'Open all objects' }
-                        </button>
-                    </div>
-                </span>
-                <span id="note_tags" class="TagsComponent flex gap-1 my-1 flex-wrap">
-                    <h2 class="text-app-property font-black me-2">Tags:</h2>
-                    <TagsComponent tags_val={metadata.tags} store_setter={props.storeSetter} />
-                </span>
+                    <span is="additional" class="flex justify-between place-items-start gap-1">
+                        <div id="info" class="py-1 px-2 flex gap-x-5 flex-wrap bg-app-surface-secondary rounded-lg text-app-text">
+                            {/* <span class="flex">
+                                <label for="content_length" class="">length:</label>
+                            </span> */}
+                            <h2 id="author" class="font-semibold">Author: {metadata.author}</h2>
+                            <h2 id="content_length" class="font-semibold">Items length: {props.store_data.content.length}</h2>
+                            <h2 id="content_type" class="font-semibold">Note type: "object"</h2>
+                            <Show when={metadata.created_at}>{(date) => { 
+                                const localeDate = new Date(date()).toLocaleString(undefined, { hour12: false, dateStyle: 'short', timeStyle: 'short' })
+                                return <h2 id="author" class="font-semibold" title={`Created: ${localeDate}`}>{ (show_lastUpdate ? 'C: ' : 'Created: ') + localeDate}</h2>
+                            }}</Show>
+                            <Show when={show_lastUpdate}>
+                                <Show when={metadata.last_updated}>{(date) => {
+                                    const localeDate = new Date(date()).toLocaleString(undefined, { hour12: false, dateStyle: 'short', timeStyle: 'short' })
+                                    return <h2 id="author" class="font-semibold" title={`Last updated: ${localeDate}`}>U: {localeDate}</h2>} }</Show>
+                            </Show>
+                        </div>
+                        <div id="buttons" class="flex gap-1 shrink min-w-0">
+                            {/* # DEV: Log Note */}
+                            <Show when={dev}>
+                                <button type="button" class={`group/copy text-app-text/70 font-semibold hover:text-app-text
+                                active:text-app-active-secondary/70 flex min-w-10 shrink items-center `+Class}
+                                    title="Log note"
+                                    onClick={() => console.log(structuredClone(unwrap(props.store_data)))} >
+                                    <CopySVG class={`stroke-app-text/70 group-hover/copy:stroke-app-text group-active/copy:stroke-app-active-secondary/70`} option={3} />
+                                    Log Note
+                                </button>
+                            </Show>
+                            
+                            {/* Open / Close - objects or arrays */}
+                            <button type="button" class={`text-app-text/70 font-semibold hover:text-app-text
+                            active:text-app-active-secondary/70 flex min-w-10 shrink items-center `+Class}
+                                title="Toggle objects & arrays"
+                                onclick={() => setObjectsClosed(p => !p)}>
+                                    <p class="truncate">{ objectsClosed() ? 'Close all objects' : 'Open all objects' }</p>
+                            </button>
+                            
+                            {/* Copy Content */}
+                            <button type="button" class={'group/copy '+Class}
+                                title="Copy Note"
+                                onClick={props.onCopy} >
+                                <CopySVG class={`stroke-app-text/70 group-hover/copy:stroke-app-text group-active/copy:stroke-app-active-secondary/70`} option={3} />
+                            </button>
+                        </div>
+                    </span>
+                    <span id="note_tags" class="TagsComponent flex gap-1 my-1 flex-wrap">
+                        <h2 class="text-app-property font-black me-2">Tags:</h2>
+                        <TagsComponent tags_val={metadata.tags} store_setter={props.storeSetter} />
+                    </span>
                 </div>
+
             </div>
             </div>
 
