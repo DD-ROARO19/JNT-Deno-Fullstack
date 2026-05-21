@@ -432,21 +432,6 @@ export function SearchPanel() {
 
             updateStore([...path, index], formatValue(value));
             updateStore([...path, index, 'key'], searchParams.resultName || currentStore()?.title || '')
-            
-            const ind = addInput(path, askMyType(null));
-            if(!ind) throw new SearchError("APPLY_ERROR", 'Could get new item index!');
-            updateStore([...path, ind], formatValue(null));
-            updateStore([...path, ind, 'key'], 'null_test')
-
-            // for(const [k, v] of Object.entries(value)) {
-            //     console.log('add_nl {} =>', [k, v]);
-
-            //     const index = addInput(path, 'array'); console.log('index? => ', index);
-            //     if(!index) throw new SearchError("APPLY_ERROR", 'Could get new item index!')
-
-            //     updateStore([...path, index], formatValue(v))
-            //     updateStore([...path, index, 'key'], k)
-            // }
         } catch (err) { console.error(err) }
     }
     function applyResult() {
