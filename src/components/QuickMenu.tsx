@@ -12,9 +12,11 @@ import {
 import { createStore } from "solid-js/store";
 import { Arrow, SettingSVG } from "../assets/svgs.tsx";
 import { twMerge } from "tailwind-merge";
+import { addInput, changeInput, eraseInput, copyToClipboard } from "../helpers.tsx";
+import { computePosition, flip, shift, offset, autoUpdate } from "@floating-ui/dom"
+
 import type { JSONPrimitive, LineContent, path_list, quickButtons, quickOptions, typeOfInputs } from "../types.tsx";
 
-import { addInput, changeInput, eraseInput, copyToClipboard } from "../helpers.tsx";
 
 
 interface qMenu_config {
@@ -30,7 +32,7 @@ interface quick_menu_options {
 }
 type menu_key_options = keyof quick_menu_options;
 interface quick_menu_params {
-    coords: { x: number, y: number };   path: path_list;
+    path: path_list;                    // coords: { x: number, y: number };   
     show_menu: boolean;                 active_menu: menu_key_options; 
     type: typeOfInputs;                 data: JSONPrimitive | LineContent[];
 }
@@ -44,7 +46,7 @@ type qMenu_params = qPrimitive_config | qObject_config | qAdder_config | qTags_c
 const [quickMenuConfig, set_quickMenuConfig] = createStore<qMenu_params>({
     path: [],
     show_menu: false,
-    coords: { x: 0, y: 0 },
+    // coords: { x: 0, y: 0 },
     active_menu: 'Adder',
     type: 'null',
     data: null
@@ -108,32 +110,61 @@ interface QuickMenuBtn_Params {
 }
 
 export function QuickMenu() {
-    let optionsMenuRef: HTMLDivElement | undefined;
+    let quickMenuRef: HTMLDivElement | undefined;
     const [openSubMenu, set_openSubMenu] = createSignal<string>();
 
     createEffect(() => {
-        // const menuRef = inputMenuRef();
+        const referenceEl = lastTouched()
+        if(!quickMenuRef || !referenceEl || !quickMenuConfig.show_menu) return;
+        // console.log('lastTouched = ', referenceEl);
+        
+        function updatePosition() {
+            if(!quickMenuRef || !referenceEl) return;
+
+            computePosition(referenceEl, quickMenuRef, {
+                placement: 'bottom-end',
+                strategy: 'fixed',
+                middleware: [flip({ fallbackPlacements: ["left-end"], padding: 16 })]
+            }).then( (config) => {
+                Object.assign(quickMenuRef.style, {
+                    top: `${config.y}px`,
+                    left: `${config.x}px`,
+                    position: config.strategy
+                })
+            })
+        }
+        
         const handleOutClick = (e: Event) => {
-            // console.log(e.target);
-            if (!optionsMenuRef || optionsMenuRef.contains(e.target as Node) ||
-                (e.target as HTMLElement).classList.contains('InputMenuButton')) {
+            console.log(e.target);
+            if (!quickMenuRef 
+                || quickMenuRef.contains(e.target as Node) 
+                || (e.target as HTMLElement).classList.contains('InputMenuButton')
+                || (e.target as HTMLElement).classList.contains('TagInput')
+            ) {
                 return;
             }
-
-            // if (showInputMenu()) { openInputMenu(false) }
-            if (quickMenuConfig.show_menu) { set_quickMenuConfig("show_menu", false) }
+            // if (quickMenuConfig.show_menu) { set_quickMenuConfig("show_menu", false) }
+            set_quickMenuConfig("show_menu", false);
         }
 
-        document.addEventListener('click', handleOutClick);
-        onCleanup(() => document.removeEventListener('click', handleOutClick));
+        document.addEventListener('pointerdown', handleOutClick);
+        const cleanup = autoUpdate(referenceEl, quickMenuRef, updatePosition)
+        
+        onCleanup(() => {
+            document.removeEventListener('pointerdown', handleOutClick);
+            cleanup()
+        });
     });
 
 
     const MenuButtons = (props: quickButtons & { class?: string } ) => {
         return (
-            <option role="menuitem" class={twMerge(`px-4 py-2 text-sm text-app-text/70 
+            <option role="menuitem" class={twMerge(`px-4 py-2 text-sm text-app-text/70 rounded-md
             hover:bg-app-active/20 hover:text-app-text`, props.class)} 
-            onClick={() => { props.action(); set_quickMenuConfig("show_menu", false); }} >
+            onMouseDown={e => e.preventDefault()}
+            onClick={() => { props.action(); 
+                set_quickMenuConfig("show_menu", false); 
+            }} >
                 {props.text}
             </option>
         )
@@ -142,30 +173,32 @@ export function QuickMenu() {
         return (
         <Switch>
         <Match when={opt.render === 'another_menu'}> <></> </Match>
-        <Match when={opt.render === 'same_menu'}> <div>
-            <Show when={opt.title.trim() !== ''}>
-                <option role="menuitem" class="block pl-4 py-2 text-sm font-bold italic text-app-text">
+
+        <Match when={opt.render === 'same_menu'}> 
+            <div>   <Show when={opt.title.trim() !== ''}>
+                <label class="block pl-4 py-2 text-sm font-bold italic text-app-text">
                     {opt.title}
-                </option>
+                </label>
             </Show>
-            <For each={opt.buttons}>{ (option) => <MenuButtons {...option} /> }</For>
-        </div> </Match>
+            <For each={opt.buttons}>{ (option) => <MenuButtons {...option} /> }</For>   </div> 
+        </Match>
+
         <Match when={opt.render === 'collapse_menu'}>{(_) => {
         const isOpen = createMemo(() => openSubMenu() === opt.title);
-
+        
         createEffect(() => {
             const _lastestElement = lastTouched()
             set_openSubMenu(undefined)
         })
-
+        
         return <div class="h-auto">
-            <span class="group/submenu flex hover:bg-app-active/20"
+            <span class="group/submenu flex hover:bg-app-active/20 rounded-md"
             classList={{ "bg-app-active/10": isOpen() }} 
-            onclick={() => set_openSubMenu(isOpen() ? undefined : opt.title)}>
-                <option role="menuitem" class={`block pl-4 py-2 text-sm font-bold italic group-hover/submenu:text-app-text
+            onClick={() => set_openSubMenu(isOpen() ? undefined : opt.title) }>
+                <button type="button" role="menuitemcheckbox" class={`block pl-4 py-2 text-sm font-bold italic group-hover/submenu:text-app-text
                 ${isOpen() ? 'text-app-active/70' : 'text-app-text/70'}`}>
                     {opt.title}
-                </option>
+                </button>
                 <Arrow class={`place-self-center transition-[rotate] duration-100 ease-in group-hover/submenu:fill-app-text 
                 ${isOpen() ? 'rotate-360 fill-app-active/70' : 'rotate-270 fill-app-text/70'}`} />
             </span>
@@ -174,7 +207,8 @@ export function QuickMenu() {
                 <div class="overflow-hidden">
                     {/* <Show when={isOpen}>
                     </Show> */}
-                    <For each={opt.buttons}>{ (option) => <MenuButtons class="list-item list-inside" {...option} /> }</For>
+                    <For each={opt.title === 'Change Input' ? opt.buttons.filter((v) => v.text.toLocaleLowerCase() !== quickMenuConfig.type) : opt.buttons}>
+                        { (option) => <MenuButtons class="list-item list-inside" {...option} /> }</For>
                 </div>
             </div>
         </div>}}</Match>
@@ -183,24 +217,25 @@ export function QuickMenu() {
 
 
     return (
-        <div ref={optionsMenuRef}
-            id="InputMenu"
-            class="absolute h-auto z-10 mt-2 w-56 origin-top-right rounded-md shadow-lg ring-1 ring-opacity-5 focus:outline-none 
-            ring-app-sidebar/50 bg-app-surface
+        <div ref={quickMenuRef}
+            id="QuickMenu"
+            class="absolute h-auto z-10 w-56 origin-top-right rounded-md shadow-lg ring-1 ring-opacity-5 focus:outline-none 
+            ring-app-sidebar/50 bg-app-surface select-none
             "
             style={{
-                top: `${quickMenuConfig.coords.y}px`,
-                left: `${quickMenuConfig.coords.x}px`,
+                // top: `${quickMenuConfig.coords.y}px`,
+                // left: `${quickMenuConfig.coords.x}px`,
                 // visibility: quickMenuConfig.show_menu ? 'visible' : 'hidden',
-                display: quickMenuConfig.show_menu ? 'block' : 'none'
+                // "z-index": quickMenuConfig.active_menu === 'tags' ? 3 : 1,
+                "display": quickMenuConfig.show_menu ? 'block' : 'none'
             }}
             role="menu"
             aria-orientation="vertical"
-            aria-labelledby="menu-button"
+            // aria-labelledby="menu-button"
         >
-            <div class="py-1 h-auto select-none" role="none">
-                <For each={quickMenu_store[quickMenuConfig.active_menu].options}>{ (option) => <MenuSection {...option} /> }</For>
-            </div>
+            <For each={quickMenu_store[quickMenuConfig.active_menu].options}>{ (option) => <MenuSection {...option} /> }</For>
+            {/* <div class="py-1 h-auto" role="none" >
+            </div> */}
         </div>
     )
 }
@@ -214,9 +249,9 @@ export function QuickMenuBtn(props: QuickMenuBtn_Params) {
 
     function updateConfig() {
         if (selectButtonRef) {
-            const rect = selectButtonRef.getBoundingClientRect();
+            // const rect = selectButtonRef.getBoundingClientRect();
             set_quickMenuConfig({ 
-                coords: { x: (rect.right - 224), y: (rect.top + selectButtonRef.offsetHeight) },
+                // coords: { x: (rect.right - 224), y: (rect.top + selectButtonRef.offsetHeight) },
                 show_menu: true,
                 path: props.path,
                 data: props.data
@@ -273,5 +308,5 @@ export function QuickMenuBtn(props: QuickMenuBtn_Params) {
 
 
 export {
-    set_quickMenuConfig, setLastTouched as setLastClicked
+    quickMenuConfig, set_quickMenuConfig, lastTouched, setLastTouched
 }
