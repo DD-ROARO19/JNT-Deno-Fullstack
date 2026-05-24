@@ -9,20 +9,20 @@ import {
 import { useParams } from "@solidjs/router";
 import { createStore } from "solid-js/store";
 
-import type { Note } from "../../types.ts";
+// import type { Note } from "../../types.ts";
 import type { noteFrame } from "../types.tsx";
 
 import { reset_searchParams, setSetter } from "../stores.tsx";
-import { copyToClipboard, DeleteNote, extractValue, json2Note, UpdateNote } from "../helpers.tsx";
-import { ObjectType } from "../components/StaticTypes.tsx";
-import Header from "../components/Header.tsx";
-import { OptionsMenu } from "../components/Select.tsx";
-import { toast } from "../components/notifications.tsx";
-// import { MenuPopovers } from "../components/LineSettingsBtn.tsx";
-import { SearchPanel } from "../components/LateralPanels.tsx";
 import { lateralSetter, setObjectsClosed } from "../signals.tsx";
+import { DeleteNote, extractValue, json2Note, UpdateNote } from "../helpers.tsx";
+
 // import { NewLine2 } from "../components/RowLines.tsx";
-import { QuickMenu } from "../components/QuickMenu.tsx";
+import Header from "../components/Header.tsx";
+import { ObjectType } from "../components/StaticTypes.tsx";
+import { toast } from "../components/notifications.tsx";
+import { SearchPanel } from "../components/LateralPanels.tsx";
+import { QuickMenu, setContentRef } from "../components/QuickMenu.tsx";
+import { Loading } from "../assets/svgs.tsx";
 
 async function getNote(id: string): Promise<true> {
     console.log('ID: ', id);
@@ -63,7 +63,7 @@ export default function Note() {
     setSetter(_ => setNote)
     reset_searchParams();
 
-    const [res, { refetch }] = createResource(() => param.id, getNote)
+    const [res] = createResource(() => param.id, getNote)
 
     const [advCard, advCardSet] = createSignal(false)
     lateralSetter(_ => advCardSet);
@@ -73,7 +73,7 @@ export default function Note() {
     return (
         <Switch>
             <Match when={res.loading}>
-                <></>
+                <div class="w-full flex justify-center"> <Loading class="h-16 w-16 mt-4" option={4} /> </div>
             </Match>
             <Match when={res()}>
                 <QuickMenu />
@@ -87,20 +87,20 @@ export default function Note() {
                         {/* Title */}
                         <Header storeSetter={setNote} store_data={note}
                         onSave={() => UpdateNote(note)}
-                        onCopy={() => copyToClipboard(note.content, 'object', [])}
+                        // onCopy={() => copyToClipboard(note.content, 'object', [])}
                         // onErase={() => DeleteNote(note.metadata.id)}
                         onErase={() => console.log(extractValue(note.content, 'object', ['content']))}
                         fixed_title
                         />
 
                         {/* Content */}
-                        <div class="NoteContent bg-app-surface-secondary rounded-lg py-3 pl-8">
+                        <div ref={setContentRef} id='NoteContent' class="bg-app-surface-secondary rounded-lg py-3 pl-8">
                             <ObjectType data={note.content} path={["content"]} no_config full_addButton />
                         </div>
 
                     </div>
                     <div class="flex-1 transition-discrete delay-75 duration-100 ease-in
-                    sticky top-0 h-fit max-h-[calc(100vh)] overflow-y-auto scrollbar-thin pb-4"
+                    sticky top-0 h-fit max-h-[calc(100vh)] overflow-y-auto pb-4"
                     classList={{ "grow-2": advCard() }}
                     ><Show when={advCard()}> <SearchPanel /> </Show></div>
                     <aside class="w-1/20 flex-none" />

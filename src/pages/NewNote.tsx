@@ -1,20 +1,19 @@
 import {
     createSignal,
-    onMount,
-    onCleanup,
-    Show } from 'solid-js'
+    Show 
+} from 'solid-js'
 
 import { newNote, setNewNote, setSetter } from "../stores.tsx";
 import { useParams } from "@solidjs/router";
 
-import { addInput, copyToClipboard, SaveNote } from "../helpers.tsx";
+import { SaveNote } from "../helpers.tsx";
 import { lateralSetter, setObjectsClosed } from "../signals.tsx";
 
 import Header from "../components/Header.tsx";
 import { ObjectType as SecondObj } from "../components/StaticTypes.tsx";
-import { ObjectType } from "../components/InputTypes.tsx";
+// import { ObjectType } from "../components/InputTypes.tsx";
 import { toast } from "../components/notifications.tsx";
-import { QuickMenu } from "../components/QuickMenu.tsx";
+import { QuickMenu, setContentRef } from "../components/QuickMenu.tsx";
 import { SearchPanel } from "../components/LateralPanels.tsx";
 
 
@@ -22,8 +21,7 @@ export default function NewNote() {
     setSetter(_ => setNewNote)
     const params = useParams();
 
-    setNewNote('metadata', 'path', `/${params.path}`)
-    const rootPath = ['content']
+    setNewNote('metadata', 'path', `/${params.path}`);
 
     const Toast = () => toast().Content();
 
@@ -45,12 +43,12 @@ export default function NewNote() {
                     {/* Title */}
                     <Header storeSetter={setNewNote} store_data={newNote}
                     onSave={() => SaveNote(newNote)}
-                    onCopy={() => copyToClipboard(newNote.content, 'object', [])}
+                    // onCopy={() => copyToClipboard(newNote.content, 'object', [])}
                     onErase={() => {setNewNote("metadata", "title", ""); setNewNote("content", [])}} 
                     />
 
                     {/* Content */}
-                    <div class="NoteContent bg-app-surface-secondary rounded-lg py-3 pl-8">
+                    <div ref={setContentRef} id= 'NoteContent' class="bg-app-surface-secondary rounded-lg py-3 pl-8">
                         <SecondObj data={newNote.content} path={["content"]} no_config full_addButton />
                     </div>
 
@@ -62,24 +60,5 @@ export default function NewNote() {
                 <aside class="w-1/20 flex-none" />
             </div>
         </>
-        // <>
-        //     <OptionsMenu />
-        //     <Toast  />
-        //     <div class="m-4 bg-app-element w-3/4 max-w-215 rounded-2xl p-2 flex flex-col 
-        //         place-self-center">
-        //         {/* Title */}
-        //         <Header storeSetter={setNewNote} metadata={newNote.metadata}
-        //             onSave={() => SaveNote(newNote)} 
-        //             onCopy={() => copyToClipboard(newNote.content, 'object', [])} 
-        //             onErase={() => {setNewNote("metadata", "title", ""); setNewNote("content", [])}} 
-        //         />
-
-        //         {/* Content */}
-        //         <div class="NoteContent bg-app-surface-secondary rounded-lg py-3 pl-8">
-        //             <SecondObj data={newNote.content} path={["content"]} no_config full_addButton />
-        //         </div>
-
-        //     </div>
-        // </>
     )
 }

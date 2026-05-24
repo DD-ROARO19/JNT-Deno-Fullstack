@@ -13,7 +13,7 @@ import { createStore } from "solid-js/store";
 import { Arrow, SettingSVG } from "../assets/svgs.tsx";
 import { twMerge } from "tailwind-merge";
 import { addInput, changeInput, eraseInput, copyToClipboard } from "../helpers.tsx";
-import { computePosition, flip, shift, offset, autoUpdate } from "@floating-ui/dom"
+import { computePosition, flip, shift, autoUpdate, autoPlacement } from "@floating-ui/dom"
 
 import type { JSONPrimitive, LineContent, path_list, quickButtons, quickOptions, typeOfInputs } from "../types.tsx";
 
@@ -99,6 +99,7 @@ const [quickMenu_store] = createStore<quick_menu_options>({
 });
 
 const [lastTouched, setLastTouched] = createSignal<HTMLElement>()
+const [contentRef, setContentRef] = createSignal<HTMLDivElement>()
 
 interface QuickMenuBtn_Params {
     class?: string;
@@ -115,16 +116,21 @@ export function QuickMenu() {
 
     createEffect(() => {
         const referenceEl = lastTouched()
-        if(!quickMenuRef || !referenceEl || !quickMenuConfig.show_menu) return;
+        const contentDivRef = contentRef()
+        if(!quickMenuRef || !referenceEl || !contentDivRef || !quickMenuConfig.show_menu) return;
         // console.log('lastTouched = ', referenceEl);
         
         function updatePosition() {
-            if(!quickMenuRef || !referenceEl) return;
+            if(!quickMenuRef || !referenceEl || !contentDivRef) return;
 
             computePosition(referenceEl, quickMenuRef, {
-                placement: 'bottom-end',
+                placement: 'bottom',
                 strategy: 'fixed',
-                middleware: [flip({ fallbackPlacements: ["left-end"], padding: 16 })]
+                middleware: [
+                    flip({ boundary: contentDivRef,/**/ crossAxis: false, fallbackPlacements: ["left-start","left-end","top"], fallbackStrategy: 'initialPlacement', padding: 16 }),
+                    shift({ boundary: contentDivRef, crossAxis: false }),
+                    // autoPlacement({ boundary: contentDivRef, allowedPlacements: ["bottom", "left-end", "top"] })
+                ]
             }).then( (config) => {
                 Object.assign(quickMenuRef.style, {
                     top: `${config.y}px`,
@@ -135,7 +141,7 @@ export function QuickMenu() {
         }
         
         const handleOutClick = (e: Event) => {
-            console.log(e.target);
+            // console.log('# targer:', e.target);
             if (!quickMenuRef 
                 || quickMenuRef.contains(e.target as Node) 
                 || (e.target as HTMLElement).classList.contains('InputMenuButton')
@@ -156,6 +162,11 @@ export function QuickMenu() {
         });
     });
 
+    createEffect(() => {
+        const _lastestElement = lastTouched()
+        set_openSubMenu(undefined)
+    })
+
 
     const MenuButtons = (props: quickButtons & { class?: string } ) => {
         return (
@@ -164,6 +175,7 @@ export function QuickMenu() {
             onMouseDown={e => e.preventDefault()}
             onClick={() => { props.action(); 
                 set_quickMenuConfig("show_menu", false); 
+                // set_openSubMenu(undefined)
             }} >
                 {props.text}
             </option>
@@ -186,10 +198,6 @@ export function QuickMenu() {
         <Match when={opt.render === 'collapse_menu'}>{(_) => {
         const isOpen = createMemo(() => openSubMenu() === opt.title);
         
-        createEffect(() => {
-            const _lastestElement = lastTouched()
-            set_openSubMenu(undefined)
-        })
         
         return <div class="h-auto">
             <span class="group/submenu flex hover:bg-app-active/20 rounded-md"
@@ -219,14 +227,14 @@ export function QuickMenu() {
     return (
         <div ref={quickMenuRef}
             id="QuickMenu"
-            class="absolute h-auto z-10 w-56 origin-top-right rounded-md shadow-lg ring-1 ring-opacity-5 focus:outline-none 
+            class="absolute h-auto w-56 origin-top-right rounded-md shadow-lg ring-1 ring-opacity-5 focus:outline-none 
             ring-app-sidebar/50 bg-app-surface select-none
             "
             style={{
                 // top: `${quickMenuConfig.coords.y}px`,
                 // left: `${quickMenuConfig.coords.x}px`,
                 // visibility: quickMenuConfig.show_menu ? 'visible' : 'hidden',
-                // "z-index": quickMenuConfig.active_menu === 'tags' ? 3 : 1,
+                "z-index": quickMenuConfig.active_menu === 'tags' ? 3 : 1,
                 "display": quickMenuConfig.show_menu ? 'block' : 'none'
             }}
             role="menu"
@@ -308,5 +316,5 @@ export function QuickMenuBtn(props: QuickMenuBtn_Params) {
 
 
 export {
-    quickMenuConfig, set_quickMenuConfig, lastTouched, setLastTouched
+    quickMenuConfig, set_quickMenuConfig, lastTouched, setLastTouched, setContentRef
 }
