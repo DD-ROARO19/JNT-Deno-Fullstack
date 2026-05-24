@@ -3,20 +3,17 @@ import {
     createSignal,
     onMount,
     onCleanup,
-    For,
     Index,
     Show,
-    createSelector,
-    createResource
+    createSelector
 } from "solid-js";
 
 import { CopySVG, Edit, Erase, SettingSVG } from "../assets/svgs.tsx";
-import { toggleLateralCard } from "../Search.ts";
-import { set_quickMenuConfig, update_tagStore, tagsStore, lastTouched, setLastTouched, quickMenuConfig } from "./QuickMenu.tsx";
-import { copyToClipboard, SaveNote } from "../helpers.tsx";
+import { set_quickMenuConfig, update_tagStore, lastTouched, setLastTouched } from "./QuickMenu.tsx";
+import { copyToClipboard } from "../helpers.tsx";
 
 import { unwrap, type SetStoreFunction } from "solid-js/store";
-import type { noteFrame, quickOptions, quickButtons } from "../types.tsx";
+import type { noteFrame, quickButtons } from "../types.tsx";
 import { objectsClosed, setObjectsClosed } from "../signals.tsx";
 import { twMerge } from "tailwind-merge/es5";
 
@@ -28,7 +25,7 @@ const headerType: 'sticky' | 'fixed' = 'sticky';
 
 interface titleParams {
     onSave: () => void,
-    onCopy: () => void,
+    // onCopy: () => void,
     onErase: () => void,
     store_data: noteFrame,
     storeSetter: SetStoreFunction<noteFrame>,
@@ -83,7 +80,7 @@ export default function Title(props: titleParams) {
 
     return (
         <>
-            <div ref={sentinelRef} class="h-[1px] w-full pointer-events-none" aria-hidden="true" />
+            <div ref={sentinelRef} class="h-px w-full pointer-events-none" aria-hidden="true" />
             {/* <div id="ExtraSpace" class="w-full transition-all"
                 style={{ height: isFixed() ? `${barHeight()}px` : 'auto' }}
             >
@@ -109,10 +106,10 @@ export default function Title(props: titleParams) {
                     text-app-function" autocomplete="off"
                             placeholder="" value={metadata.title} onChange={e => props.storeSetter('metadata', 'title', e.currentTarget.value)} disabled={props.fixed_title} />
                         <label for="floating_outlined" class="absolute text-md text-body duration-300 transform 
-                    -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2 peer-focus:px-2 
+                    -translate-y-4 scale-75 top-2 z-2 origin-left bg-neutral-primary px-2 peer-focus:px-2 
                     peer-focus:text-fg-brand peer-placeholder-shown:scale-130 peer-placeholder-shown:-translate-y-1/2 
                     peer-placeholder-shown:top-1/2 peer-focus:top-0 peer-focus:scale-75 peer-focus:-translate-y-4 
-                    rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1 pointer-events-none
+                    rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto inset-s-1 pointer-events-none
                     text-app-string" classList={{ "hidden": props.fixed_title }}>Note Title</label>
                     </div>
                     {/* {props.children} */}
@@ -192,7 +189,7 @@ export default function Title(props: titleParams) {
                                 {/* Copy Content */}
                                 <button type="button" class={'group/copy ' + Class[0]}
                                     title="Copy Note"
-                                    onClick={props.onCopy} >
+                                    onClick={() => copyToClipboard(props.store_data.content, 'object', [])} >
                                     <CopySVG class={`stroke-app-text/70 group-hover/copy:stroke-app-text group-active/copy:stroke-app-active-secondary/70`} option={3} />
                                 </button>
                             </div>
@@ -280,7 +277,7 @@ function TagInput(p: singleTag) {
     async function updateConfig(val: string) {
         if (inputRef) {
             const mapped_tags = (await searchTags(val)).map(v => {
-                return { text: v.tag, action: () => p.setter('metadata', 'tags', p.index, v.tag) }
+                return { text: v.tag, action: () => { inputRef.value = v.tag; p.setter('metadata', 'tags', p.index, _ => v.tag); }}
             }) satisfies quickButtons[];
             update_tagStore('options', 0, 'buttons', _ => mapped_tags || [])
 
