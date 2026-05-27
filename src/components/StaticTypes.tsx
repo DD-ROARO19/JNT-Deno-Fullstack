@@ -5,7 +5,8 @@ import {
     Switch,
     Match,
     createComputed,
-    createEffect
+    createEffect,
+    on
 } from "solid-js";
 
 import type { Accessor, Setter, JSXElement } from "solid-js";
@@ -19,6 +20,7 @@ import { prepareSearchPanel } from "../Search.ts";
 import { LineSettingsBtn, Toggle } from "./Toggle.tsx";
 import { QuickMenuBtn } from "./QuickMenu.tsx";
 import { objectsClosed } from "../signals.tsx";
+import regexs from "../regexs.ts";
 
 
 const search_term = "__SEARCH"
@@ -46,15 +48,75 @@ type primitiveProps = basicProps
 
 /** Component to display text. */
 export function StringType(props: primitiveProps & { data: string }) {
-
     if (props.key === undefined) {
         return <span>No metadata for key</span>
     }
+    let stringRef!: HTMLDivElement;
+
+    function formatText(rawText: string) {
+        const safeText = rawText
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+        
+        return safeText.replace(regexs.includeURL, (url) => 
+            `<a href="${url}" data-url="${url}" class="text-blue-500 underline cursor-pointer hover:text-blue-600">${url}</a>`
+        )
+    }
+    function updateInnerHTML() {
+        stringRef.innerHTML = formatText(props.data)
+    }
+
+    createEffect(() => {
+        const data_fromStore = props.data;
+
+        if(stringRef && document.activeElement !== stringRef) {
+            if (!data_fromStore) stringRef.innerHTML = "";
+            else updateInnerHTML();
+        }
+    })
+
+    function updateValue() {
+        // console.log({ path: props.path, text: stringRef.innerText });
+        updateStore(props.path, stringRef.innerText); 
+        if(typeof props.key === 'string' && props.key?.toLocaleUpperCase() === search_term && props.data.toString().trim() !== "") {
+            prepareSearchPanel(stringRef.innerText, props.path)
+        } 
+    }
+    // function handleInput(e: InputEvent) {}
+
+    function handleClick(e: MouseEvent) {
+        const target = (e.target as HTMLElement);
+        const url = target.getAttribute("data-url");
+        if (url && target.tagName === "A" && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            globalThis.open(url, "_blank", "noopener,noreferrer");
+        }
+    }
+    function handleAuxClick(e: MouseEvent) {
+        if(e.button === 1) {
+            const target = (e.target as HTMLElement);
+            const url = target.getAttribute("data-url");
+            if(url && target.tagName === "A") {
+                e.preventDefault();
+                globalThis.open(url, "_blank", "noopener,noreferrer");
+            }
+        }
+    }
 
     return (
-        <span class="StringType group/s-line flex-1 flex relative hover:bg-app-active/5 min-w-3/4">
+        <span class="StringType min-h-6.5 group/s-line flex-1 flex relative hover:bg-app-active/5 min-w-3/4 [content-visibility:auto] [contain-intrinsic-size:auto_26px]">
             <KeyComp value={props.key} path={props.path.with(-1, 'key')} />
-            <textarea placeholder="Bla Bla Bla..."
+            <div ref={stringRef} contentEditable 
+                data-placeholder="Bla Bla Bla..."
+                class="StringType flex-1 outline-none focus:bg-app-base rounded-md mr-8
+                    min-h-6 field-sizing-content text-app-string whitespace-break-spaces wrap-anywhere
+                    empty:before:content-[attr(data-placeholder)] empty:before:text-app-string/60 empty:before:pointer-events-none"
+                // onInput={handleInput} 
+                onBlur={() => updateValue()}
+                onClick={handleClick} onAuxClick={handleAuxClick}
+            />
+            {/* <textarea placeholder="Bla Bla Bla..."
                 value={
                     (typeof props.data === 'object') ? // is an object?
                         // JSON.stringify(extractValue(props.data, 'object', props.path), undefined, 4) 
@@ -68,7 +130,7 @@ export function StringType(props: primitiveProps & { data: string }) {
                 }}
                 class="StringType flex-1 outline-none focus:bg-app-base rounded-md mr-8
                     min-h-6 field-sizing-content text-app-string wrap-anywhere"
-            ></textarea>
+            /> */}
             <LineSettingsBtn path={props.path} type="string" data={props.data} // config={[props.path, props.data, 'string']}
                 hover_class="group-hover/s-line:visible" />
         </span>
@@ -83,7 +145,7 @@ function NumberType(props: primitiveProps & { data: number }) {
     }
 
     return (
-        <span class="NumberType group/n-line flex-1 flex relative hover:bg-app-active/5">
+        <span class="NumberType min-h-6.5 group/n-line flex-1 flex relative hover:bg-app-active/5 [content-visibility:auto] [contain-intrinsic-size:26px]">
             <KeyComp value={props.key} path={props.path.with(-1, 'key')} />
             <input type="number" placeholder="0, 1 or more (or less)!"
                 value={(props.data || props.data === 0 || typeof props.data === 'boolean') ? Number(props.data) : ''}
@@ -147,7 +209,7 @@ function BooleanType(props: primitiveProps & { data: boolean }) {
     }
 
     return (
-        <span class="BooleanType group/b-line flex-1 flex relative hover:bg-app-active/5">
+        <span class="BooleanType min-h-6.5 group/b-line flex-1 flex relative hover:bg-app-active/5 [content-visibility:auto] [contain-intrinsic-size:26px]">
             <KeyComp value={props.key} path={props.path.with(-1, 'key')} />
             <span class="flex gap-2 text-app-keyword items-center">
                 <Switch fallback={<BoolSwitch />}>
@@ -180,20 +242,30 @@ function AddItemBtn(props: { path: path_list, type: 'object' | 'array', isFullWi
 
 /** Component for rendering an list of values. */
 export function ArrayType(props: objectProps) {
-    const [showList, setList] = createSignal(false);
+    const [showList, setListVisible] = createSignal(false);
     const isRoot = props.no_config && props.full_addButton;
 
     createComputed(() => {
-        const globalOpen = objectsClosed()
-        setList(isRoot ? true 
+        // const globalOpen = objectsClosed()
+        setListVisible(isRoot ? true 
             : props.data.length === 0 ? false 
-            : globalOpen
+            : false // globalOpen // # TODO: TOGGLE for lists.
         )
     })
 
-    createEffect(() => {
-        if (props.data.length !== 0) setList(true);
-    })
+    createEffect(
+        on(
+            () => props.data.length,
+            (_currLength, _prevLength) => {
+                // if (prevLength !== undefined && currLength > prevLength) { // Does work, but is fine; we only need to know the length changed!
+                //     setListVisible(true)
+                // }
+                setListVisible(true)
+                // console.log({ currLength, prevLength });
+            },
+            { defer: true }
+        )
+    )
 
     if (props.key === undefined) {
         return <span>No metadata for key</span>
@@ -203,13 +275,13 @@ export function ArrayType(props: objectProps) {
     return (
         <>
             <Show when={showList()}
-                fallback={<Toggle text={`[${props.data?.length}]`} signal={[showList, setList]}
+                fallback={<Toggle text={`[${props.data?.length}]`} signal={[showList, setListVisible]}
                     path={props.path} type="array" data={props.data} show
                     class="text-app-keyword" key={
                         <KeyComp value={props.key!} path={props.path.with(-1, 'key')} />}
                 />}
             >
-                <Toggle text="[" signal={[showList, setList]} class="text-app-keyword"
+                <Toggle text="[" signal={[showList, setListVisible]} class="text-app-keyword"
                     path={props.path} type="array" data={props.data} show
                     key={<KeyComp value={props.key!} path={props.path.with(-1, 'key')} />} />
                 <div class="Brake w-full" />
@@ -223,7 +295,7 @@ export function ArrayType(props: objectProps) {
                     }}</For>
                 </div>
 
-                <Toggle text="]" signal={[showList, setList]} class="text-app-keyword"
+                <Toggle text="]" signal={[showList, setListVisible]} class="text-app-keyword"
                     path={props.path} type="array" data={props.data} show end />
             </Show>
         </>
@@ -232,20 +304,29 @@ export function ArrayType(props: objectProps) {
 
 /** Component to render groups of `key` - `value` pairs. */
 export function ObjectType(props: objectProps) {
-    const [isShowing, setShow] = createSignal(true);
+    const [showObj, setObjVisible] = createSignal(true);
     const isRoot = props.no_config && props.full_addButton;
 
     createComputed(() => {
         const globalOpen = objectsClosed()
-        setShow(isRoot ? true 
+        setObjVisible(isRoot ? true 
             : props.data.length === 0 ? false 
-            : globalOpen
+            : globalOpen // # TODO: RENAME this to globalToggle_objects or something. Separate it from arrays.
         )
     })
 
-    createEffect(() => {
-        if (props.data.length !== 0) setShow(true);
-    })
+    createEffect(on(
+            () => props.data.length,
+            (_currLength, _prevLength) => {
+                // if (prevLength !== undefined && currLength > prevLength) { // Does work, but is fine; we only need to know the length changed!
+                //     setListVisible(true)
+                // }
+                setObjVisible(true)
+                // console.log({ currLength, prevLength });
+            },
+            { defer: true }
+        )
+    )
 
     if (props.key === undefined && props.no_config != true) {
         return <span>No metadata for key</span>
@@ -254,15 +335,15 @@ export function ObjectType(props: objectProps) {
 
     return (
         <>
-            <Show when={isShowing()} fallback={
-                <Toggle text={`{${props.data?.length}}`} signal={[isShowing, setShow]}
+            <Show when={showObj()} fallback={
+                <Toggle text={`{${props.data?.length}}`} signal={[showObj, setObjVisible]}
                     path={props.path} type="object" data={props.data} show={!props.no_config}
                     class="text-app-function"
                     key={<Show when={!(props.no_config)}>
                         <KeyComp value={props.key!} path={props.path.with(-1, 'key')} />
                     </Show>} />
             }>
-                <Toggle text="{" signal={[isShowing, setShow]} class="text-app-function"
+                <Toggle text="{" signal={[showObj, setObjVisible]} class="text-app-function"
                     path={props.path} type="object" data={props.data} show={!props.no_config}
                     key={<Show when={!(props.no_config)}>
                         <KeyComp value={props.key!} path={props.path.with(-1, 'key')} />
@@ -283,7 +364,7 @@ export function ObjectType(props: objectProps) {
                     </Show>
                 </div>
 
-                <Toggle text="}" signal={[isShowing, setShow]} class="text-app-function"
+                <Toggle text="}" signal={[showObj, setObjVisible]} class="text-app-function"
                     path={props.path} type="object" data={props.data} show={!props.no_config} end />
             </Show>
         </>
